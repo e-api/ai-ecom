@@ -68,7 +68,7 @@ class FilamentServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Force HTTPS for all URLs in production/staging
-        if (app()->environment(['production', 'staging'])) {
+        if (app()->environment(['production', 'staging', 'local'])) {
             URL::forceScheme('https');
         }
 

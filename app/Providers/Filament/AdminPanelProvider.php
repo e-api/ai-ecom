@@ -6,6 +6,7 @@ use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
+use Filament\Support\Enums\Width;
 
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -46,6 +47,9 @@ class AdminPanelProvider extends PanelProvider
                 AccountWidget::class,
                 FilamentInfoWidget::class,
             ])
+            ->sidebarCollapsibleOnDesktop()
+            ->maxContentWidth(Width::Full)
+            ->unsavedChangesAlerts()
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

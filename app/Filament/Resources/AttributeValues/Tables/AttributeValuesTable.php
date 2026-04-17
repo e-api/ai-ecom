@@ -1,36 +1,33 @@
 <?php
 
-namespace App\Filament\Resources\Brands\Tables;
+namespace App\Filament\Resources\AttributeValues\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class BrandsTable
+class AttributeValuesTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->emptyStateHeading('No data yet')
-                ->emptyStateDescription('Create your first brand to get started.')
-                ->emptyStateIcon('heroicon-o-building-storefront')
+                ->emptyStateDescription('Create your first attribute value to get started.')
+                ->emptyStateIcon('heroicon-o-shape')
                 ->emptyStateActions([
                     EditAction::make()
-                        ->label('Create a Brand')
-                        ->url(fn () => route('filament.resources.brands.pages.create')),
+                        ->label('Create an Attribute Value')
+                        ->url(fn () => route('filament.resources.attribute-values.pages.create')),
                 ])
             ->columns([
-                TextColumn::make('name')
+                TextColumn::make('attribute.name')
+                    ->label('Attribute')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('value')
                     ->searchable(),
-                TextColumn::make('slug')
-                    ->searchable(),
-                ImageColumn::make('image'),
-                IconColumn::make('status')
-                    ->boolean(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

@@ -15,6 +15,14 @@ class ProductsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No data yet')
+                ->emptyStateDescription('Create your first product to get started.')
+                ->emptyStateIcon('heroicon-o-shopping-bag')
+                ->emptyStateActions([
+                    EditAction::make()
+                        ->label('Create a Product')
+                        ->url(fn () => route('filament.resources.products.pages.create')),
+                ])
             ->columns([
                 TextColumn::make('category_id')
                     ->numeric()

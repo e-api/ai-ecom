@@ -15,6 +15,14 @@ class CategoriesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No data yet')
+                ->emptyStateDescription('Create your first category to get started.')
+                ->emptyStateIcon('heroicon-o-folder')
+                ->emptyStateActions([
+                    EditAction::make()
+                        ->label('Create a Category')
+                        ->url(fn () => route('filament.resources.categories.pages.create')),
+                ])
             ->columns([
                 TextColumn::make('parent_id')
                     ->numeric()

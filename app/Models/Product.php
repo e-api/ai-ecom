@@ -57,4 +57,9 @@ class Product extends Model
     {
         return $this->belongsTo(Brand::class);
     }
+
+    public function attributeValues()
+    {
+        return $this->belongsToMany(\App\Models\AttributeValue::class);
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AttributeValues\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -17,9 +18,10 @@ class AttributeValuesTable
                 ->emptyStateDescription('Create your first attribute value to get started.')
                 ->emptyStateIcon('heroicon-o-shape')
                 ->emptyStateActions([
-                    EditAction::make()
+                    Action::make('create')
                         ->label('Create an Attribute Value')
-                        ->url(fn () => route('filament.resources.attribute-values.pages.create')),
+                        ->url('attribute-values/create')
+                        ->button(),
                 ])
             ->columns([
                 TextColumn::make('attribute.name')

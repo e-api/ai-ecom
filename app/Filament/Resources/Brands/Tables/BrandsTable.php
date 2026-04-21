@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Brands\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -19,9 +20,10 @@ class BrandsTable
                 ->emptyStateDescription('Create your first brand to get started.')
                 ->emptyStateIcon('heroicon-o-building-storefront')
                 ->emptyStateActions([
-                    EditAction::make()
+                    Action::make('create')
                         ->label('Create a Brand')
-                        ->url(fn () => route('filament.resources.brands.pages.create')),
+                        ->url('brands/create')
+                        ->button(),
                 ])
             ->columns([
                 TextColumn::make('name')

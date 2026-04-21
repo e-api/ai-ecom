@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Products\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -19,9 +20,10 @@ class ProductsTable
                 ->emptyStateDescription('Create your first product to get started.')
                 ->emptyStateIcon('heroicon-o-shopping-bag')
                 ->emptyStateActions([
-                    EditAction::make()
+                    Action::make('create')
                         ->label('Create a Product')
-                        ->url(fn () => route('filament.resources.products.pages.create')),
+                        ->url('products/create')
+                        ->button(),
                 ])
             ->columns([
                 TextColumn::make('category_id')

@@ -13,15 +13,32 @@ return new class extends Migration
     {
         Schema::create('coupons', function (Blueprint $table) {
             $table->id();
-	    $table->string('code')->unique();
-    	    // type: fixed or percentage
-    	    $table->enum('type', ['fixed', 'percentage']);
-	    $table->decimal('value', 10, 2);
-    	    $table->decimal('min_cart_value', 10, 2)->nullable();
-    	    $table->integer('usage_limit')->nullable();
-    	    $table->integer('used_count')->default(0);
-    	    $table->date('expires_at')->nullable();
-    	    $table->boolean('status')->default(1);
+	        
+            // Coupon code
+            $table->string('code')->unique();
+
+            // ✅ Manual or Automatic
+            $table->enum('code_type', ['manual', 'auto'])->default('manual');
+
+            // Discount type
+            $table->enum('type', ['fixed', 'percentage']);
+
+            // Discount value
+            $table->decimal('value', 10, 2);
+
+            // Minimum cart value
+            $table->decimal('min_cart_value', 10, 2)->nullable();
+
+            // Usage control
+            $table->integer('usage_limit')->nullable();
+            $table->integer('used_count')->default(0);
+
+            // Expiry
+            $table->date('expires_at')->nullable();
+
+            // Status
+            $table->boolean('status')->default(1);
+
             $table->timestamps();
         });
     }

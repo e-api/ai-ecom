@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Forgot Password</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="themes/store.css"></head>
+<body>
+  <header class="store-header sticky top-0 z-40">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="flex items-center justify-between gap-4 py-3">
+        <div class="flex items-center gap-3">
+          <button data-mobile-toggle class="mobile-toggle lg:hidden p-2 rounded-md" aria-controls="mobile-navigation" aria-expanded="false" aria-label="Toggle menu" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <a href="index.html" class="text-2xl font-black tracking-tight text-white">Storefront</a>
+        </div>
+
+        <div class="flex-1 hidden md:flex justify-center px-4">
+          <form class="header-search w-full max-w-2xl flex items-center gap-2" role="search" aria-label="Site search" onsubmit="return false;">
+            <label for="site-search" class="sr-only">Search products</label>
+            <input id="site-search" class="form-control text-gray-900" type="search" placeholder="Search shirts, dresses, tops">
+            <button class="btn-go shrink-0 rounded-md px-5 py-2 font-bold" type="submit">Search</button>
+          </form>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <a class="cart-button rounded-md bg-white/10 px-3 py-2 text-sm font-bold flex items-center gap-2" href="cart.html" aria-label="View cart">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4"></path><circle cx="9" cy="20" r="1"></circle><circle cx="20" cy="20" r="1"></circle></svg>
+            <span class="sr-only">Cart</span>
+            <span data-cart-count>3</span>
+          </a>
+          <a class="btn-login rounded-md px-4 py-2 font-bold hidden sm:inline-flex" href="login.html">Login</a>
+        </div>
+      </div>
+
+      <nav id="primary-navigation" class="hidden lg:flex lg:items-center lg:justify-between mt-2" aria-label="Primary navigation">
+        <div class="flex flex-wrap items-center gap-2 text-sm">
+          <a data-nav class="store-link rounded-md px-3 py-2" href="index.html">Home</a>
+          <a data-nav class="store-link rounded-md px-3 py-2" href="listing.html">Shop</a>
+          <a data-nav class="store-link rounded-md px-3 py-2" href="about.html">About</a>
+          <a data-nav class="store-link rounded-md px-3 py-2" href="faq.html">FAQ</a>
+          <a data-nav class="store-link rounded-md px-3 py-2" href="contact.html">Contact</a>
+          <a class="hidden rounded-md bg-white/10 px-3 py-2 lg:inline-flex" href="cart.html">Cart: <span class="ml-1" data-cart-count>3</span></a>
+        </div>
+        <div class="hidden lg:block">
+          <a class="rounded-md border border-gray-300 bg-white px-4 py-2 font-bold text-gray-800" href="register.html">Create account</a>
+        </div>
+      </nav>
+
+      <nav id="mobile-navigation" class="mobile-drawer lg:hidden" aria-label="Mobile navigation" aria-hidden="true">
+        <div class="p-4">
+          <form class="header-search mb-4 flex w-full gap-2" role="search" aria-label="Mobile search" onsubmit="return false;">
+            <label for="mobile-site-search" class="sr-only">Search products</label>
+            <input id="mobile-site-search" class="form-control text-gray-900" type="search" placeholder="Search shirts, dresses, tops">
+            <button class="btn-go shrink-0 rounded-md px-4 py-2 font-bold" type="submit">Search</button>
+          </form>
+          <div class="flex flex-col gap-2">
+            <a data-nav class="store-link rounded-md px-3 py-2" href="index.html">Home</a>
+            <a data-nav class="store-link rounded-md px-3 py-2" href="listing.html">Shop</a>
+            <a data-nav class="store-link rounded-md px-3 py-2" href="about.html">About</a>
+            <a data-nav class="store-link rounded-md px-3 py-2" href="faq.html">FAQ</a>
+            <a data-nav class="store-link rounded-md px-3 py-2" href="contact.html">Contact</a>
+          </div>
+          <div class="mt-4">
+            <a class="rounded-md border border-gray-300 bg-white px-4 py-2 font-bold text-gray-800 block text-center" href="register.html">Create account</a>
+          </div>
+        </div>
+      </nav>
+
+    </div>
+  </header>
+  <main class="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+    <section class="space-y-6 lg:sticky lg:top-28 lg:self-start">
+      <div class="sidebar-cart-card px-4 py-3 text-sm font-semibold text-gray-700">Cart icon: 3 items in your cart</div>
+      <aside class="store-sidebar p-4">
+        <section class="mb-6"><h2 class="sidebar-title mb-2">MEN</h2><a class="category-link" href="listing.html">T-Shirts <span>24</span></a><a class="category-link" href="listing.html">Casual T-Shirts <span>18</span></a><a class="category-link" href="listing.html">Formal T-Shirts <span>9</span></a><a class="category-link" href="listing.html">Shirts <span>31</span></a><a class="category-link" href="listing.html">Casual Shirts <span>14</span></a><a class="category-link" href="listing.html">Formal Shirts <span>12</span></a></section><section class="mb-6"><h2 class="sidebar-title mb-2">WOMEN</h2><a class="category-link" href="listing.html">Tops <span>28</span></a><a class="category-link" href="listing.html">Casual Tops <span>19</span></a><a class="category-link" href="listing.html">Formal Tops <span>7</span></a><a class="category-link" href="listing.html">Dresses <span>35</span></a><a class="category-link" href="listing.html">Casual Dresses <span>16</span></a><a class="category-link" href="listing.html">Formal Dresses <span>10</span></a></section><section><h2 class="sidebar-title mb-2">KIDS</h2><a class="category-link" href="listing.html">T-Shirts <span>15</span></a><a class="category-link" href="listing.html">Shirts <span>11</span></a><a class="category-link" href="listing.html">Dresses <span>13</span></a></section>
+      </aside>
+    </section>
+    <section class="space-y-6">
+      <nav class="breadcrumb-card px-4 py-3 text-sm" aria-label="Breadcrumb">
+        <ol class="flex flex-wrap items-center gap-2 text-gray-600">
+          <li><a class="breadcrumb-link" href="index.html">Home</a></li>
+          <li aria-hidden="true">/</li>
+          <li class="font-bold text-gray-900" aria-current="page">Forgot Password</li>
+        </ol>
+      </nav>
+      <div class="mx-auto w-full max-w-xl">
+      <div class="muted-box p-6 md:p-8"><p class="mb-2 text-sm font-bold uppercase tracking-wider text-blue-700">Account Recovery</p><h1 class="mb-4 text-3xl font-black">Forgot Password</h1><p class="mb-6 text-gray-700">Enter your email address to receive reset instructions.</p><form class="space-y-4"><input class="form-control" type="email" placeholder="Email address"><button class="btn-go w-full rounded-md px-4 py-3 font-bold" type="button">Send reset link</button></form><a class="mt-5 inline-block text-sm font-bold text-blue-700" href="login.html">Back to login</a></div>
+    </div>
+    </section>
+  </main>
+  <footer class="mt-10 bg-gray-950 text-gray-300">
+    <div class="mx-auto max-w-7xl px-4 py-10">
+      <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr_1.2fr]">
+        <section>
+          <h2 class="mb-3 text-xl font-black text-white">Storefront</h2>
+          <p class="max-w-sm text-sm leading-6 text-gray-400">A responsive apparel store template with product categories, account pages, customer policies, and checkout-ready layouts.</p>
+          <div class="mt-5 flex gap-3">
+            <a class="footer-social" href="#" aria-label="Facebook">f</a>
+            <a class="footer-social" href="#" aria-label="Instagram">ig</a>
+            <a class="footer-social" href="#" aria-label="X">x</a>
+          </div>
+        </section>
+        <section>
+          <h3 class="mb-3 font-bold text-white">Required Pages</h3>
+          <a class="footer-link" href="about.html">About</a>
+          <a class="footer-link" href="contact.html">Contact</a>
+          <a class="footer-link" href="faq.html">FAQ</a>
+          <a class="footer-link" href="terms-and-conditions.html">Terms and Conditions</a>
+        </section>
+        <section>
+          <h3 class="mb-3 font-bold text-white">Selling</h3>
+          <a class="footer-link" href="listing.html">Men</a>
+          <a class="footer-link" href="listing.html">Women</a>
+          <a class="footer-link" href="listing.html">Kids</a>
+          <a class="footer-link" href="cart.html">Shopping Cart</a>
+        </section>
+        <section>
+          <h3 class="mb-3 font-bold text-white">Company Policy</h3>
+          <a class="footer-link" href="terms-and-conditions.html">Privacy Policy</a>
+          <a class="footer-link" href="terms-and-conditions.html">Returns Policy</a>
+          <a class="footer-link" href="terms-and-conditions.html">Shipping Policy</a>
+          <a class="footer-link" href="terms-and-conditions.html">Payment Policy</a>
+        </section>
+        <section>
+          <h3 class="mb-3 font-bold text-white">Location Details</h3>
+          <p class="text-sm leading-6 text-gray-400">123 Market Street<br>Bangkok, Thailand</p>
+          <p class="mt-3 text-sm text-gray-400">support@example.com<br>+66 00 000 0000</p>
+        </section>
+      </div>
+      <div class="mt-8 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+        <p>Copyright 2026 Storefront. All rights reserved.</p>
+        <p>Secure shopping, clear policies, responsive customer support.</p>
+      </div>
+    </div>
+  </footer>
+  <script src="extra/site.js"></script>
+</body>
+</html>

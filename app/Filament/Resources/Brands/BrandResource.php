@@ -21,8 +21,8 @@ class BrandResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Shop';
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingStorefront;
-    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::BuildingStorefront; // Remove 'Solid' prefix
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSwatch;
+    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::Swatch; // Remove 'Solid' prefix
 
     protected static ?string $recordTitleAttribute = 'name';
 

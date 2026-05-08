@@ -56,32 +56,33 @@
   <section class="space-y-6 lg:sticky lg:top-28 lg:self-start">
     <div class="sidebar-cart-card px-4 py-3 text-sm font-semibold text-gray-700">Cart icon: 3 items in your cart</div>
     <aside class="store-sidebar p-4">
-      <section class="mb-6">
-        <h2 class="sidebar-title mb-2">MEN</h2>
-        <a class="category-link" href="{{ url('listing.html') }}">T-Shirts <span>24</span></a>
-        <a class="category-link" href="{{ url('listing.html') }}">Casual T-Shirts <span>18</span></a>
-        <a class="category-link" href="{{ url('listing.html') }}">Formal T-Shirts <span>9</span></a>
-        <a class="category-link" href="{{ url('listing.html') }}">Shirts <span>31</span></a>
-        <a class="category-link" href="{{ url('listing.html') }}">Casual Shirts <span>14</span></a>
-        <a class="category-link" href="{{ url('listing.html') }}">Formal Shirts <span>12</span></a>
-      </section>
-      <section class="mb-6">
-        <h2 class="sidebar-title mb-2">WOMEN</h2>
-        <a class="category-link" href="{{ url('listing.html') }}">Tops <span>28</span></a>
-        <a class="category-link" href="{{ url('listing.html') }}">Casual Tops <span>19</span></a>
-        <a class="category-link" href="{{ url('listing.html') }}">Formal Tops <span>7</span></a>
-        <a class="category-link" href="{{ url('listing.html') }}">Dresses <span>35</span></a>
-        <a class="category-link" href="{{ url('listing.html') }}">Casual Dresses <span>16</span></a>
-        <a class="category-link" href="{{ url('listing.html') }}">Formal Dresses <span>10</span></a>
-      </section>
-      <section>
-        <h2 class="sidebar-title mb-2">KIDS</h2>
-        <a class="category-link" href="{{ url('listing.html') }}">T-Shirts <span>15</span></a>
-        <a class="category-link" href="{{ url('listing.html') }}">Shirts <span>11</span></a>
-        <a class="category-link" href="{{ url('listing.html') }}">Dresses <span>13</span></a>
-      </section>
+      
+      @foreach($categories as $category)
+        <section class="mb-6">
+          <h2 class="sidebar-title mb-2">{{ strtoupper($category->name) }}</h2>
+          
+          @if($category->children->count())
+            @foreach($category->children as $child)
+              <a class="category-link" href="{{ url('category/'.$child->slug) }}">
+                {{ $child->name }}
+              </a>
+              
+              @foreach($child->children as $sub)
+                <a class="category-link" href="{{ url('category/'.$sub->slug) }}" style="padding-left: 20px; display: block;">
+                  - {{ $sub->name }}
+                </a>
+              @endforeach
+            @endforeach
+          @else
+            <a class="category-link" href="{{ url('category/'.$category->slug) }}">
+              {{ $category->name }}
+            </a>
+          @endif
+        </section>
+      @endforeach
+      
     </aside>
-  </section>
+</section>
 
   <section class="space-y-8">
     <div class="rounded-lg border border-gray-200 bg-white p-6 md:p-8">

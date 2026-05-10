@@ -162,7 +162,7 @@ a {
   border: 1px solid #e5e7eb;
   background: #fff;
   border-radius: 8px;
-  min-height: 52px;
+  max-height: 50px;
   display: flex;
   align-items: center;
 }
@@ -470,7 +470,7 @@ body.sidebar-open .store-header {
     inset: 0;
     /* stronger dark overlay so the white page behind the drawer is not visible */
     background: var(--drawer-backdrop);
-    backdrop-filter: blur(2px) brightness(0.7);
+    backdrop-filter: blur(0px) brightness(1.7);
     z-index: 55;
     transition: background-color 160ms ease;
   }
@@ -553,7 +553,7 @@ body.sidebar-open .store-header {
     color: var(--drawer-cta-text) !important;
   }
   /* Register CTA: use the same color as the search button for clarity */
-  .mobile-drawer a[href="register.html"] {
+  .mobile-drawer a[id="create_account"] {
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -565,7 +565,7 @@ body.sidebar-open .store-header {
     border: none !important;
     margin-top: 0.5rem;
   }
-  .mobile-drawer a[href="register.html"]:hover {
+  .mobile-drawer a[id="create_account"]:hover {
     background: var(--drawer-cta-bg-hover) !important;
   }
 
@@ -573,17 +573,24 @@ body.sidebar-open .store-header {
   .mobile-drawer > .p-4 {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    align-items: stretch;
+    text-align: left;
   }
-  .mobile-drawer .flex.flex-col { align-items: center; }
+  .mobile-drawer .flex.flex-col { 
+    align-items: stretch;
+    text-align: left;
+  }
   .mobile-drawer .store-link {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0.6rem 1rem;
+    display: block;
+    text-align: left;
+    padding: 0.6rem 0.75rem;
     margin: 0.25rem 0;
-    width: auto;
+    width: 100%;
+  }
+  .mobile-drawer .mobile-category-details .store-link {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
   }
   .mobile-drawer .header-search { width: 100%; max-width: 520px; }
   /* hide on large screens */
@@ -767,3 +774,202 @@ body.sidebar-open .store-header {
 
 /* Small accessibility focus style */
 .carousel:focus { outline: 3px solid rgba(37,99,235,0.18); }
+
+/* Additional styles for dynamic banner images */
+.carousel-slide {
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Hide overlay and content since we only want images */
+.carousel-slide .overlay,
+.carousel-slide .slide-content {
+  display: none;
+}
+
+/* Prevent duplicate carousels (if any appear) */
+.carousel:not(:first-of-type) {
+  display: none;
+}
+
+/* Ensure smooth image loading */
+.carousel-slide {
+  transition: background-image 0.3s ease;
+}
+
+/* Style for details/summary dropdown arrow */
+.mobile-category-details[open] .summary-arrow {
+  transform: rotate(90deg);
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.summary-arrow {
+  transition: transform 0.2s ease;
+}
+
+/* Remove default triangle/details marker */
+.mobile-category-details summary {
+  list-style: none;
+}
+
+.mobile-category-details summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Fix mobile category alignment - ensure summary stays left */
+.mobile-category-details {
+  width: 100%;
+  margin: 0;
+}
+
+.mobile-category-details > summary {
+  width: 100%;
+  display: flex;
+  padding-left: 0.75rem !important;
+  margin-left: 0 !important;
+  box-sizing: border-box;
+}
+
+/* Container for children with vertical line */
+.mobile-category-details > div {
+  margin-left: 1.25rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+/* When opened, keep summary aligned left */
+.mobile-category-details[open] > summary {
+  padding-left: 0.75rem !important;
+  margin-left: 0 !important;
+}
+
+/* Level 2 - Child categories */
+.mobile-level-2 {
+  padding-left: 0.5rem !important;
+  font-size: 0.9rem !important;
+  font-weight: 500;
+  opacity: 0.95;
+  margin-top: 0.3rem;
+}
+
+.mobile-level-2:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Level 3 - Sub-child categories */
+.mobile-level-3 {
+  padding-left: 1.5rem !important;
+  font-size: 0.8rem !important;
+  font-weight: 400;
+  opacity: 0.75;
+}
+
+.mobile-level-3::before {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+.mobile-level-3:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  opacity: 0.9;
+}
+
+/* Divider between child groups */
+.mobile-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 0.25rem 0;
+}
+
+/* Prevent gap between parent and dropdown */
+.dropdown-menu {
+  top: 100%;
+  margin-top: 0;
+}
+
+/* Add invisible bridge to prevent hover gap */
+.relative.inline-block.group > a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -10px;
+  height: 10px;
+}
+
+/* Ensure the parent has relative positioning for the bridge */
+.relative.inline-block.group > a {
+  position: relative;
+}
+
+/* Fix sidebar sticky position for desktop */
+@media (min-width: 1024px) {
+  .lg\:sticky.lg\:self-start {
+    top: calc(var(--header-height, 64px) + 0.5rem);
+  }
+}
+
+/* Fix grid/list toggle container on mobile */
+@media (max-width: 640px) {
+  .flex.items-center.gap-3 {
+    flex-shrink: 0;
+  }
+  
+  .view-toggle {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+}
+
+/* Payment Methods */
+.store-sidebar .grid.grid-cols-2 .flex {
+  transition: all 0.2s ease;
+}
+
+.store-sidebar .grid.grid-cols-2 .flex:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border-color: #cbd5e1;
+}
+
+/* Currency Select Styles */
+.currency-select {
+  appearance: none;
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1rem;
+  padding-right: 2rem;
+}
+
+.currency-select:focus {
+  outline: 2px solid rgba(255,255,255,0.5);
+  outline-offset: 2px;
+}
+
+.currency-select option {
+  background: white;
+  color: #111827;
+}
+
+/* User Avatar */
+#desktop-user-menu {
+  transition: opacity 0.15s ease;
+}
+
+#desktop-user-menu:hover {
+  opacity: 0.8;
+}
+
+/* Mobile User Section */
+.mobile-logged-out a:hover,
+.mobile-logged-in a:hover {
+  background: rgba(255,255,255,0.08);
+}

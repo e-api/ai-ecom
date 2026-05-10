@@ -57,15 +57,10 @@ document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll("[data-view-toggle]").forEach(function (button) {
     button.addEventListener("click", function () {
       var view = button.getAttribute("data-view-toggle");
-      // find the closest section (or container) for this toggle, then target
-      // the related-products element within that container. Fallback to the
-      // first global related-products if none is found locally.
       var container = button.closest('section') || document;
       var products = container.querySelector("[data-related-products]") || document.querySelector("[data-related-products]");
       if (!products) return;
 
-      // only update toggles that are within the same container (so multiple
-      // product lists on the page can be toggled independently)
       var toggles = container.querySelectorAll("[data-view-toggle]");
       if (!toggles || toggles.length === 0) toggles = document.querySelectorAll("[data-view-toggle]");
 
@@ -204,12 +199,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Carousel initialization (auto-advance, manual controls, touch)
   (function initCarousels() {
-    var autoplayDelay = 3000;
+    var autoplayDelay = 8000;
     var carousels = document.querySelectorAll('.carousel');
+    
     carousels.forEach(function(carousel) {
       var track = carousel.querySelector('.carousel-track');
       var slides = Array.from(carousel.querySelectorAll('.carousel-slide'));
+      
+      // Force slides to be visible and track to have proper width
       if (!track || slides.length === 0) return;
+      
       var prevBtn = carousel.querySelector('.carousel-arrow.left');
       var nextBtn = carousel.querySelector('.carousel-arrow.right');
       var dots = Array.from(carousel.querySelectorAll('.carousel-dot'));
@@ -222,78 +221,96 @@ document.addEventListener("DOMContentLoaded", function () {
 
       function refreshSizes() {
         width = carousel.clientWidth || carousel.offsetWidth;
-        slides.forEach(function(s){ s.style.width = width + 'px'; });
+        // Set width for each slide
+        slides.forEach(function(slide) {
+          slide.style.width = width + 'px';
+          slide.style.flex = '0 0 ' + width + 'px';
+        });
         track.style.width = (slides.length * width) + 'px';
+        track.style.display = 'flex';
       }
 
       function update() {
         track.style.transition = 'transform 640ms cubic-bezier(.2,.9,.2,1)';
         track.style.transform = 'translateX(' + (-index * width) + 'px)';
-        slides.forEach(function(s,i){
-          s.setAttribute('aria-hidden', i !== index);
-          s.setAttribute('aria-roledescription', 'slide');
-          s.setAttribute('aria-label', (i+1) + ' of ' + slides.length);
-        });
+        
+        // Update dots
         if (dots && dots.length === slides.length) {
-          dots.forEach(function(d,i){ d.classList.toggle('active', i === index); d.setAttribute('aria-selected', String(i===index)); });
+          dots.forEach(function(dot, i) {
+            dot.classList.toggle('active', i === index);
+            dot.setAttribute('aria-selected', String(i === index));
+          });
         }
       }
 
-      function goTo(i) { index = (i + slides.length) % slides.length; update(); }
+      function goTo(i) { 
+        index = (i + slides.length) % slides.length; 
+        update(); 
+      }
       function next() { goTo(index + 1); }
       function prev() { goTo(index - 1); }
 
-      function start() { if (timer) clearInterval(timer); timer = setInterval(function(){ if (!isPaused) next(); }, autoplayDelay); }
+      function start() { 
+        if (timer) clearInterval(timer); 
+        timer = setInterval(function() { 
+          if (!isPaused) next(); 
+        }, autoplayDelay); 
+      }
       function stop() { if (timer) { clearInterval(timer); timer = null; } }
       function pause() { isPaused = true; }
       function resume() { isPaused = false; }
 
-      window.addEventListener('resize', function () { refreshSizes(); update(); });
+      window.addEventListener('resize', function() { 
+        refreshSizes(); 
+        update(); 
+      });
 
-      if (nextBtn) nextBtn.addEventListener('click', function(){ next(); pause(); setTimeout(resume, autoplayDelay); });
-      if (prevBtn) prevBtn.addEventListener('click', function(){ prev(); pause(); setTimeout(resume, autoplayDelay); });
-
-      if (dots && dots.length === slides.length) {
-        dots.forEach(function(d,i){ d.addEventListener('click', function(){ goTo(i); pause(); setTimeout(resume, autoplayDelay); }); });
+      if (nextBtn) {
+        nextBtn.addEventListener('click', function() { 
+          next(); 
+          pause(); 
+          setTimeout(resume, autoplayDelay); 
+        });
+      }
+      if (prevBtn) {
+        prevBtn.addEventListener('click', function() { 
+          prev(); 
+          pause(); 
+          setTimeout(resume, autoplayDelay); 
+        });
       }
 
-      // touch support
-      track.addEventListener('touchstart', function (e) {
-        startX = e.touches[0].clientX;
-        currentTranslate = -index * width;
-        track.style.transition = 'none';
-        pause();
-      }, {passive:true});
-      track.addEventListener('touchmove', function (e) {
-        var dx = e.touches[0].clientX - startX;
-        track.style.transform = 'translateX(' + (currentTranslate + dx) + 'px)';
-      }, {passive:true});
-      track.addEventListener('touchend', function (e) {
-        var dx = e.changedTouches[0].clientX - startX;
-        track.style.transition = 'transform 320ms cubic-bezier(.2,.9,.2,1)';
-        if (Math.abs(dx) > (width * 0.15) || Math.abs(dx) > 40) {
-          if (dx < 0) next(); else prev();
-        } else {
-          update();
-        }
-        setTimeout(resume, 250);
-      });
+      if (dots && dots.length === slides.length) {
+        dots.forEach(function(dot, i) {
+          dot.addEventListener('click', function() { 
+            goTo(i); 
+            pause(); 
+            setTimeout(resume, autoplayDelay); 
+          });
+        });
+      }
 
-      carousel.addEventListener('mouseenter', function(){ pause(); });
-      carousel.addEventListener('mouseleave', function(){ resume(); });
-      carousel.addEventListener('focusin', function(){ pause(); });
-      carousel.addEventListener('focusout', function(){ resume(); });
-
-      carousel.setAttribute('tabindex','0');
-      carousel.addEventListener('keydown', function(e){
-        if (e.key === 'ArrowLeft') { prev(); pause(); setTimeout(resume, autoplayDelay); }
-        if (e.key === 'ArrowRight') { next(); pause(); setTimeout(resume, autoplayDelay); }
-      });
-
-      // initial setup
+      // Initialize
       refreshSizes();
       update();
       start();
     });
   })();
+
+  // Toggle sidebar submenu (used by sidebar categories)
+  // Use windows - make it globally available
+  window.toggleSidebarSubmenu = function(element) {
+    const submenu = element.nextElementSibling;
+    const icon = element.querySelector('.sidebar-toggle-icon');
+    
+    if (submenu) {
+      if (submenu.style.display === 'none' || submenu.style.display === '') {
+        submenu.style.display = 'block';
+        if (icon) icon.style.transform = 'rotate(90deg)';
+      } else {
+        submenu.style.display = 'none';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+      }
+    }
+  };
 });

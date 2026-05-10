@@ -9,7 +9,7 @@
 <body class="@yield('body-class')">
   @include('frontend.partials.header')
 
-  <main class="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[260px_minmax(0,1fr)]" role="main">
+  <main class="mx-auto grid max-w-7xl gap-3 px-4 py-6 lg:grid-cols-[260px_minmax(0,1fr)]" role="main">
     @yield('content')
   </main>
 

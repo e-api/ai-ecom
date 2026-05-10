@@ -17,21 +17,47 @@
       </div>
 
       <div class="flex items-center gap-3">
+        <!-- Currency Swapper Desktop -->
+        <div class="hidden sm:flex items-center gap-2">
+          <select class="currency-select bg-white/10 text-white text-sm rounded-md px-2 py-1.5 border border-white/20 cursor-pointer" aria-label="Select currency">
+            <option value="USD" class="text-gray-900">🇺🇸 USD</option>
+            <option value="EUR" class="text-gray-900">🇪🇺 EUR</option>
+            <option value="GBP" class="text-gray-900">🇬🇧 GBP</option>
+            <option value="JPY" class="text-gray-900">🇯🇵 JPY</option>
+          </select>
+        </div>
+
         <a class="cart-button rounded-md bg-white/10 px-3 py-2 text-sm font-bold flex items-center gap-2" href="{{ url('cart.html') }}" aria-label="View cart">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4"></path><circle cx="9" cy="20" r="1"></circle><circle cx="20" cy="20" r="1"></circle></svg>
           <span class="sr-only">Cart</span>
           <span data-cart-count>3</span>
         </a>
-        <a class="btn-login rounded-md px-4 py-2 font-bold hidden sm:inline-flex" href="{{ url('login.html') }}">Login</a>
+
+        <!-- Desktop: Login Button (logged out) -->
+        <a class="btn-login rounded-md px-4 py-2 font-bold hidden sm:inline-flex items-center gap-2" href="{{ url('login.html') }}">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          </svg>
+          Login
+        </a>
+
+        <!-- Desktop: User Avatar (logged in) - Hidden by default -->
+        <div class="hidden sm:flex items-center gap-2 cursor-pointer" id="desktop-user-menu">
+          <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
+            JD
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
       </div>
     </div>
 
-    {{-- Desktop Navigation with Dropdowns --}}
     <nav id="primary-navigation" class="hidden lg:flex lg:items-center lg:justify-between mt-2" aria-label="Primary navigation">
       <div class="flex flex-wrap items-center gap-2 text-sm">
         <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('/') }}">Home</a>
         
-        {{-- Dynamic Categories Dropdown --}}
+        {{-- Dynamic Categories Dropdown for Desktop --}}
         @foreach($categories as $category)
           <div class="relative inline-block group">
             <a data-nav class="store-link rounded-md px-3 py-2 inline-flex items-center gap-1" href="{{ url('category/'.$category->slug) }}">
@@ -71,7 +97,7 @@
         <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('about.html') }}">About</a>
         <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('contact.html') }}">Contact</a>
       </div>
-      <div class="hidden lg:block">
+      <div class="hidden lg:flex items-center gap-3">
         <a class="rounded-md border border-gray-300 bg-white px-4 py-2 font-bold text-gray-800" href="{{ url('register.html') }}">Create account</a>
       </div>
     </nav>
@@ -79,53 +105,100 @@
     {{-- Mobile Navigation --}}
     <nav id="mobile-navigation" class="mobile-drawer lg:hidden" aria-label="Mobile navigation" aria-hidden="true">
       <div class="p-4">
+        <!-- Mobile Search -->
         <form class="header-search mb-4 flex w-full gap-2" role="search" aria-label="Mobile search" onsubmit="return false;">
           <label for="mobile-site-search" class="sr-only">Search products</label>
           <input id="mobile-site-search" class="form-control text-gray-900" type="search" placeholder="Search shirts, dresses, tops">
           <button class="btn-go shrink-0 rounded-md px-4 py-2 font-bold" type="submit">Search</button>
         </form>
+
+        <!-- Mobile User Section -->
+        <div class="mb-4 p-3 rounded-lg bg-white/5 border border-white/10">
+          <!-- Logged Out State -->
+          <div class="mobile-logged-out">
+            <a href="{{ url('login.html') }}" class="flex items-center gap-2 text-white hover:bg-white/10 rounded-md p-2 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              </svg>
+              <span class="font-bold">Login / Register</span>
+            </a>
+          </div>
+
+          <!-- Logged In State (Hidden by default) -->
+          <div class="mobile-logged-in hidden">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+                JD
+              </div>
+              <div class="flex-1">
+                <p class="text-white font-bold text-sm">John Doe</p>
+                <p class="text-white/60 text-xs">john@example.com</p>
+              </div>
+            </div>
+            <div class="mt-3 pt-3 border-t border-white/10 grid grid-cols-2 gap-2">
+              <a href="{{ url('account.html') }}" class="text-white text-sm hover:bg-white/10 rounded-md p-2 transition text-center">My Account</a>
+              <a href="{{ url('orders.html') }}" class="text-white text-sm hover:bg-white/10 rounded-md p-2 transition text-center">Orders</a>
+              <a href="{{ url('wishlist.html') }}" class="text-white text-sm hover:bg-white/10 rounded-md p-2 transition text-center">Wishlist</a>
+              <a href="{{ url('logout.html') }}" class="text-red-400 text-sm hover:bg-white/10 rounded-md p-2 transition text-center">Logout</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Currency Swapper -->
+        <div class="mb-4">
+          <label class="text-white/60 text-xs block mb-1">Currency</label>
+          <select class="w-full bg-white/5 border border-white/10 text-white text-sm rounded-md px-3 py-2 cursor-pointer" aria-label="Select currency">
+            <option value="USD" class="text-gray-900">🇺🇸 USD - US Dollar</option>
+            <option value="EUR" class="text-gray-900">🇪🇺 EUR - Euro</option>
+            <option value="GBP" class="text-gray-900">🇬🇧 GBP - British Pound</option>
+            <option value="JPY" class="text-gray-900">🇯🇵 JPY - Japanese Yen</option>
+          </select>
+        </div>
+
+        <!-- Mobile Navigation Links -->
         <div class="flex flex-col gap-2">
           <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('/') }}">Home</a>
           
-          {{-- Mobile Categories with Collapsible Submenu --}}
           @foreach($categories as $category)
-            <div class="mobile-category">
-              <div class="flex items-center justify-between">
-                <a data-nav class="store-link rounded-md px-3 py-2 flex-1" href="{{ url('category/'.$category->slug) }}">
-                  {{ $category->name }}
-                </a>
-                @if($category->children->count())
-                  <button type="button" class="mobile-submenu-toggle p-2" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-180')">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                @endif
-              </div>
-              @if($category->children->count())
-                <div class="mobile-submenu hidden ml-4 mt-1 flex flex-col gap-1">
+            @if($category->children->count())
+              <details class="mobile-category-details">
+                <summary class="store-link rounded-md px-3 py-2 cursor-pointer list-none w-full text-left">
+                  <span class="flex items-center justify-between">
+                    <span>{{ $category->name }}</span>
+                    <span class="summary-arrow ml-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </span>
+                  </span>
+                </summary>
+                <div class="mt-1 flex flex-col">
                   @foreach($category->children as $child)
-                    <a href="{{ url('category/'.$child->slug) }}" class="store-link rounded-md px-3 py-1 text-sm">
-                      <strong>{{ $child->name }}</strong>
+                    <a data-nav class="store-link rounded-md py-1 text-sm mobile-level-2" href="{{ url('category/'.$child->slug) }}">
+                      {{ $child->name }}
                     </a>
                     @foreach($child->children as $sub)
-                      <a href="{{ url('category/'.$sub->slug) }}" class="store-link rounded-md px-6 py-1 text-xs text-gray-400">
-                        - {{ $sub->name }}
+                      <a data-nav class="store-link rounded-md py-1 text-xs mobile-level-3" href="{{ url('category/'.$sub->slug) }}">
+                        {{ $sub->name }}
                       </a>
                     @endforeach
+                    @if(!$loop->last && $child->children->count())
+                      <div class="mobile-divider"></div>
+                    @endif
                   @endforeach
                 </div>
-              @endif
-            </div>
+              </details>
+            @else
+              <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('category/'.$category->slug) }}">
+                {{ $category->name }}
+              </a>
+            @endif
           @endforeach
           
           <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('listing.html') }}">Shop</a>
           <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('about.html') }}">About</a>
           <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('faq.html') }}">FAQ</a>
           <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('contact.html') }}">Contact</a>
-        </div>
-        <div class="mt-4">
-          <a class="rounded-md border border-gray-300 bg-white px-4 py-2 font-bold text-gray-800 block text-center" href="{{ url('register.html') }}">Create account</a>
         </div>
       </div>
     </nav>

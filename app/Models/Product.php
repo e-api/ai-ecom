@@ -60,6 +60,11 @@ class Product extends Model
 
     public function attributeValues()
     {
-        return $this->belongsToMany(\App\Models\AttributeValue::class);
+        return $this->belongsToMany(AttributeValue::class);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 1);
     }
 }

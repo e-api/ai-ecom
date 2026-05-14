@@ -16,6 +16,27 @@ html {
   --drawer-cta-bg-hover: var(--primary-hover);
   --drawer-cta-text: var(--primary-text);
   --drawer-close-color: rgba(255,255,255,0.9);
+
+  /* Dropdown Colors */
+  --dropdown-bg: #ffffff;
+  --dropdown-border: #f0f0f0;
+  --dropdown-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+  --dropdown-radius: 12px;
+  
+  /* Text Colors */
+  --dropdown-text: #374151;
+  --dropdown-text-hover: #ff6a00;
+  --dropdown-text-muted: #6b7280;
+  
+  /* Hover Background */
+  --dropdown-hover-bg: linear-gradient(90deg, rgba(255,106,0,0.08) 0%, rgba(255,106,0,0) 100%);
+  
+  /* Icon Colors */
+  --dropdown-icon: #9ca3af;
+  --dropdown-icon-hover: #ff6a00;
+  
+  /* Divider */
+  --dropdown-divider: #f3f4f6;
 }
 
 body {
@@ -34,15 +55,33 @@ a {
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
+/* Navigation link styles - only for store links */
 .store-link {
   color: #e5e7eb;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  transition: color 0.15s ease;
+  text-decoration: none;
+  background: transparent;
 }
 
 .store-link:hover,
 .store-link.active {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--primary-hover);
+}
+
+/* Remove any background hover effects */
+.store-link:hover {
+  background-color: transparent !important;
+  background: none !important;
+}
+
+/* Style for the arrow SVG inside store links */
+.store-link svg {
+  color: #9ca3af;
+  transition: color 0.15s ease;
+}
+
+.store-link:hover svg {
+  color: var(--primary-hover);
 }
 
 .header-search .form-control {
@@ -103,6 +142,201 @@ a {
   background: #f3f4f6;
 }
 
+/* Sidebar Container */
+.store-sidebar {
+  background: var(--dropdown-bg);
+  border-radius: var(--dropdown-radius);
+  border: 1px solid var(--dropdown-border);
+  padding: 1rem;
+}
+
+/* ============================================
+   MAIN CATEGORY STYLES
+   ============================================ */
+
+.sidebar-category-group {
+  margin-bottom: 0.75rem;
+}
+
+/* Category row container */
+.sidebar-category-group .flex.items-stretch {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+/* Category Link Styling */
+.sidebar-link {
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 10px 12px;
+  color: var(--dropdown-text);
+  background: transparent;
+  transition: all 0.2s ease;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  border-radius: 8px 0 0 8px;
+}
+
+.sidebar-link:hover {
+  color: var(--dropdown-text-hover);
+  background: var(--dropdown-hover-bg);
+}
+
+/* Active Category */
+.sidebar-link.active {
+  color: var(--dropdown-text-hover);
+  background: var(--dropdown-hover-bg);
+  font-weight: 600;
+}
+
+/* Toggle Button Styling */
+.sidebar-toggle-btn {
+  background: transparent;
+  border: none;
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 0 8px 8px 0;
+  min-width: 40px;
+}
+
+.sidebar-toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* Icon Styling */
+.sidebar-icon {
+  width: 16px;
+  height: 16px;
+  stroke: var(--dropdown-icon);
+  stroke-width: 2;
+  transition: transform 0.2s ease, stroke 0.2s ease;
+}
+
+.sidebar-toggle-btn:hover .sidebar-icon {
+  stroke: var(--dropdown-text-hover);
+}
+
+/* Rotate icon when dropdown open */
+.sidebar-dropdown:not(.hidden) ~ .flex .sidebar-toggle-btn .sidebar-icon,
+.sidebar-toggle-btn[data-open="true"] .sidebar-icon {
+  transform: rotate(180deg);
+}
+
+/* ============================================
+   DROPDOWN MENU STYLES
+   ============================================ */
+
+/* Dropdown Container */
+.sidebar-dropdown {
+  margin-top: 8px;
+  margin-left: 16px;
+  padding-left: 12px;
+  border-left: 2px solid var(--dropdown-divider);
+  transition: all 0.2s ease;
+}
+
+.sidebar-dropdown.hidden {
+  display: none;
+}
+
+/* Level 1 Dropdown Items */
+.sidebar-dropdown .sidebar-level-item {
+  margin-bottom: 4px;
+}
+
+/* Dropdown Link Styling */
+.sidebar-dropdown a {
+  display: block;
+  padding: 8px 12px;
+  font-size: 0.8125rem;
+  color: var(--dropdown-text-muted);
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.sidebar-dropdown a:hover {
+  color: var(--dropdown-text-hover);
+  background: var(--dropdown-hover-bg);
+  padding-left: 16px;
+}
+
+/* Active dropdown item */
+.sidebar-dropdown a.active {
+  color: var(--dropdown-text-hover);
+  background: var(--dropdown-hover-bg);
+  font-weight: 500;
+}
+
+/* ============================================
+   NESTED DROPDOWN LEVELS (2, 3, 4)
+   ============================================ */
+
+/* Level 2 - Sub-sub categories */
+.sidebar-dropdown .sidebar-dropdown {
+  margin-left: 12px;
+  margin-top: 4px;
+  border-left-color: var(--dropdown-divider);
+}
+
+/* Level 2 links */
+.sidebar-dropdown .sidebar-dropdown a {
+  font-size: 0.75rem;
+  padding: 6px 12px;
+}
+
+.sidebar-dropdown .sidebar-dropdown a:hover {
+  color: var(--dropdown-text-hover);
+  padding-left: 16px;
+}
+
+/* Level 3 links */
+.sidebar-dropdown .sidebar-dropdown .sidebar-dropdown a {
+  font-size: 0.6875rem;
+  padding: 5px 12px;
+}
+
+/* Level 4 links */
+.sidebar-dropdown .sidebar-dropdown .sidebar-dropdown .sidebar-dropdown a {
+  font-size: 0.625rem;
+  padding: 4px 12px;
+}
+
+/* ============================================
+   DIVIDER STYLES
+   ============================================ */
+
+.divider {
+  height: 1px;
+  background: var(--dropdown-divider);
+  margin: 8px 0;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sidebar-dropdown:not(.hidden) {
+  animation: slideDown 0.2s ease;
+}
+
 .text-link,
 .card-link {
   color: #2563eb;
@@ -113,19 +347,6 @@ a {
   color: #1d4ed8;
   text-decoration: underline;
   text-underline-offset: 3px;
-}
-
-.product-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #fff;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
-}
-
-.product-card:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
-  transform: translateY(-2px);
 }
 
 .form-control {
@@ -892,6 +1113,64 @@ body.sidebar-open .store-header {
 .dropdown-menu {
   top: 100%;
   margin-top: 0;
+  background: var(--dropdown-bg);
+  border-radius: var(--dropdown-radius);
+  box-shadow: var(--dropdown-shadow);
+  border: 1px solid var(--dropdown-border);
+}
+
+.dropdown-menu a {
+  color: var(--dropdown-text);
+}
+
+.dropdown-menu a:hover {
+  color: var(--dropdown-text-hover);
+  background: var(--dropdown-hover-bg);
+}
+
+/* Ensure submenu appears below parent item */
+.dropdown-submenu {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: 0;
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0.15s, opacity 0.15s;
+  background: var(--dropdown-bg);
+  border-radius: var(--dropdown-radius);
+  box-shadow: var(--dropdown-shadow);
+  border: 1px solid var(--dropdown-border);
+}
+
+/* Show submenu when hovering over the parent item */
+.submenu-trigger:hover + .dropdown-submenu,
+.dropdown-submenu:hover {
+  visibility: visible;
+  opacity: 1;
+}
+
+.dropdown-submenu a {
+  color: var(--dropdown-text-muted);
+}
+
+.dropdown-submenu a:hover {
+  color: var(--dropdown-text-hover);
+  background: var(--dropdown-hover-bg);
+}
+
+/* Add invisible bridge to prevent gap */
+.submenu-trigger {
+  position: relative;
+}
+
+.submenu-trigger::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -10px;
+  height: 10px;
 }
 
 /* Add invisible bridge to prevent hover gap */
@@ -972,4 +1251,264 @@ body.sidebar-open .store-header {
 .mobile-logged-out a:hover,
 .mobile-logged-in a:hover {
   background: rgba(255,255,255,0.08);
+}
+
+/* Mobile logged out state fix */
+.mobile-logged-out a {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.mobile-logged-out a svg {
+  flex-shrink: 0;
+}
+
+.flag-icon {
+  display: inline-block;
+  width: 20px;
+  height: 14px;
+  vertical-align: middle;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.currency-select option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+}
+
+/* Banner carousel styles */
+.banner-track {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.banner-track::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.snap-x {
+  scroll-snap-type: x mandatory;
+}
+
+.snap-center {
+  scroll-snap-align: center;
+}
+
+/* Line clamp for text truncation */
+.line-clamp-1 {
+  display: -webkit-box;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Base styles - works for all devices */
+.product-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.product-image-container {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0.5rem;
+}
+
+.product-info h3 {
+  font-weight: bold;
+  font-size: 0.7rem;
+  line-height: 1.3;
+  margin-bottom: 0.25rem;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+/* Price container */
+.price-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.current-price {
+  font-weight: bold;
+  font-size: 0.7rem;
+  color: #ff6a00;
+}
+
+.old-price {
+  font-size: 0.6rem;
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+
+.btn-go {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.6rem;
+  font-weight: bold;
+  border-radius: 0.25rem;
+  background: #ff6a00;
+  color: white;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-go:hover {
+  background: #e65a00;
+}
+
+/* Mobile styles (under 640px) */
+@media (max-width: 640px) {
+  .product-info {
+    padding: 0.4rem;
+  }
+  
+  .product-info h3 {
+    font-size: 0.6rem;
+    line-clamp: 2;
+  }
+  
+  .current-price {
+    font-size: 0.6rem;
+  }
+  
+  .old-price {
+    font-size: 0.5rem;
+  }
+  
+  .btn-go {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.55rem;
+  }
+  
+  .price-container {
+    margin-top: 0.25rem;
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+  .product-info {
+    padding: 1rem;
+  }
+  
+  .product-info h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .current-price {
+    font-size: 1.1rem;
+  }
+  
+  .old-price {
+    font-size: 0.85rem;
+  }
+  
+  .btn-go {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+  
+  .price-container {
+    margin-top: 0.75rem;
+  }
+}
+
+/* Tablet styles */
+@media (min-width: 641px) and (max-width: 1023px) {
+  .product-info {
+    padding: 0.75rem;
+  }
+  
+  .product-info h3 {
+    font-size: 0.85rem;
+  }
+  
+  .current-price {
+    font-size: 0.85rem;
+  }
+  
+  .btn-go {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.7rem;
+  }
+}
+
+.related-products:not(.list-view) {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .related-products:not(.list-view) {
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .related-products:not(.list-view) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .related-products:not(.list-view) {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
 }

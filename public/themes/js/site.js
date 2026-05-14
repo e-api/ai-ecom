@@ -314,3 +314,178 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 });
+
+// Toggle dropdown when clicking on the arrow area only
+document.addEventListener('DOMContentLoaded', function() {
+  // Get all toggle buttons
+  const toggleButtons = document.querySelectorAll('.sidebar-toggle-btn');
+  
+  toggleButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Get target dropdown ID from data-target attribute
+      const targetId = this.getAttribute('data-target');
+      const targetDropdown = document.getElementById(targetId);
+      const icon = this.querySelector('.sidebar-icon');
+      
+      if (targetDropdown) {
+        // Toggle visibility
+        if (targetDropdown.classList.contains('hidden')) {
+          targetDropdown.classList.remove('hidden');
+          if (icon) {
+            icon.style.transform = 'rotate(180deg)';
+          }
+        } else {
+          targetDropdown.classList.add('hidden');
+          if (icon) {
+            icon.style.transform = 'rotate(0deg)';
+          }
+        }
+      }
+    });
+  });
+});
+
+// Banner carousel with auto-slide
+(function initBannerCarousel() {
+  var carousels = document.querySelectorAll('.banner-carousel');
+  
+  carousels.forEach(function(carousel) {
+    var track = carousel.querySelector('.banner-track');
+    var slides = carousel.querySelectorAll('.banner-slide');
+    var dots = carousel.querySelectorAll('.banner-dot');
+    
+    if (!track || slides.length === 0) return;
+    
+    var currentIndex = 0;
+    var autoplayDelay = 5000; // 5 seconds
+    var timer = null;
+    var isPaused = false;
+
+    function goToSlide(index) {
+      if (index >= slides.length) index = 0;
+      if (index < 0) index = slides.length - 1;
+      currentIndex = index;
+      
+      // Scroll to slide
+      var targetSlide = slides[currentIndex];
+      var scrollPosition = targetSlide.offsetLeft - (track.offsetWidth - targetSlide.offsetWidth) / 2;
+      
+      track.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth'
+      });
+      
+      // Update dots
+      updateDots();
+    }
+
+    function nextSlide() {
+      goToSlide(currentIndex + 1);
+    }
+
+    function updateDots() {
+      dots.forEach(function(dot, i) {
+        if (i === currentIndex) {
+          dot.classList.remove('bg-gray-300');
+          dot.classList.add('bg-gray-800');
+        } else {
+          dot.classList.remove('bg-gray-800');
+          dot.classList.add('bg-gray-300');
+        }
+      });
+    }
+
+    function startAutoplay() {
+      stopAutoplay();
+      timer = setInterval(function() {
+        if (!isPaused) {
+          nextSlide();
+        }
+      }, autoplayDelay);
+    }
+
+    function stopAutoplay() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    // Dot click handlers
+    dots.forEach(function(dot) {
+      dot.addEventListener('click', function() {
+        var index = parseInt(this.getAttribute('data-index'));
+        goToSlide(index);
+        stopAutoplay();
+        startAutoplay();
+      });
+    });
+
+    // Update current index on manual scroll
+    track.addEventListener('scroll', function() {
+      var scrollCenter = this.scrollLeft + (this.offsetWidth / 2);
+      
+      slides.forEach(function(slide, index) {
+        var slideLeft = slide.offsetLeft;
+        var slideRight = slideLeft + slide.offsetWidth;
+        
+        if (scrollCenter >= slideLeft && scrollCenter < slideRight) {
+          if (currentIndex !== index) {
+            currentIndex = index;
+            updateDots();
+          }
+        }
+      });
+    });
+
+    // Pause autoplay on hover
+    carousel.addEventListener('mouseenter', function() {
+      isPaused = true;
+    });
+
+    carousel.addEventListener('mouseleave', function() {
+      isPaused = false;
+    });
+
+    // Pause on touch
+    track.addEventListener('touchstart', function() {
+      isPaused = true;
+    }, {passive: true});
+
+    track.addEventListener('touchend', function() {
+      setTimeout(function() {
+        isPaused = false;
+      }, 2000);
+    });
+
+    // Start autoplay
+    startAutoplay();
+  });
+})();
+
+// Update dots on scroll
+document.querySelectorAll('.flex.overflow-x-auto.snap-x').forEach(function(container) {
+  container.addEventListener('scroll', function() {
+    var dots = this.parentElement.querySelectorAll('.banner-dot');
+    if (!dots.length) return;
+    
+    var scrollPosition = this.scrollLeft + (this.offsetWidth / 2);
+    var items = this.querySelectorAll('.flex-shrink-0');
+    
+    items.forEach(function(item, index) {
+      if (scrollPosition >= item.offsetLeft && scrollPosition < item.offsetLeft + item.offsetWidth) {
+        dots.forEach(function(d) { 
+          d.classList.remove('bg-gray-800');
+          d.classList.add('bg-gray-300');
+        });
+        if (dots[index]) {
+          dots[index].classList.remove('bg-gray-300');
+          dots[index].classList.add('bg-gray-800');
+        }
+      }
+    });
+  });
+});

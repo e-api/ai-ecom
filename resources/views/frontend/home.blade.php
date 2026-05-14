@@ -3,7 +3,7 @@
 @section('title','Home')
 
 @section('content')
-  <!-- Carousel (copied from public index) -->
+  {{-- Carousel (copied from public index) --}}
   <div class="carousel col-span-full w-full mx-auto" aria-roledescription="carousel">
     <div class="carousel-track" aria-live="polite">
       @forelse($sliderBanners as $index => $banner)
@@ -25,59 +25,139 @@
     </div>
   </div>
 
-  {{-- Grid Banners Section - Full width layout like carousel --}}
+  {{-- Grid Banners Section --}}
   @if($gridBanners->count())
     <div class="col-span-full w-full mx-auto my-4">
-      <div class="grid grid-cols-3 gap-3">
+      {{-- Desktop: 3 columns grid --}}
+      <div class="hidden sm:grid grid-cols-3 gap-3">
         @foreach($gridBanners as $banner)
           <a href="{{ $banner->link ?? '#' }}" class="rounded-lg overflow-hidden">
             <img src="{{ Storage::url($banner->image) }}" alt="{{ $banner->title ?? 'Banner' }}" class="w-full h-auto object-cover">
           </a>
         @endforeach
       </div>
+      
+      {{-- Mobile: Horizontal scroll carousel --}}
+      <div class="sm:hidden relative banner-carousel">
+        <div class="banner-track flex overflow-x-auto gap-3 snap-x snap-mandatory scrollbar-hide pb-2">
+          @foreach($gridBanners as $banner)
+            <a href="{{ $banner->link ?? '#' }}" class="banner-slide flex-shrink-0 w-[85%] snap-center rounded-lg overflow-hidden">
+              <img src="{{ Storage::url($banner->image) }}" alt="{{ $banner->title ?? 'Banner' }}" class="w-full h-auto object-cover">
+            </a>
+          @endforeach
+        </div>
+        {{-- Scroll indicator dots --}}
+        @if($gridBanners->count() > 1)
+          <div class="flex justify-center gap-2 mt-3">
+            @foreach($gridBanners as $index => $banner)
+              <button class="w-2 h-2 rounded-full {{ $index === 0 ? 'bg-gray-800' : 'bg-gray-300' }} transition-colors duration-200 banner-dot" data-index="{{ $index }}" aria-label="Banner {{ $index + 1 }}"></button>
+            @endforeach
+          </div>
+        @endif
+      </div>
     </div>
   @endif
 
   <section class="space-y-6 lg:sticky lg:top-24 lg:self-start">
     <div class="flex items-center justify-center sidebar-cart-card px-4 py-3 text-sm font-semibold text-gray-700 gap-2"><img src="/themes/images/cart.png" width='50' height='50' alt="cart">3 items in your cart</div>
-    <aside class="store-sidebar p-4">
+      <aside class="store-sidebar p-4">
       
       @foreach($categories as $category)
-        <section class="mb-6">
-          <div class="sidebar-header flex items-center justify-between cursor-pointer" onclick="toggleSidebarSubmenu(this)">
-            <h2 class="sidebar-title mb-2">{{ strtoupper($category->name) }}</h2>
+        <div class="sidebar-category-group mb-3">
+          {{-- Level 0 (Parent) - Same height for link and button --}}
+          <div class="flex items-stretch">
+            <a href="{{ url('category/'.$category->slug) }}" class="sidebar-link flex-1 px-3 py-2 rounded-l-md hover:bg-transparent transition-all duration-200 font-semibold text-gray-800 flex items-center">
+              {{ $category->name }}
+            </a>
             @if($category->children->count())
-              <svg class="sidebar-toggle-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
+              <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="level1-{{ $category->id }}">
+                <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
             @endif
           </div>
           
-          <div class="sidebar-submenu" @if($category->children->count()) style="display: none;" @endif>
-            @if($category->children->count())
-              @foreach($category->children as $child)
-                <a class="category-link font-bold" href="{{ url('category/'.$child->slug) }}">
-                  {{ $child->name }}
-                </a>
-                
-                @if($child->children->count())
-                  @foreach($child->children as $sub)
-                    <a class="category-link" href="{{ url('category/'.$sub->slug) }}" style="padding-left: 25px; display: block;">
-                       {{ $sub->name }}
+          @if($category->children->count())
+            <div id="level1-{{ $category->id }}" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100">
+              @foreach($category->children as $level1)
+                {{-- Level 1 - Matching heights --}}
+                <div class="mb-1">
+                  <div class="flex items-stretch">
+                    <a href="{{ url('category/'.$level1->slug) }}" class="sidebar-link flex-1 px-3 py-2 rounded-l-md hover:bg-gray-100 transition-all duration-200 text-gray-700 flex items-center">
+                      {{ $level1->name }}
                     </a>
-                  @endforeach
-                @endif
+                    @if($level1->children->count())
+                      <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="level2-{{ $level1->id }}">
+                        <svg class="sidebar-icon h-3 w-3 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                    @endif
+                  </div>
+                  
+                  @if($level1->children->count())
+                    <div id="level2-{{ $level1->id }}" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100">
+                      @foreach($level1->children as $level2)
+                        {{-- Level 2 - Matching heights --}}
+                        <div class="mb-1">
+                          <div class="flex items-stretch">
+                            <a href="{{ url('category/'.$level2->slug) }}" class="sidebar-link flex-1 px-3 py-2 rounded-l-md hover:bg-gray-100 transition-all duration-200 text-gray-600 text-sm flex items-center">
+                              {{ $level2->name }}
+                            </a>
+                            @if($level2->children->count())
+                              <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="level3-{{ $level2->id }}">
+                                <svg class="sidebar-icon h-3 w-3 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
+                            @endif
+                          </div>
+                          
+                          @if($level2->children->count())
+                            <div id="level3-{{ $level2->id }}" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100">
+                              @foreach($level2->children as $level3)
+                                {{-- Level 3 - Matching heights --}}
+                                <div class="mb-1">
+                                  <div class="flex items-stretch">
+                                    <a href="{{ url('category/'.$level3->slug) }}" class="sidebar-link flex-1 px-3 py-2 rounded-l-md hover:bg-gray-100 transition-all duration-200 text-gray-500 text-xs flex items-center">
+                                      {{ $level3->name }}
+                                    </a>
+                                    @if($level3->children->count())
+                                      <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="level4-{{ $level3->id }}">
+                                        <svg class="sidebar-icon h-2 w-2 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                      </button>
+                                    @endif
+                                  </div>
+                                  
+                                  @if($level3->children->count())
+                                    <div id="level4-{{ $level3->id }}" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100">
+                                      @foreach($level3->children as $level4)
+                                        <a href="{{ url('category/'.$level4->slug) }}" class="block px-3 py-2 text-xs text-gray-400 rounded-md hover:bg-gray-100 hover:text-primary transition-all duration-200">
+                                          {{ $level4->name }}
+                                        </a>
+                                      @endforeach
+                                    </div>
+                                  @endif
+                                </div>
+                              @endforeach
+                            </div>
+                          @endif
+                        </div>
+                      @endforeach
+                    </div>
+                  @endif
+                </div>
               @endforeach
-            @else
-              <a class="category-link font-bold" href="{{ url('category/'.$category->slug) }}">
-                View All {{ $category->name }}
-              </a>
-            @endif
-          </div>
-        </section>
+            </div>
+          @endif
+        </div>
       @endforeach
+      
     </aside>
-    <!-- Payment Methods -->
+    {{-- Payment Methods --}}
     <div class="store-sidebar p-4">
       <h2 class="sidebar-title mb-3">We Accept</h2>
       <div class="grid grid-cols-4 max-w-xs mx-auto">
@@ -119,106 +199,163 @@
     </div>
   </section>
 
-  <section class="space-y-8">
+  <section class="space-y-8 px-4 lg:px-0">
+    {{-- FEATURED PRODUCTS --}}
     <section>
-      <div class="mb-4 flex items-end justify-between gap-4">
+      <div class="mb-4 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <h2 class="text-2xl font-black">Featured Products</h2>
-          <p class="text-sm text-gray-600">Flat product cards with modern spacing and responsive grids.</p>
+          <h2 class="text-xl md:text-2xl font-black">Featured Products</h2>
+          <p class="text-xs sm:text-sm text-gray-600">Flat product cards with modern spacing and responsive grids.</p>
         </div>
-        <div class="flex items-center gap-3">
-          <div class="inline-flex rounded-md border border-gray-300 bg-white p-0.5">
-            <button class="view-toggle rounded px-2.5 py-1.5 text-sm font-black active" type="button" data-view-toggle="grid" aria-pressed="true">Grid</button>
-            <button class="view-toggle rounded px-2.5 py-1.5 text-sm font-black" type="button" data-view-toggle="list" aria-pressed="false">List</button>
+        <div class="flex items-center justify-between sm:justify-end gap-3">
+          {{-- Grid/List Toggle - Hidden on mobile, visible on tablet+ --}}
+          <div class="hidden sm:inline-flex rounded-md border border-gray-300 bg-white p-0.5">
+            <button class="view-toggle rounded px-2.5 py-1.5 text-xs sm:text-sm font-black active" type="button" data-view-toggle="grid" data-target="featured-products" aria-pressed="true">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+              </svg>
+            </button>
+            <button class="view-toggle rounded px-2.5 py-1.5 text-xs sm:text-sm font-black" type="button" data-view-toggle="list" data-target="featured-products" aria-pressed="false">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
+            </button>
           </div>
-          <a class="text-sm font-bold text-blue-700" href="{{ url('listing.html') }}">View all</a>
+          <a class="text-xs sm:text-sm font-bold text-blue-700 whitespace-nowrap" href="{{ url('listing.html') }}">View all →</a>
         </div>
       </div>
-      <div data-related-products class="related-products grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        <!-- Product 1 -->
-        <article class="product-card relative group">
-          <a href="{{ url('detail.html') }}" class="block">
-            <div class="product-swatch bg-gray-200"></div>
-          </a>
-          <div class="p-5 flex flex-col flex-1">
-            <a href="{{ url('detail.html') }}" class="card-link">
-              <h3 class="font-black text-lg">Classic T-Shirt</h3>
-            </a>
-            <p class="mt-1 text-sm text-gray-600 flex-1">Soft cotton basic for daily wear.</p>
-            <div class="mt-4 flex items-center justify-between">
-              <span class="font-black text-lg">$24.00</span>
-              <a class="flex items-center justify-center btn-go rounded-lg px-4 py-2 text-sm font-bold" href="{{ url('detail.html') }}">View</a>
+      
+      {{-- Products Grid - Responsive columns (Fixed for mobile) --}}
+      <div id="featured-products" data-related-products class="related-products grid gap-3 sm:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        @forelse($featuredProducts as $product)
+          <article class="product-card relative group bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col">
+            {{-- Image Container --}}
+            <div class="product-image-container relative w-full overflow-hidden bg-gray-100 flex-shrink-0">
+              @php
+                $imageUrl = $product->image ? Storage::url($product->image) : 'https://placehold.co/400x400/e5e7eb/9ca3af?text=No+Image';
+              @endphp
+              <a href="{{ url('product/'.$product->slug) }}" class="absolute inset-0">
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
+                    style="background-image: url('{{ $imageUrl }}');">
+                </div>
+              </a>
+              
+              {{-- Sale Badge --}}
+              @if($product->sale_price)
+                <div class="absolute top-0 left-2 z-10">
+                  <span class="bg-red-500 text-white text-[8px] sm:text-xs font-bold px-1.5 py-0.5 rounded">SALE</span>
+                </div>
+              @endif
             </div>
-          </div>
-          <!-- Tooltip -->
-          <div class="absolute top-2 right-2 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-            <div class="bg-gray-900 text-white text-xs px-3 py-2 rounded-lg shadow-lg max-w-[200px]">
-              <p class="font-bold mb-1">Quick Info</p>
-              <p class="text-gray-300">100% Cotton • Machine washable • Available in S-XXL • Free shipping</p>
-              <div class="absolute top-3 -right-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+            
+            {{-- Product Info --}}
+            <div class="product-info flex flex-col flex-1">
+              <a href="{{ url('product/'.$product->slug) }}" class="card-link block">
+                <h3 class="font-bold text-gray-800 hover:text-primary transition-colors line-clamp-2">{{ $product->name }}</h3>
+              </a>
+              
+              <div class="price-container mt-auto flex items-center justify-between gap-2">
+                <div class="flex items-baseline gap-1 flex-wrap">
+                  @if($product->sale_price)
+                    <span class="current-price font-bold text-primary">${{ number_format($product->sale_price, 2) }}</span>
+                    <span class="old-price text-gray-400 line-through text-[9px]">${{ number_format($product->price, 2) }}</span>
+                  @else
+                    <span class="current-price font-bold text-gray-800">${{ number_format($product->price, 2) }}</span>
+                  @endif
+                </div>
+                
+                <a class="btn-go flex items-center justify-center transition-transform hover:scale-105" 
+                  href="{{ url('product/'.$product->slug) }}">
+                  View
+                </a>
+              </div>
             </div>
+          </article>
+        @empty
+          <div class="col-span-full text-center py-8 sm:py-12">
+            <p class="text-gray-500 text-sm sm:text-base">No featured products available.</p>
           </div>
-        </article>
-        
-        <!-- Product 2 -->
-        <article class="product-card relative group">
-          <a href="{{ url('detail.html') }}" class="block">
-            <div class="product-swatch bg-slate-300"></div>
-          </a>
-          <div class="p-5 flex flex-col flex-1">
-            <a href="{{ url('detail.html') }}" class="card-link">
-              <h3 class="font-black text-lg">Formal Shirt</h3>
-            </a>
-            <p class="mt-1 text-sm text-gray-600 flex-1">A polished shirt for office days.</p>
-            <div class="mt-4 flex items-center justify-between">
-              <span class="font-black text-lg">$39.00</span>
-              <a class="flex items-center justify-center btn-go rounded-lg px-4 py-2 text-sm font-bold" href="{{ url('detail.html') }}">View</a>
-            </div>
-          </div>
-          <!-- Tooltip -->
-          <div class="absolute top-2 right-2 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-            <div class="bg-gray-900 text-white text-xs px-3 py-2 rounded-lg shadow-lg max-w-[200px]">
-              <p class="font-bold mb-1">Quick Info</p>
-              <p class="text-gray-300">Slim fit • Non-iron fabric • Spread collar • Dry clean recommended</p>
-              <div class="absolute top-3 -right-1 w-2 h-2 bg-gray-900 rotate-45"></div>
-            </div>
-          </div>
-        </article>
-        
-        <!-- Product 3 -->
-        <article class="product-card relative group">
-          <a href="{{ url('detail.html') }}" class="block">
-            <div class="product-swatch bg-zinc-300"></div>
-          </a>
-          <div class="p-5 flex flex-col flex-1">
-            <a href="{{ url('detail.html') }}" class="card-link">
-              <h3 class="font-black text-lg">Casual Dress</h3>
-            </a>
-            <p class="mt-1 text-sm text-gray-600 flex-1">Easy fit with clean lines.</p>
-            <div class="mt-4 flex items-center justify-between">
-              <span class="font-black text-lg">$59.00</span>
-              <a class="flex items-center justify-center btn-go rounded-lg px-4 py-2 text-sm font-bold" href="{{ url('detail.html') }}">View</a>
-            </div>
-          </div>
-          <!-- Tooltip -->
-          <div class="absolute top-2 right-2 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-            <div class="bg-gray-900 text-white text-xs px-3 py-2 rounded-lg shadow-lg max-w-[200px]">
-              <p class="font-bold mb-1">Quick Info</p>
-              <p class="text-gray-300">A-line silhouette • Knee length • Hidden pockets • Easy care</p>
-              <div class="absolute top-3 -right-1 w-2 h-2 bg-gray-900 rotate-45"></div>
-            </div>
-          </div>
-        </article>
+        @endforelse
       </div>
-      <nav class="mt-6 flex items-center justify-center" aria-label="Pagination">
-        <ul class="inline-flex items-center gap-2 pagination">
-          <li><a href="#" class="px-3 py-2 rounded-md">‹ Prev</a></li>
-          <li><a href="#" class="px-3 py-2 rounded-md active">1</a></li>
-          <li><a href="#" class="px-3 py-2 rounded-md">2</a></li>
-          <li><a href="#" class="px-3 py-2 rounded-md">3</a></li>
-          <li><a href="#" class="px-3 py-2 rounded-md">Next ›</a></li>
-        </ul>
-      </nav>
+    </section>
+
+    {{-- LATEST PRODUCTS --}}
+    <section>
+      <div class="mb-4 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <h2 class="text-xl md:text-2xl font-black">Latest Products</h2>
+          <p class="text-xs sm:text-sm text-gray-600">Check out our newest arrivals.</p>
+        </div>
+        <div class="flex items-center justify-between sm:justify-end gap-3">
+          {{-- Grid/List Toggle - Hidden on mobile, visible on tablet+ --}}
+          <div class="hidden sm:inline-flex rounded-md border border-gray-300 bg-white p-0.5">
+            <button class="view-toggle rounded px-2.5 py-1.5 text-xs sm:text-sm font-black active" type="button" data-view-toggle="grid" data-target="latest-products" aria-pressed="true">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+              </svg>
+            </button>
+            <button class="view-toggle rounded px-2.5 py-1.5 text-xs sm:text-sm font-black" type="button" data-view-toggle="list" data-target="latest-products" aria-pressed="false">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
+            </button>
+          </div>
+          <a class="text-xs sm:text-sm font-bold text-blue-700 whitespace-nowrap" href="{{ url('listing.html') }}">View all →</a>
+        </div>
+      </div>
+      
+      {{-- Products Grid - Responsive columns (Fixed for mobile) --}}
+      <div id="latest-products" data-related-products class="related-products grid gap-3 sm:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        @forelse($latestProducts as $product)
+          <article class="product-card relative group bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col">
+            {{-- Image Container --}}
+            <div class="product-image-container relative w-full overflow-hidden bg-gray-100 flex-shrink-0">
+              @php
+                $imageUrl = $product->image ? Storage::url($product->image) : 'https://placehold.co/400x400/e5e7eb/9ca3af?text=No+Image';
+              @endphp
+              <a href="{{ url('product/'.$product->slug) }}" class="absolute inset-0">
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
+                    style="background-image: url('{{ $imageUrl }}');">
+                </div>
+              </a>
+              
+              {{-- Sale Badge --}}
+              @if($product->sale_price)
+                <div class="absolute top-0 left-2 z-10">
+                  <span class="bg-green-500 text-white text-[8px] sm:text-xs font-bold px-1.5 py-0.5 rounded">NEW</span>
+                </div>
+              @endif
+            </div>
+            
+            {{-- Product Info --}}
+            <div class="product-info flex flex-col flex-1">
+              <a href="{{ url('product/'.$product->slug) }}" class="card-link block">
+                <h3 class="font-bold text-gray-800 hover:text-primary transition-colors line-clamp-2">{{ $product->name }}</h3>
+              </a>
+              
+              <div class="price-container mt-auto flex items-center justify-between gap-2">
+                <div class="flex items-baseline gap-1 flex-wrap">
+                  @if($product->sale_price)
+                    <span class="current-price font-bold text-primary">${{ number_format($product->sale_price, 2) }}</span>
+                    <span class="old-price text-gray-400 line-through text-[9px]">${{ number_format($product->price, 2) }}</span>
+                  @else
+                    <span class="current-price font-bold text-gray-800">${{ number_format($product->price, 2) }}</span>
+                  @endif
+                </div>
+                
+                <a class="btn-go flex items-center justify-center transition-transform hover:scale-105" 
+                  href="{{ url('product/'.$product->slug) }}">
+                  View
+                </a>
+              </div>
+            </div>
+          </article>
+        @empty
+          <div class="col-span-full text-center py-8 sm:py-12">
+            <p class="text-gray-500 text-sm sm:text-base">No latest products available.</p>
+          </div>
+        @endforelse
+      </div>
     </section>
   </section>
 @endsection

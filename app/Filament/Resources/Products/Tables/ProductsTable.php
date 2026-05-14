@@ -45,7 +45,8 @@ class ProductsTable
                 TextColumn::make('stock')
                     ->numeric()
                     ->sortable(),
-                ImageColumn::make('image'),
+                ImageColumn::make('image')
+                    ->disk('public'),
                 IconColumn::make('featured')
                     ->boolean(),
                 IconColumn::make('status')

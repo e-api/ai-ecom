@@ -74,7 +74,10 @@ class ProductForm
                             
                             FileUpload::make('image')
                                 ->image()
-                                ->directory('products'),
+                                ->directory('products')
+                                ->disk('public')
+                                ->visibility('public')
+                                ->required(),
                             
                             Toggle::make('status')
                                 ->default(true),

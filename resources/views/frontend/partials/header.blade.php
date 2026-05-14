@@ -20,10 +20,22 @@
         <!-- Currency Swapper Desktop -->
         <div class="hidden sm:flex items-center gap-2">
           <select class="currency-select bg-white/10 text-white text-sm rounded-md px-2 py-1.5 border border-white/20 cursor-pointer" aria-label="Select currency">
-            <option value="USD" class="text-gray-900">🇺🇸 USD</option>
-            <option value="EUR" class="text-gray-900">🇪🇺 EUR</option>
-            <option value="GBP" class="text-gray-900">🇬🇧 GBP</option>
-            <option value="JPY" class="text-gray-900">🇯🇵 JPY</option>
+            <option value="USD" class="text-gray-900 flex items-center gap-2">
+              <svg class="flag-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 14"><rect width="20" height="14" fill="#fff"/><rect y="1" width="20" height="2" fill="#B22234"/><rect y="5" width="20" height="2" fill="#B22234"/><rect y="9" width="20" height="2" fill="#B22234"/><rect width="8" height="7" fill="#3C3B6E"/></svg>
+              USD
+            </option>
+            <option value="EUR" class="text-gray-900 flex items-center gap-2">
+              <svg class="flag-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 14"><rect width="20" height="14" fill="#003399"/><rect y="4.6" width="20" height="4.8" fill="#FFCC00"/></svg>
+              EUR
+            </option>
+            <option value="GBP" class="text-gray-900 flex items-center gap-2">
+              <svg class="flag-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 14"><rect width="20" height="14" fill="#012169"/><path d="M0 0L20 14M20 0L0 14" stroke="#fff" stroke-width="3"/><path d="M0 0L20 14M20 0L0 14" stroke="#C8102E" stroke-width="1.5"/></svg>
+              GBP
+            </option>
+            <option value="JPY" class="text-gray-900 flex items-center gap-2">
+              <svg class="flag-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 14"><rect width="20" height="14" fill="#fff"/><circle cx="10" cy="7" r="4" fill="#BC002D"/></svg>
+              JPY
+            </option>
           </select>
         </div>
 
@@ -55,12 +67,11 @@
 
     <nav id="primary-navigation" class="hidden lg:flex lg:items-center lg:justify-between mt-2" aria-label="Primary navigation">
       <div class="flex flex-wrap items-center gap-2 text-sm">
-        <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('/') }}">Home</a>
+        <a data-nav class="store-link px-2 rounded-lg font-medium transition-all duration-200 text-white hover:bg-white/10" href="{{ url('/') }}">Home</a>
         
-        {{-- Dynamic Categories Dropdown for Desktop --}}
         @foreach($categories as $category)
-          <div class="relative inline-block group">
-            <a data-nav class="store-link rounded-md px-3 py-2 inline-flex items-center gap-1" href="{{ url('category/'.$category->slug) }}">
+          <div class="relative group">
+            <a data-nav class="store-link rounded-md px-2 font-medium text-white hover:bg-white/10 inline-flex items-center gap-1" href="{{ url('category/'.$category->slug) }}">
               {{ $category->name }}
               @if($category->children->count())
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -71,31 +82,67 @@
             
             @if($category->children->count())
               <div class="dropdown-menu absolute left-0 mt-1 w-64 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                <div class="rounded-md bg-white ring-1 ring-black ring-opacity-5">
-                  <div class="py-1">
-                    @foreach($category->children as $child)
+                <div class="rounded-md bg-white ring-1 ring-black ring-opacity-5 py-1">
+                  @foreach($category->children as $child)
+                    @if($child->children->count())
+                      <div class="relative">
+                        <div class="submenu-trigger flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                          <strong>{{ $child->name }}</strong>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                        
+                        <div class="dropdown-submenu absolute left-0 top-full mt-0 w-64 rounded-md shadow-lg opacity-0 invisible transition-all duration-200 z-50">
+                          <div class="rounded-md bg-white ring-1 ring-black ring-opacity-5 py-1">
+                            @foreach($child->children as $sub)
+                              @if($sub->children->count())
+                                <div class="relative">
+                                  <div class="submenu-trigger flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                                    <span>{{ $sub->name }}</span>
+                                    <svg class="h-3 w-3 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                  </div>
+                                  
+                                  <div class="dropdown-submenu absolute left-0 top-full mt-0 w-64 rounded-md shadow-lg opacity-0 invisible transition-all duration-200 z-50">
+                                    <div class="rounded-md bg-white ring-1 ring-black ring-opacity-5 py-1">
+                                      @foreach($sub->children as $subsub)
+                                        <a href="{{ url('category/'.$subsub->slug) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                          {{ $subsub->name }}
+                                        </a>
+                                      @endforeach
+                                    </div>
+                                  </div>
+                                </div>
+                              @else
+                                <a href="{{ url('category/'.$sub->slug) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                  {{ $sub->name }}
+                                </a>
+                              @endif
+                            @endforeach
+                          </div>
+                        </div>
+                      </div>
+                    @else
                       <a href="{{ url('category/'.$child->slug) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                         <strong>{{ $child->name }}</strong>
                       </a>
-                      @foreach($child->children as $sub)
-                        <a href="{{ url('category/'.$sub->slug) }}" class="block px-8 py-1 text-sm text-gray-500 hover:bg-gray-100">
-                          - {{ $sub->name }}
-                        </a>
-                      @endforeach
-                      @if(!$loop->last)
-                        <div class="border-t border-gray-100 my-1"></div>
-                      @endif
-                    @endforeach
-                  </div>
+                    @endif
+                    
+                    @if(!$loop->last)
+                      <div class="border-t border-gray-100 my-1"></div>
+                    @endif
+                  @endforeach
                 </div>
               </div>
             @endif
           </div>
         @endforeach
         
-        <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('listing.html') }}">Shop</a>
-        <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('about.html') }}">About</a>
-        <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('contact.html') }}">Contact</a>
+        <a data-nav class="store-link px-2 rounded-lg font-medium transition-all duration-200 text-white hover:bg-white/10" href="{{ url('shop.html') }}">Shop</a>
+        <a data-nav class="store-link px-2 rounded-lg font-medium transition-all duration-200 text-white hover:bg-white/10" href="{{ url('about.html') }}">About</a>
+        <a data-nav class="store-link px-2 rounded-lg font-medium transition-all duration-200 text-white hover:bg-white/10" href="{{ url('contact.html') }}">Contact</a>
       </div>
       <div class="hidden lg:flex items-center gap-3">
         <a class="rounded-md border border-gray-300 bg-white px-4 py-2 font-bold text-gray-800" href="{{ url('register.html') }}">Create account</a>
@@ -105,16 +152,16 @@
     {{-- Mobile Navigation --}}
     <nav id="mobile-navigation" class="mobile-drawer lg:hidden" aria-label="Mobile navigation" aria-hidden="true">
       <div class="p-4">
-        <!-- Mobile Search -->
+        {{-- Mobile Search --}}
         <form class="header-search mb-4 flex w-full gap-2" role="search" aria-label="Mobile search" onsubmit="return false;">
           <label for="mobile-site-search" class="sr-only">Search products</label>
           <input id="mobile-site-search" class="form-control text-gray-900" type="search" placeholder="Search shirts, dresses, tops">
           <button class="btn-go shrink-0 rounded-md px-4 py-2 font-bold" type="submit">Search</button>
         </form>
 
-        <!-- Mobile User Section -->
+        {{-- Mobile User Section --}}
         <div class="mb-4 p-3 rounded-lg bg-white/5 border border-white/10">
-          <!-- Logged Out State -->
+          {{-- Logged Out State --}}
           <div class="mobile-logged-out">
             <a href="{{ url('login.html') }}" class="flex items-center gap-2 text-white hover:bg-white/10 rounded-md p-2 transition">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -124,7 +171,7 @@
             </a>
           </div>
 
-          <!-- Logged In State (Hidden by default) -->
+          {{-- Logged In State (Hidden by default) --}}
           <div class="mobile-logged-in hidden">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
@@ -144,7 +191,7 @@
           </div>
         </div>
 
-        <!-- Mobile Currency Swapper -->
+        {{-- Mobile Currency Swapper --}}
         <div class="mb-4">
           <label class="text-white/60 text-xs block mb-1">Currency</label>
           <select class="w-full bg-white/5 border border-white/10 text-white text-sm rounded-md px-3 py-2 cursor-pointer" aria-label="Select currency">
@@ -155,7 +202,7 @@
           </select>
         </div>
 
-        <!-- Mobile Navigation Links -->
+        {{-- Mobile Navigation Links --}}
         <div class="flex flex-col gap-2">
           <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('/') }}">Home</a>
           
@@ -174,15 +221,62 @@
                 </summary>
                 <div class="mt-1 flex flex-col">
                   @foreach($category->children as $child)
-                    <a data-nav class="store-link rounded-md py-1 text-sm mobile-level-2" href="{{ url('category/'.$child->slug) }}">
-                      {{ $child->name }}
-                    </a>
-                    @foreach($child->children as $sub)
-                      <a data-nav class="store-link rounded-md py-1 text-xs mobile-level-3" href="{{ url('category/'.$sub->slug) }}">
-                        {{ $sub->name }}
+                    {{-- Level 2 Category --}}
+                    @if($child->children->count())
+                      {{-- Has Level 3 children - Make it collapsible --}}
+                      <details class="mobile-sub-category-details ml-2">
+                        <summary class="store-link rounded-md py-1 text-sm cursor-pointer list-none w-full text-left font-semibold">
+                          <span class="flex items-center justify-between">
+                            <span>{{ $child->name }}</span>
+                            <span class="summary-arrow ml-2">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                              </svg>
+                            </span>
+                          </span>
+                        </summary>
+                        <div class="mt-1 ml-2 flex flex-col">
+                          @foreach($child->children as $sub)
+                            {{-- Level 3 Category --}}
+                            @if($sub->children->count())
+                              {{-- Has Level 4 children --}}
+                              <details class="mobile-level3-category-details ml-2">
+                                <summary class="store-link rounded-md py-1 text-xs cursor-pointer list-none w-full text-left text-gray-600">
+                                  <span class="flex items-center justify-between">
+                                    <span>{{ $sub->name }}</span>
+                                    <span class="summary-arrow ml-2">
+                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                      </svg>
+                                    </span>
+                                  </span>
+                                </summary>
+                                <div class="mt-1 ml-2 flex flex-col">
+                                  @foreach($sub->children as $level4)
+                                    {{-- Level 4 Category --}}
+                                    <a data-nav class="store-link rounded-md py-1 text-xs text-gray-500 mobile-level-4" href="{{ url('category/'.$level4->slug) }}">
+                                      {{ $level4->name }}
+                                    </a>
+                                  @endforeach
+                                </div>
+                              </details>
+                            @else
+                              {{-- No Level 4 children - Regular link --}}
+                              <a data-nav class="store-link rounded-md py-1 text-xs mobile-level-3 ml-2" href="{{ url('category/'.$sub->slug) }}">
+                                {{ $sub->name }}
+                              </a>
+                            @endif
+                          @endforeach
+                        </div>
+                      </details>
+                    @else
+                      {{-- No Level 3 children - Regular link --}}
+                      <a data-nav class="store-link rounded-md py-1 text-sm mobile-level-2 ml-2" href="{{ url('category/'.$child->slug) }}">
+                        {{ $child->name }}
                       </a>
-                    @endforeach
-                    @if(!$loop->last && $child->children->count())
+                    @endif
+                    
+                    @if(!$loop->last)
                       <div class="mobile-divider"></div>
                     @endif
                   @endforeach
@@ -197,7 +291,6 @@
           
           <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('listing.html') }}">Shop</a>
           <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('about.html') }}">About</a>
-          <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('faq.html') }}">FAQ</a>
           <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('contact.html') }}">Contact</a>
         </div>
       </div>

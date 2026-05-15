@@ -197,7 +197,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Carousel initialization (auto-advance, manual controls, touch)
+  // Carousel initialization (auto-advance, manual controls, touch, hover buttons, scroll wheel)
   (function initCarousels() {
     var autoplayDelay = 8000;
     var carousels = document.querySelectorAll('.carousel');
@@ -289,6 +289,75 @@ document.addEventListener("DOMContentLoaded", function () {
           });
         });
       }
+
+      // ========== NEW: HOVER BUTTONS - Show arrows on hover ==========
+      carousel.addEventListener('mouseenter', function() {
+        if (prevBtn) prevBtn.style.opacity = '1';
+        if (nextBtn) nextBtn.style.opacity = '1';
+        pause();
+      });
+      
+      carousel.addEventListener('mouseleave', function() {
+        if (prevBtn) prevBtn.style.opacity = '0';
+        if (nextBtn) nextBtn.style.opacity = '0';
+        resume();
+      });
+      
+      // Initially hide buttons
+      if (prevBtn) prevBtn.style.opacity = '0';
+      if (nextBtn) nextBtn.style.opacity = '0';
+      
+      // ========== NEW: MOUSE SCROLL WHEEL SUPPORT ==========
+      carousel.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        if (e.deltaY > 0) {
+          next();
+        } else if (e.deltaY < 0) {
+          prev();
+        }
+        pause();
+        setTimeout(resume, autoplayDelay);
+      }, { passive: false });
+      
+      // ========== KEYBOARD NAVIGATION (already works with tabindex) ==========
+      carousel.setAttribute('tabindex', '0');
+      
+      carousel.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft') {
+          prev();
+          pause();
+          setTimeout(resume, autoplayDelay);
+        }
+        if (e.key === 'ArrowRight') {
+          next();
+          pause();
+          setTimeout(resume, autoplayDelay);
+        }
+      });
+
+      // Touch support (already working)
+      track.addEventListener('touchstart', function(e) {
+        startX = e.touches[0].clientX;
+        currentTranslate = -index * width;
+        track.style.transition = 'none';
+        pause();
+      }, { passive: true });
+      
+      track.addEventListener('touchmove', function(e) {
+        var dx = e.touches[0].clientX - startX;
+        track.style.transform = 'translateX(' + (currentTranslate + dx) + 'px)';
+      }, { passive: true });
+      
+      track.addEventListener('touchend', function(e) {
+        var dx = e.changedTouches[0].clientX - startX;
+        track.style.transition = 'transform 320ms cubic-bezier(.2,.9,.2,1)';
+        if (Math.abs(dx) > (width * 0.15) || Math.abs(dx) > 40) {
+          if (dx < 0) next(); else prev();
+        } else {
+          update();
+        }
+        setTimeout(resume, 250);
+      });
 
       // Initialize
       refreshSizes();

@@ -4,7 +4,7 @@
 
 @section('content')
   {{-- Carousel (copied from public index) --}}
-  <div class="carousel col-span-full w-full mx-auto" aria-roledescription="carousel">
+  <div class="carousel col-span-full w-full mx-auto relative group" aria-roledescription="carousel">
     <div class="carousel-track" aria-live="polite">
       @forelse($sliderBanners as $index => $banner)
         <a href="{{ $banner->link ?? '#' }}" class="carousel-slide" role="group" aria-roledescription="slide" aria-label="{{ $index + 1 }} of {{ $sliderBanners->count() }}" style="background-image: url('{{ Storage::url($banner->image) }}');">
@@ -15,8 +15,9 @@
       @endforelse
     </div>
 
-    <button class="carousel-arrow left" aria-label="Previous slide">‹</button>
-    <button class="carousel-arrow right" aria-label="Next slide">›</button>
+    {{-- Buttons appear on hover --}}
+    <button class="carousel-arrow left opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-label="Previous slide">‹</button>
+    <button class="carousel-arrow right opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-label="Next slide">›</button>
 
     <div class="carousel-dots" role="tablist" aria-label="Carousel dots">
       @foreach($sliderBanners as $index => $banner)
@@ -266,7 +267,7 @@
                 
                 <a class="btn-go flex items-center justify-center transition-transform hover:scale-105" 
                   href="{{ url('product/'.$product->slug) }}">
-                  View
+                  <i class="fa-solid fa-magnifying-glass-plus"></i>
                 </a>
               </div>
             </div>
@@ -333,7 +334,8 @@
                 <h3 class="font-bold text-gray-800 hover:text-primary transition-colors line-clamp-2">{{ $product->name }}</h3>
               </a>
               
-              <div class="price-container mt-auto flex items-center justify-between gap-2">
+              <div class="price-container mt-auto flex flex-wrap items-center justify-between gap-2">
+                {{-- Price Section --}}
                 <div class="flex items-baseline gap-1 flex-wrap">
                   @if($product->sale_price)
                     <span class="current-price font-bold text-primary">${{ number_format($product->sale_price, 2) }}</span>
@@ -343,10 +345,22 @@
                   @endif
                 </div>
                 
-                <a class="btn-go flex items-center justify-center transition-transform hover:scale-105" 
-                  href="{{ url('product/'.$product->slug) }}">
-                  View
-                </a>
+                {{-- Buttons Container - Add to Cart on the right, View on left --}}
+                <div class="flex items-center gap-1 sm:gap-1">
+                  {{-- View Button (Left) --}}
+                  <a class="btn-go flex items-center justify-center transition-transform hover:scale-105 bg-gray-100 text-gray-700 hover:bg-primary hover:text-white rounded-md px-1 py-1 sm:px-1 sm:py-1 text-xs sm:text-xs" 
+                    href="{{ url('product/'.$product->slug) }}">
+                    <i class="fa-solid fa-magnifying-glass-plus sm:mr-1"></i>
+                    <span class="hidden sm:inline">View</span>
+                  </a>
+                  
+                  {{-- Add to Cart Button (Right) --}}
+                  <a class="btn-go flex items-center justify-center transition-transform hover:scale-105 bg-gray-100 text-gray-700 hover:bg-primary hover:text-white rounded-md px-1.5 py-1 sm:px-1 sm:py-1 text-xs sm:text-xs" 
+                    href="{{ url('#') }}">
+                    <i class="fa-solid fa-cart-arrow-down sm:mr-1"></i>
+                    <span class="hidden sm:inline">Add</span>
+                  </a>
+                </div>
               </div>
             </div>
           </article>

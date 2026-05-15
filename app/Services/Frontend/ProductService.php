@@ -24,4 +24,22 @@ class ProductService
             ->take($limit)
             ->get();
     }
+
+    public function getCategoryProducts($category, $limit = 12)
+    {
+        // Current category ID
+        $categoryIds = [$category->id];
+
+        // Merge child category IDs recursively
+        $categoryIds = array_merge(
+            $categoryIds,
+            $category->getAllChildrenIds()
+        );
+
+        return Product::active()
+            ->whereIn('category_id', $categoryIds)
+            ->latest()
+            ->take($limit)
+            ->get();
+    }
 }

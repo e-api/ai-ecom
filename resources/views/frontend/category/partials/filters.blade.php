@@ -1,4 +1,62 @@
 <section class="space-y-6 lg:sticky lg:top-28 lg:self-start">
+    <div class="store-sidebar p-4">
+        <h5 class="font-bold text-lg mb-3">Filters</h5>
+
+        <hr class="my-3 border-gray-200">
+
+        <!-- Price Filter -->
+        <h6 class="font-semibold text-md mb-2 mt-3">Price</h6>
+
+        <div class="space-y-1">
+            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+                <input type="checkbox"  
+                    class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"  
+                    value="0-50"
+                    {{ request()->price && in_array('0-50', explode(',', request()->price)) ? 'checked' : '' }}>
+                <span class="text-gray-700 text-sm">$0 - $50</span>
+            </label>
+
+            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+                <input type="checkbox"
+                    class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
+                    value="50-100"
+                    {{ request()->price && in_array('50-100', explode(',', request()->price)) ? 'checked' : '' }}>
+                <span class="text-gray-700 text-sm">$50 - $100</span>
+            </label>
+
+            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+                <input type="checkbox"
+                    class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
+                    value="100-200"
+                    {{ request()->price && in_array('100-200', explode(',', request()->price)) ? 'checked' : '' }}>
+                <span class="text-gray-700 text-sm">$100 - $200</span>
+            </label>
+
+            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+                <input type="checkbox"
+                    class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
+                    value="200-500"
+                    {{ request()->price && in_array('200-500', explode(',', request()->price)) ? 'checked' : '' }}>
+                <span class="text-gray-700 text-sm">$200 - $500</span>
+            </label>
+
+            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+                <input type="checkbox"
+                    class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
+                    value="500-1000"
+                    {{ request()->price && in_array('500-1000', explode(',', request()->price)) ? 'checked' : '' }}>
+                <span class="text-gray-700 text-sm">$500 - $1000</span>
+            </label>
+
+            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+                <input type="checkbox"
+                    class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
+                    value="1000-2500"
+                    {{ request()->price && in_array('1000-2500', explode(',', request()->price)) ? 'checked' : '' }}>
+                <span class="text-gray-700 text-sm">$1000 - $2500</span>
+            </label>
+        </div>
+    </div>
     {{-- Payment Methods --}}
     <div class="store-sidebar p-4">
       <h2 class="sidebar-title mb-3">We Accept</h2>

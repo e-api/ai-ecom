@@ -25,19 +25,64 @@ class ProductService
             ->get();
     }
 
-    public function getCategoryProducts($category, $limit = 12)
+    public function getCategoryProducts($category, $filters = [], $limit = 12)
     {
-        // Current category ID
+        /*
+        |-------------------------------|
+        | Category IDs
+        |-------------------------------*/
         $categoryIds = [$category->id];
 
-        // Merge child category IDs recursively
         $categoryIds = array_merge(
             $categoryIds,
             $category->getAllChildrenIds()
         );
 
-        return Product::active()
-            ->whereIn('category_id', $categoryIds)
+        $query = Product::active()
+            ->whereIn('category_id', $categoryIds);
+
+        /*
+        | UPDATED: Multiple Price Filters
+        |---
+        |
+        | IMPORTANT:
+        | Use sale_price if available,
+        | otherwise use regular price
+        |
+        */
+
+        if (!empty($filters['price'])) {
+
+            $prices = explode(',', $filters['price']);
+
+            $query->where(function ($q) use ($prices) {
+                foreach ($prices as $price) {
+
+                    [$min, $max] = explode('-', $price);
+
+                    $q->orWhere(function ($subQuery) use ($min, $max) {
+
+                        /*
+                        | Sale Price
+                        |
+                        */
+                        $subQuery->whereNotNull('sale_price')
+                            ->whereBetween('sale_price', [$min, $max]);
+
+                        /*
+                        | Regular Price
+                        */
+                        $subQuery->orWhere(function ($regularPriceQuery) use ($min, $max) {
+                            $regularPriceQuery
+                                ->whereNull('sale_price')
+                                ->whereBetween('price', [$min, $max]);
+                        });
+                    });
+                }
+            });
+        }
+
+        return $query
             ->latest()
             ->take($limit)
             ->get();

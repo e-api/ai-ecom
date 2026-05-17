@@ -71,7 +71,7 @@
         
         @foreach($categories as $category)
           <div class="relative group">
-            <a data-nav class="store-link rounded-md px-2 font-medium text-white hover:bg-white/10 inline-flex items-center gap-1" href="{{ url('category/'.$category->slug) }}">
+            <a data-nav class="store-link rounded-md px-2 font-medium text-white hover:bg-white/10 inline-flex items-center gap-1" href="{{ url($category->slug) }}">
               {{ $category->name }}
               @if($category->children->count())
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -108,7 +108,7 @@
                                   <div class="dropdown-submenu absolute left-0 top-full mt-0 w-64 rounded-md shadow-lg opacity-0 invisible transition-all duration-200 z-50">
                                     <div class="rounded-md bg-white ring-1 ring-black ring-opacity-5 py-1">
                                       @foreach($sub->children as $subsub)
-                                        <a href="{{ url('category/'.$subsub->slug) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <a href="{{ url($subsub->slug) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                           {{ $subsub->name }}
                                         </a>
                                       @endforeach
@@ -116,7 +116,7 @@
                                   </div>
                                 </div>
                               @else
-                                <a href="{{ url('category/'.$sub->slug) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <a href="{{ url($sub->slug) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                   {{ $sub->name }}
                                 </a>
                               @endif
@@ -125,7 +125,7 @@
                         </div>
                       </div>
                     @else
-                      <a href="{{ url('category/'.$child->slug) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      <a href="{{ url($child->slug) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                         <strong>{{ $child->name }}</strong>
                       </a>
                     @endif
@@ -205,13 +205,15 @@
         {{-- Mobile Navigation Links --}}
         <div class="flex flex-col gap-2">
           <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('/') }}">Home</a>
-          
+
           @foreach($categories as $category)
             @if($category->children->count())
               <details class="mobile-category-details">
                 <summary class="store-link rounded-md px-3 py-2 cursor-pointer list-none w-full text-left">
                   <span class="flex items-center justify-between">
-                    <span>{{ $category->name }}</span>
+                    <a href="{{ url($category->slug) }}" class="flex-1 hover:text-primary transition-colors" onclick="event.stopPropagation()">
+                      {{ $category->name }}
+                    </a>
                     <span class="summary-arrow ml-2">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
@@ -227,7 +229,9 @@
                       <details class="mobile-sub-category-details ml-2">
                         <summary class="store-link rounded-md py-1 text-sm cursor-pointer list-none w-full text-left font-semibold">
                           <span class="flex items-center justify-between">
-                            <span>{{ $child->name }}</span>
+                            <a href="{{ url($child->slug) }}" class="flex-1 hover:text-primary transition-colors" onclick="event.stopPropagation()">
+                              {{ $child->name }}
+                            </a>
                             <span class="summary-arrow ml-2">
                               <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
@@ -243,7 +247,9 @@
                               <details class="mobile-level3-category-details ml-2">
                                 <summary class="store-link rounded-md py-1 text-xs cursor-pointer list-none w-full text-left text-gray-600">
                                   <span class="flex items-center justify-between">
-                                    <span>{{ $sub->name }}</span>
+                                    <a href="{{ url($sub->slug) }}" class="flex-1 hover:text-primary transition-colors" onclick="event.stopPropagation()">
+                                      {{ $sub->name }}
+                                    </a>
                                     <span class="summary-arrow ml-2">
                                       <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
@@ -254,7 +260,7 @@
                                 <div class="mt-1 ml-2 flex flex-col">
                                   @foreach($sub->children as $level4)
                                     {{-- Level 4 Category --}}
-                                    <a data-nav class="store-link rounded-md py-1 text-xs text-gray-500 mobile-level-4" href="{{ url('category/'.$level4->slug) }}">
+                                    <a data-nav class="store-link rounded-md py-1 text-xs text-gray-500 mobile-level-4" href="{{ url($level4->slug) }}">
                                       {{ $level4->name }}
                                     </a>
                                   @endforeach
@@ -262,7 +268,7 @@
                               </details>
                             @else
                               {{-- No Level 4 children - Regular link --}}
-                              <a data-nav class="store-link rounded-md py-1 text-xs mobile-level-3 ml-2" href="{{ url('category/'.$sub->slug) }}">
+                              <a data-nav class="store-link rounded-md py-1 text-xs mobile-level-3 ml-2" href="{{ url($sub->slug) }}">
                                 {{ $sub->name }}
                               </a>
                             @endif
@@ -271,11 +277,11 @@
                       </details>
                     @else
                       {{-- No Level 3 children - Regular link --}}
-                      <a data-nav class="store-link rounded-md py-1 text-sm mobile-level-2 ml-2" href="{{ url('category/'.$child->slug) }}">
+                      <a data-nav class="store-link rounded-md py-1 text-sm mobile-level-2 ml-2" href="{{ url($child->slug) }}">
                         {{ $child->name }}
                       </a>
                     @endif
-                    
+
                     @if(!$loop->last)
                       <div class="mobile-divider"></div>
                     @endif
@@ -283,12 +289,12 @@
                 </div>
               </details>
             @else
-              <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('category/'.$category->slug) }}">
+              <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url($category->slug) }}">
                 {{ $category->name }}
               </a>
             @endif
           @endforeach
-          
+
           <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('listing.html') }}">Shop</a>
           <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('about.html') }}">About</a>
           <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('contact.html') }}">Contact</a>

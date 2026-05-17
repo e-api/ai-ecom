@@ -10,4 +10,8 @@ use App\Http\Controllers\Frontend\CategoryController;
 // });
 
 Route::get('/', [HomeController::class, 'Index']);
-Route::get('category/{slug}', [CategoryController::class, 'listing']);
+/*
+NEW: SEO Friendly Category Route
+*/
+Route::get('/{slug}', [CategoryController::class, 'listing'])
+    ->where('slug', '^[A-Za-z0-9-_]+$');

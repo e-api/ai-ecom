@@ -4,6 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>@yield('title', 'Storefront')</title>
+  <link rel="icon" type="image/x-icon" href="https://images.icon-icons.com/844/PNG/512/AWS_icon-icons.com_67084.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://images.icon-icons.com/844/PNG/512/AWS_icon-icons.com_67084.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://images.icon-icons.com/844/PNG/512/AWS_icon-icons.com_67084.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://images.icon-icons.com/844/PNG/512/AWS_icon-icons.com_67084.png">
   @include('frontend.partials.styles')
 </head>
 <body class="@yield('body-class')">

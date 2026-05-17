@@ -67,7 +67,7 @@
         <div class="sidebar-category-group mb-3">
           {{-- Level 0 (Parent) - Same height for link and button --}}
           <div class="flex items-stretch">
-            <a href="{{ url('category/'.$category->slug) }}" class="sidebar-link flex-1 px-3 py-2 rounded-l-md hover:bg-transparent transition-all duration-200 font-semibold text-gray-800 flex items-center">
+            <a href="{{ url($category->slug) }}" class="sidebar-link flex-1 px-3 py-2 rounded-l-md hover:bg-transparent transition-all duration-200 font-semibold text-gray-800 flex items-center">
               {{ $category->name }}
             </a>
             @if($category->children->count())
@@ -80,63 +80,60 @@
           </div>
           
           @if($category->children->count())
-            <div id="level1-{{ $category->id }}" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100">
-              @foreach($category->children as $level1)
-                {{-- Level 1 - Matching heights --}}
+            <div id="submenu-{{ $category->id }}" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100">
+              @foreach($category->children as $child)
                 <div class="mb-1">
                   <div class="flex items-stretch">
-                    <a href="{{ url('category/'.$level1->slug) }}" class="sidebar-link flex-1 px-3 py-2 rounded-l-md hover:bg-gray-100 transition-all duration-200 text-gray-700 flex items-center">
-                      {{ $level1->name }}
+                    <a href="{{ url($child->slug) }}" class="sidebar-link flex-1 px-3 py-2 rounded-l-md hover:bg-gray-100 transition-all duration-200 text-gray-700 flex items-center">
+                      {{ $child->name }}
                     </a>
-                    @if($level1->children->count())
-                      <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="level2-{{ $level1->id }}">
+                    @if($child->children->count())
+                      <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="submenu-{{ $child->id }}">
                         <svg class="sidebar-icon h-3 w-3 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                       </button>
                     @endif
                   </div>
-                  
-                  @if($level1->children->count())
-                    <div id="level2-{{ $level1->id }}" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100">
-                      @foreach($level1->children as $level2)
-                        {{-- Level 2 - Matching heights --}}
+
+                  @if($child->children->count())
+                    <div id="submenu-{{ $child->id }}" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100">
+                      @foreach($child->children as $sub)
                         <div class="mb-1">
                           <div class="flex items-stretch">
-                            <a href="{{ url('category/'.$level2->slug) }}" class="sidebar-link flex-1 px-3 py-2 rounded-l-md hover:bg-gray-100 transition-all duration-200 text-gray-600 text-sm flex items-center">
-                              {{ $level2->name }}
+                            <a href="{{ url($sub->slug) }}" class="sidebar-link flex-1 px-3 py-2 rounded-l-md hover:bg-gray-100 transition-all duration-200 text-gray-600 text-sm flex items-center">
+                              {{ $sub->name }}
                             </a>
-                            @if($level2->children->count())
-                              <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="level3-{{ $level2->id }}">
+                            @if($sub->children->count())
+                              <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="submenu-{{ $sub->id }}">
                                 <svg class="sidebar-icon h-3 w-3 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>
                               </button>
                             @endif
                           </div>
-                          
-                          @if($level2->children->count())
-                            <div id="level3-{{ $level2->id }}" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100">
-                              @foreach($level2->children as $level3)
-                                {{-- Level 3 - Matching heights --}}
+
+                          @if($sub->children->count())
+                            <div id="submenu-{{ $sub->id }}" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100">
+                              @foreach($sub->children as $subsub)
                                 <div class="mb-1">
                                   <div class="flex items-stretch">
-                                    <a href="{{ url('category/'.$level3->slug) }}" class="sidebar-link flex-1 px-3 py-2 rounded-l-md hover:bg-gray-100 transition-all duration-200 text-gray-500 text-xs flex items-center">
-                                      {{ $level3->name }}
+                                    <a href="{{ url($subsub->slug) }}" class="sidebar-link flex-1 px-3 py-2 rounded-l-md hover:bg-gray-100 transition-all duration-200 text-gray-500 text-xs flex items-center">
+                                      {{ $subsub->name }}
                                     </a>
-                                    @if($level3->children->count())
-                                      <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="level4-{{ $level3->id }}">
+                                    @if($subsub->children->count())
+                                      <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="submenu-{{ $subsub->id }}">
                                         <svg class="sidebar-icon h-2 w-2 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                         </svg>
                                       </button>
                                     @endif
                                   </div>
-                                  
-                                  @if($level3->children->count())
-                                    <div id="level4-{{ $level3->id }}" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100">
-                                      @foreach($level3->children as $level4)
-                                        <a href="{{ url('category/'.$level4->slug) }}" class="block px-3 py-2 text-xs text-gray-400 rounded-md hover:bg-gray-100 hover:text-primary transition-all duration-200">
+
+                                  @if($subsub->children->count())
+                                    <div id="submenu-{{ $subsub->id }}" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100">
+                                      @foreach($subsub->children as $level4)
+                                        <a href="{{ url($level4->slug) }}" class="block px-3 py-2 text-xs text-gray-400 rounded-md hover:bg-gray-100 hover:text-primary transition-all duration-200">
                                           {{ $level4->name }}
                                         </a>
                                       @endforeach

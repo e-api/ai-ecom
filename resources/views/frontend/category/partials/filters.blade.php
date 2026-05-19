@@ -4,57 +4,65 @@
 
         <hr class="my-3 border-gray-200">
 
-        <!-- Price Filter -->
-        <h6 class="font-semibold text-md mb-2 mt-3">Price</h6>
+        {{-- Category Filter --}}
+        <div class="filter-group mb-3">
+            <div class="flex items-stretch">
+                <h6 class="font-semibold text-md flex-1 px-3 py-2 rounded-l-md text-gray-800 flex items-center">Categories</h6>
+                <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="category-filter-dropdown">
+                    <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+            </div>
+            <div id="category-filter-dropdown" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100 space-y-1">
+                @foreach($filterCategories as $filterCategory)
+                    <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+                        <input type="checkbox"
+                            class="filter-checkbox category-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
+                            value="{{ $filterCategory->id }}"
+                            {{ request()->categories && in_array($filterCategory->id, explode(',', request()->categories)) ? 'checked' : '' }}>
+                        <span class="text-gray-700 text-sm">{{ $filterCategory->name }}</span>
+                    </label>
+                @endforeach
+            </div>
+        </div>
 
-        <div class="space-y-1">
-            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
-                <input type="checkbox"  
-                    class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"  
-                    value="0-50"
-                    {{ request()->price && in_array('0-50', explode(',', request()->price)) ? 'checked' : '' }}>
-                <span class="text-gray-700 text-sm">$0 - $50</span>
-            </label>
-
-            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
-                <input type="checkbox"
-                    class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
-                    value="50-100"
-                    {{ request()->price && in_array('50-100', explode(',', request()->price)) ? 'checked' : '' }}>
-                <span class="text-gray-700 text-sm">$50 - $100</span>
-            </label>
-
-            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
-                <input type="checkbox"
-                    class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
-                    value="100-200"
-                    {{ request()->price && in_array('100-200', explode(',', request()->price)) ? 'checked' : '' }}>
-                <span class="text-gray-700 text-sm">$100 - $200</span>
-            </label>
-
-            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
-                <input type="checkbox"
-                    class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
-                    value="200-500"
-                    {{ request()->price && in_array('200-500', explode(',', request()->price)) ? 'checked' : '' }}>
-                <span class="text-gray-700 text-sm">$200 - $500</span>
-            </label>
-
-            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
-                <input type="checkbox"
-                    class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
-                    value="500-1000"
-                    {{ request()->price && in_array('500-1000', explode(',', request()->price)) ? 'checked' : '' }}>
-                <span class="text-gray-700 text-sm">$500 - $1000</span>
-            </label>
-
-            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
-                <input type="checkbox"
-                    class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
-                    value="1000-2500"
-                    {{ request()->price && in_array('1000-2500', explode(',', request()->price)) ? 'checked' : '' }}>
-                <span class="text-gray-700 text-sm">$1000 - $2500</span>
-            </label>
+        {{-- Price Filter --}}
+        <div class="filter-group mb-3">
+            <div class="flex items-stretch">
+                <h6 class="font-semibold text-md flex-1 px-3 py-2 rounded-l-md text-gray-800 flex items-center">Price</h6>
+                <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="price-filter-dropdown">
+                    <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+            </div>
+            <div id="price-filter-dropdown" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100 space-y-1">
+                <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+                    <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="0-50" {{ request()->price && in_array('0-50', explode(',', request()->price)) ? 'checked' : '' }}>
+                    <span class="text-gray-700 text-sm">$0 - $50</span>
+                </label>
+                <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+                    <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="50-100" {{ request()->price && in_array('50-100', explode(',', request()->price)) ? 'checked' : '' }}>
+                    <span class="text-gray-700 text-sm">$50 - $100</span>
+                </label>
+                <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+                    <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="100-200" {{ request()->price && in_array('100-200', explode(',', request()->price)) ? 'checked' : '' }}>
+                    <span class="text-gray-700 text-sm">$100 - $200</span>
+                </label>
+                <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+                    <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="200-500" {{ request()->price && in_array('200-500', explode(',', request()->price)) ? 'checked' : '' }}>
+                    <span class="text-gray-700 text-sm">$200 - $500</span>
+                </label>
+                <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+                    <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="500-1000" {{ request()->price && in_array('500-1000', explode(',', request()->price)) ? 'checked' : '' }}>
+                    <span class="text-gray-700 text-sm">$500 - $1000</span>
+                </label>
+                <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+                    <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="1000-999999" {{ request()->price && in_array('1000-999999', explode(',', request()->price)) ? 'checked' : '' }}>
+                    <span class="text-gray-700 text-sm">$1000+</span>
+                </label>
+            </div>
         </div>
     </div>
     {{-- Payment Methods --}}

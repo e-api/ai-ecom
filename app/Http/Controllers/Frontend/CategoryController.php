@@ -24,18 +24,27 @@ class CategoryController extends Controller
     {
         $category = $this->categoryService->getCategoryBySlug($slug);
         
+        // Get filter categories for sidebar (all active categories)
+        $filterCategories = \App\Models\Category::where('status', 1)
+            ->orderBy('name')
+            ->get();
+        
         $filters = [];
+        
         if ($request->has('price')) {
             $filters['price'] = $request->price;
         }
         
-        $products = $this->productService->getCategoryProducts($category, $filters, 12);
+        if ($request->has('categories')) {
+            $filters['categories'] = $request->categories;
+        }
+
+        $products = $this->productService->getCategoryProducts($category, $filters);
         
         if ($request->ajax()) {
-            // Return only the products partial (which now has the wrapper)
             return view('frontend.category.partials.products', compact('products', 'category'))->render();
         }
         
-        return view('frontend.category.listing', compact('category', 'products'));
+        return view('frontend.category.listing', compact('category', 'products', 'filterCategories'));
     }
 }

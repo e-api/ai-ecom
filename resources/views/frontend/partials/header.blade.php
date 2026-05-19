@@ -71,7 +71,7 @@
         
         @foreach($categories as $category)
           <div class="relative group">
-            <a data-nav class="store-link rounded-md px-2 font-medium text-white hover:bg-white/10 inline-flex items-center gap-1" href="{{ url($category->slug) }}">
+            <a data-nav class="store-link rounded-md px-2 font-medium text-white inline-flex items-center gap-1 hover:bg-white/10" href="{{ url($category->slug) }}">
               {{ $category->name }}
               @if($category->children->count())
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -81,32 +81,32 @@
             </a>
             
             @if($category->children->count())
-              <div class="dropdown-menu absolute left-0 mt-1 w-64 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div class="dropdown-menu absolute left-0 mt-1 w-40 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div class="rounded-md bg-white ring-1 ring-black ring-opacity-5 py-1">
                   @foreach($category->children as $child)
                     @if($child->children->count())
-                      <div class="relative">
-                        <div class="submenu-trigger flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
-                          <strong>{{ $child->name }}</strong>
+                      <div class="relative group">
+                        <a href="{{ url($child->slug) }}" class="submenu-trigger flex items-center justify-between px-4 py-1 text-sm text-gray-700 cursor-pointer hover:bg-gray-100">
+                          <span>{{ $child->name }}</span>
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                           </svg>
-                        </div>
+                        </a>
                         
-                        <div class="dropdown-submenu absolute left-0 top-full mt-0 w-64 rounded-md shadow-lg opacity-0 invisible transition-all duration-200 z-50">
+                        <div class="dropdown-submenu absolute left-[10%] -mt-0 w-40 rounded-md shadow-lg opacity-0 invisible transition-all duration-200 z-50">
                           <div class="rounded-md bg-white ring-1 ring-black ring-opacity-5 py-1">
                             @foreach($child->children as $sub)
                               @if($sub->children->count())
-                                <div class="relative">
-                                  <div class="submenu-trigger flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                                <div class="relative group">
+                                  <a href="{{ url($sub->slug) }}" class="submenu-trigger flex items-center justify-between px-4 py-1 text-sm text-gray-700 cursor-pointer hover:bg-gray-100">
                                     <span>{{ $sub->name }}</span>
                                     <svg class="h-3 w-3 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                       <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                                     </svg>
-                                  </div>
+                                  </a>
                                   
-                                  <div class="dropdown-submenu absolute left-0 top-full mt-0 w-64 rounded-md shadow-lg opacity-0 invisible transition-all duration-200 z-50">
-                                    <div class="rounded-md bg-white ring-1 ring-black ring-opacity-5 py-1">
+                                  <div class="dropdown-submenu absolute left-[10%] -mt-0 w-40 rounded-md shadow-lg opacity-0 invisible transition-all duration-200 z-50">
+                                    <div class="rounded-md bg-white ring-1 ring-black ring-opacity-5 py-0">
                                       @foreach($sub->children as $subsub)
                                         <a href="{{ url($subsub->slug) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                           {{ $subsub->name }}
@@ -126,7 +126,7 @@
                       </div>
                     @else
                       <a href="{{ url($child->slug) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        <strong>{{ $child->name }}</strong>
+                        <span>{{ $child->name }}</span>
                       </a>
                     @endif
                     

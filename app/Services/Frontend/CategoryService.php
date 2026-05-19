@@ -19,4 +19,9 @@ class CategoryService
     {
         return Category::where('slug', $slug)->where('status', 1)->firstOrFail();
     }
+
+    public function getFilterCategories($category)
+    {
+        return $category->children;
+    }
 }

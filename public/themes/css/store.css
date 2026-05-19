@@ -1159,6 +1159,12 @@ body.sidebar-open .store-header {
   background: var(--dropdown-hover-bg);
 }
 
+.group:hover > .submenu-trigger,
+.group:hover > .store-link {
+  color: var(--dropdown-text-hover);
+  background: var(--dropdown-hover-bg);
+}
+
 /* Add invisible bridge to prevent gap */
 .submenu-trigger {
   position: relative;

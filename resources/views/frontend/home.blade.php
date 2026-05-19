@@ -62,7 +62,6 @@
   <section class="space-y-6 lg:sticky lg:top-24 lg:self-start">
     <div class="flex items-center justify-center sidebar-cart-card px-4 py-3 text-sm font-semibold text-gray-700 gap-2"><img src="/themes/images/cart.png" width='50' height='50' alt="cart">3 items in your cart</div>
       <aside class="store-sidebar p-4">
-      
       @foreach($categories as $category)
         <div class="sidebar-category-group mb-3">
           {{-- Level 0 (Parent) - Same height for link and button --}}
@@ -71,7 +70,7 @@
               {{ $category->name }}
             </a>
             @if($category->children->count())
-              <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="level1-{{ $category->id }}">
+              <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="submenu-{{ $category->id }}">
                 <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
@@ -153,7 +152,6 @@
           @endif
         </div>
       @endforeach
-      
     </aside>
     {{-- Payment Methods --}}
     <div class="store-sidebar p-4">

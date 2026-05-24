@@ -3,6 +3,7 @@
 namespace App\Services\Frontend;
 
 use App\Models\Product;
+use App\Models\Category;
 
 class ProductService
 {
@@ -91,7 +92,7 @@ class ProductService
             $categoryFilters = explode(',', $filters['categories']);
             
             foreach ($categoryFilters as $categoryId) {
-                $filterCategory = \App\Models\Category::find($categoryId);
+                $filterCategory = Category::find($categoryId);
                 
                 if ($filterCategory) {
                     /*
@@ -110,6 +111,14 @@ class ProductService
             }
             
             $query->whereIn('category_id', $selectedCategoryIds);
+        }
+
+        /*
+        | NEW: Brand Filters
+        */
+        if (!empty($filters['brands'])) {
+            $brands = explode(',', $filters['brands']);
+            $query->whereIn('brand_id', $brands);
         }
 
         return $query

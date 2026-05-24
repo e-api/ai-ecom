@@ -2,10 +2,26 @@
   <div class="mx-auto max-w-7xl px-4">
     <div class="flex items-center justify-between gap-4 py-3">
       <div class="flex items-center gap-3">
-        <button data-mobile-toggle class="mobile-toggle lg:hidden p-2 rounded-md" aria-controls="mobile-navigation" aria-expanded="false" aria-label="Toggle menu" type="button">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <button 
+          data-mobile-toggle 
+          class="mobile-toggle lg:hidden p-2 rounded-md" 
+          aria-controls="mobile-navigation" 
+          aria-expanded="false" 
+          aria-label="Toggle menu" 
+          type="button"
+          >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
         </button>
-        <a href="{{ url('/') }}" class="text-2xl font-black tracking-tight text-white">Storefront</a>
+        <!-- Logo -->
+        <a href="{{ url('/') }}">
+          <img 
+            src="{{ asset('themes/images/logo.png') }}" 
+            alt="Storefront Logo"
+            class="h-10 w-auto"
+            >
+        </a>
       </div>
 
       <div class="flex-1 hidden md:flex justify-center px-4">
@@ -17,7 +33,7 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <!-- Currency Swapper Desktop -->
+        {{-- Currency Swapper Desktop --}}
         <div class="hidden sm:flex items-center gap-2">
           <select class="currency-select bg-white/10 text-white text-sm rounded-md px-2 py-1.5 border border-white/20 cursor-pointer" aria-label="Select currency">
             <option value="USD" class="text-gray-900 flex items-center gap-2">
@@ -45,7 +61,7 @@
           <span data-cart-count>3</span>
         </a>
 
-        <!-- Desktop: Login Button (logged out) -->
+        {{-- Desktop: Login Button (logged out) --}}
         <a class="btn-login rounded-md px-4 py-2 font-bold hidden sm:inline-flex items-center gap-2" href="{{ url('login.html') }}">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
@@ -53,7 +69,7 @@
           Login
         </a>
 
-        <!-- Desktop: User Avatar (logged in) - Hidden by default -->
+        {{-- Desktop: User Avatar (logged in) - Hidden by default --}}
         <div class="hidden sm:flex items-center gap-2 cursor-pointer" id="desktop-user-menu">
           <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
             JD
@@ -203,7 +219,7 @@
         </div>
 
         {{-- Mobile Navigation Links --}}
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col">
           <a data-nav class="store-link rounded-md px-3 py-2" href="{{ url('/') }}">Home</a>
 
           @foreach($categories as $category)
@@ -227,7 +243,7 @@
                     @if($child->children->count())
                       {{-- Has Level 3 children - Make it collapsible --}}
                       <details class="mobile-sub-category-details ml-2">
-                        <summary class="store-link rounded-md py-1 text-sm cursor-pointer list-none w-full text-left font-semibold">
+                        <summary class="store-link rounded-md py-1 text-sm cursor-pointer list-none w-full text-left">
                           <span class="flex items-center justify-between">
                             <a href="{{ url($child->slug) }}" class="flex-1 hover:text-primary transition-colors" onclick="event.stopPropagation()">
                               {{ $child->name }}

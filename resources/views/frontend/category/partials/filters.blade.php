@@ -1,97 +1,257 @@
 <section class="space-y-6 lg:sticky lg:top-28 lg:self-start">
-    <div class="store-sidebar p-4">
-        <h5 class="font-bold text-lg mb-3">Filters</h5>
-
-        <hr class="my-3 border-gray-200">
-
-        {{-- Category Filter --}}
-        <div class="filter-group mb-3">
+  <div class="store-sidebar p-4">
+    <div class="flex items-center justify-between mb-2">
+      <h5 class="font-bold text-lg">Filters</h5>
+      <button id="desktop-filter-reset" class="text-xs text-red-500 hover:text-red-700 transition">Reset All</button>
+    </div>
+    <hr class="my-3 border-gray-200">
+    {{-- Category Filter --}}
+    <div class="filter-group">
+      <div class="flex items-stretch">
+        <h6 class="font-semibold text-md flex-1 px-1 py-0 rounded-l-md text-gray-800 flex items-center">Categories</h6>
+        <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="category-filter-dropdown">
+          <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
+      <div id="category-filter-dropdown" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100 space-y-1">
+        @foreach($filterCategories as $filterCategory)
+        <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+        <input type="checkbox"
+        class="filter-checkbox category-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
+        value="{{ $filterCategory->id }}"
+        {{ request()->categories && in_array($filterCategory->id, explode(',', request()->categories)) ? 'checked' : '' }}>
+        <span class="text-gray-700 text-[12px]">{{ $filterCategory->name }}</span>
+        </label>
+        @endforeach
+      </div>
+    </div>
+    {{-- Price Filter --}}
+    <div class="filter-group">
+      <div class="flex items-stretch">
+        <h6 class="font-semibold text-md flex-1 px-1 py-0 rounded-l-md text-gray-800 flex items-center">Price</h6>
+        <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="price-filter-dropdown">
+          <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
+      <div id="price-filter-dropdown" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100 space-y-1">
+        <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+        <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="0-50" {{ request()->price && in_array('0-50', explode(',', request()->price)) ? 'checked' : '' }}>
+        <span class="text-gray-700 text-[12px]">$0 - $50</span>
+        </label>
+        <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+        <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="50-100" {{ request()->price && in_array('50-100', explode(',', request()->price)) ? 'checked' : '' }}>
+        <span class="text-gray-700 text-[12px]">$50 - $100</span>
+        </label>
+        <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+        <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="100-200" {{ request()->price && in_array('100-200', explode(',', request()->price)) ? 'checked' : '' }}>
+        <span class="text-gray-700 text-[12px]">$100 - $200</span>
+        </label>
+        <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+        <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="200-500" {{ request()->price && in_array('200-500', explode(',', request()->price)) ? 'checked' : '' }}>
+        <span class="text-gray-700 text-[12px]">$200 - $500</span>
+        </label>
+        <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+        <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="500-1000" {{ request()->price && in_array('500-1000', explode(',', request()->price)) ? 'checked' : '' }}>
+        <span class="text-gray-700 text-[12px]">$500 - $1000</span>
+        </label>
+        <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+        <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="1000-999999" {{ request()->price && in_array('1000-999999', explode(',', request()->price)) ? 'checked' : '' }}>
+        <span class="text-gray-700 text-[12px]">$1000+</span>
+        </label>
+      </div>
+    </div>
+    {{-- Brand Filter --}}
+        @if($brands->count() > 0)
+        <div class="filter-group mb-4">
             <div class="flex items-stretch">
-                <h6 class="font-semibold text-md flex-1 px-3 py-2 rounded-l-md text-gray-800 flex items-center">Categories</h6>
-                <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="category-filter-dropdown">
+                <h6 class="font-semibold text-md flex-1 px-1 py-0 rounded-l-md text-gray-800 flex items-center">Brands</h6>
+                <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="brand-filter-dropdown">
                     <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
                 </button>
             </div>
-            <div id="category-filter-dropdown" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100 space-y-1">
-                @foreach($filterCategories as $filterCategory)
+            <div id="brand-filter-dropdown" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100 space-y-1">
+                @foreach($brands as $brand)
                     <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
                         <input type="checkbox"
-                            class="filter-checkbox category-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
-                            value="{{ $filterCategory->id }}"
-                            {{ request()->categories && in_array($filterCategory->id, explode(',', request()->categories)) ? 'checked' : '' }}>
-                        <span class="text-gray-700 text-sm">{{ $filterCategory->name }}</span>
+                            class="filter-checkbox brand-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
+                            value="{{ $brand->id }}"
+                            {{ request()->brands && in_array($brand->id, explode(',', request()->brands)) ? 'checked' : '' }}>
+                        <span class="text-gray-700 text-[12px]">{{ $brand->name }}</span>
                     </label>
                 @endforeach
             </div>
         </div>
-
-        {{-- Price Filter --}}
-        <div class="filter-group mb-3">
-            <div class="flex items-stretch">
-                <h6 class="font-semibold text-md flex-1 px-3 py-2 rounded-l-md text-gray-800 flex items-center">Price</h6>
-                <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="price-filter-dropdown">
-                    <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
-            </div>
-            <div id="price-filter-dropdown" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100 space-y-1">
-                <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
-                    <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="0-50" {{ request()->price && in_array('0-50', explode(',', request()->price)) ? 'checked' : '' }}>
-                    <span class="text-gray-700 text-sm">$0 - $50</span>
-                </label>
-                <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
-                    <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="50-100" {{ request()->price && in_array('50-100', explode(',', request()->price)) ? 'checked' : '' }}>
-                    <span class="text-gray-700 text-sm">$50 - $100</span>
-                </label>
-                <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
-                    <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="100-200" {{ request()->price && in_array('100-200', explode(',', request()->price)) ? 'checked' : '' }}>
-                    <span class="text-gray-700 text-sm">$100 - $200</span>
-                </label>
-                <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
-                    <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="200-500" {{ request()->price && in_array('200-500', explode(',', request()->price)) ? 'checked' : '' }}>
-                    <span class="text-gray-700 text-sm">$200 - $500</span>
-                </label>
-                <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
-                    <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="500-1000" {{ request()->price && in_array('500-1000', explode(',', request()->price)) ? 'checked' : '' }}>
-                    <span class="text-gray-700 text-sm">$500 - $1000</span>
-                </label>
-                <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
-                    <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="1000-999999" {{ request()->price && in_array('1000-999999', explode(',', request()->price)) ? 'checked' : '' }}>
-                    <span class="text-gray-700 text-sm">$1000+</span>
-                </label>
-            </div>
+        @endif
+  </div>
+  {{-- Mobile Filter Button (Only visible on mobile) --}}
+  <div class="lg:hidden fixed bottom-4 right-4 z-50">
+    <button id="mobile-filter-toggle" class="bg-primary text-white rounded-full p-4 shadow-lg flex items-center justify-center">
+      <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+      </svg>
+    </button>
+  </div>
+  {{-- Mobile Filter Drawer --}}
+  <div id="mobile-filter-drawer" class="fixed inset-y-0 left-0 transform -translate-x-full transition-transform duration-300 ease-in-out z-40 w-80 bg-white shadow-xl lg:hidden" style="top: 48px; height: calc(100% - 48px);">
+    <div class="flex flex-col h-full">
+      {{-- Header --}}
+      <div class="flex items-center justify-between p-4 border-b border-gray-200">
+        <h3 class="text-lg font-bold">Filters</h3>
+        <button id="mobile-filter-close" class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      {{-- Filter Content --}}
+      <div class="flex-1 overflow-y-auto p-4">
+        {{-- Category Filter --}}
+        <div class="filter-group">
+          <div class="flex items-stretch">
+            <h6 class="font-semibold text-md flex-1 px-1 py-0 rounded-l-md text-gray-800 flex items-center">Categories</h6>
+            <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="category-filter-dropdown-mobile">
+              <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+          <div id="category-filter-dropdown-mobile" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100 space-y-1">
+            @foreach($filterCategories as $filterCategory)
+            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+            <input type="checkbox"
+            class="filter-checkbox category-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
+            value="{{ $filterCategory->id }}"
+            {{ request()->categories && in_array($filterCategory->id, explode(',', request()->categories)) ? 'checked' : '' }}>
+            <span class="text-gray-700 text-sm">{{ $filterCategory->name }}</span>
+            </label>
+            @endforeach
+          </div>
         </div>
+        {{-- Price Filter --}}
+        <div class="filter-group">
+          <div class="flex items-stretch">
+            <h6 class="font-semibold text-md flex-1 px-1 py-0 rounded-l-md text-gray-800 flex items-center">Price</h6>
+            <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="price-filter-dropdown-mobile">
+              <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+          <div id="price-filter-dropdown-mobile" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100 space-y-1">
+            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+            <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="0-50" {{ request()->price && in_array('0-50', explode(',', request()->price)) ? 'checked' : '' }}>
+            <span class="text-gray-700 text-sm">$0 - $50</span>
+            </label>
+            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+            <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="50-100" {{ request()->price && in_array('50-100', explode(',', request()->price)) ? 'checked' : '' }}>
+            <span class="text-gray-700 text-sm">$50 - $100</span>
+            </label>
+            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+            <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="100-200" {{ request()->price && in_array('100-200', explode(',', request()->price)) ? 'checked' : '' }}>
+            <span class="text-gray-700 text-sm">$100 - $200</span>
+            </label>
+            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+            <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="200-500" {{ request()->price && in_array('200-500', explode(',', request()->price)) ? 'checked' : '' }}>
+            <span class="text-gray-700 text-sm">$200 - $500</span>
+            </label>
+            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+            <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="500-1000" {{ request()->price && in_array('500-1000', explode(',', request()->price)) ? 'checked' : '' }}>
+            <span class="text-gray-700 text-sm">$500 - $1000</span>
+            </label>
+            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+            <input type="checkbox" class="filter-checkbox price-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2" value="1000-999999" {{ request()->price && in_array('1000-999999', explode(',', request()->price)) ? 'checked' : '' }}>
+            <span class="text-gray-700 text-sm">$1000+</span>
+            </label>
+          </div>
+        </div>
+        {{-- Brand Filter --}}
+        <div class="filter-group">
+          <div class="flex items-stretch">
+            <h6 class="font-semibold text-md flex-1 px-1 py-0 rounded-l-md text-gray-800 flex items-center">Brands</h6>
+            <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="brand-filter-dropdown-mobile">
+              <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+          <div id="brand-filter-dropdown-mobile" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100 space-y-1">
+            @foreach($brands as $brand)
+            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+              <input type="checkbox"
+                class="filter-checkbox brand-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
+                value="{{ $brand->id }}"
+                {{ request()->brands && in_array($brand->id, explode(',', request()->brands)) ? 'checked' : '' }}>
+                <span class="text-gray-700 text-sm">{{ $brand->name }}</span>
+            </label>
+            @endforeach
+          </div>
+        </div>
+      </div>
+      {{-- Footer with Apply Button --}}
+      <div class="p-4 border-t border-gray-200 space-y-2">
+        <button id="mobile-filter-reset" class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-200 transition">Reset All Filters</button>
+      </div>
     </div>
-    {{-- Payment Methods --}}
+  </div>
+  {{-- Overlay --}}
+  <div id="mobile-filter-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-60 hidden lg:hidden"></div>
+  {{-- Payment Methods --}}
     <div class="store-sidebar p-4">
       <h2 class="sidebar-title mb-3">We Accept</h2>
-      <div class="grid grid-cols-4 max-w-xs mx-auto">
-        <div class="relative group flex items-center justify-center bg-transparent cursor-pointer transition hover:shadow-md">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 658 642"><path d="M502.1 295.3C502.1 295.3 509.7 332.5 511.4 340.3L478 340.3C481.3 331.4 494 296.8 494 296.8C493.8 297.1 497.3 287.7 499.3 281.9L502.1 295.3zM608 144L608 496C608 522.5 586.5 544 560 544L80 544C53.5 544 32 522.5 32 496L32 144C32 117.5 53.5 96 80 96L560 96C586.5 96 608 117.5 608 144zM184.5 395.2L247.7 240L205.2 240L165.9 346L161.6 324.5L147.6 253.1C145.3 243.2 138.2 240.4 129.4 240L64.7 240L64 243.1C79.8 247.1 93.9 252.9 106.2 260.2L142 395.2L184.5 395.2zM278.9 395.4L304.1 240L263.9 240L238.8 395.4L278.9 395.4zM418.8 344.6C419 326.9 408.2 313.4 385.1 302.3C371 295.2 362.4 290.4 362.4 283.1C362.6 276.5 369.7 269.7 385.5 269.7C398.6 269.4 408.2 272.5 415.4 275.6L419 277.3L424.5 243.7C416.6 240.6 404 237.1 388.5 237.1C348.8 237.1 320.9 258.3 320.7 288.5C320.4 310.8 340.7 323.2 355.9 330.7C371.4 338.3 376.7 343.3 376.7 350C376.5 360.4 364.1 365.2 352.6 365.2C336.6 365.2 328 362.7 314.9 356.9L309.6 354.4L304 389.3C313.4 393.6 330.8 397.4 348.8 397.6C391 397.7 418.5 376.8 418.8 344.6zM560 395.4L527.6 240L496.5 240C486.9 240 479.6 242.8 475.5 252.9L415.8 395.4L458 395.4C458 395.4 464.9 376.2 466.4 372.1L518 372.1C519.2 377.6 522.8 395.4 522.8 395.4L560 395.4z"/></svg>
+      <div class="grid grid-cols-4 max-w-xs mx-auto gap-2">
+        <div class="relative group flex items-center justify-center bg-transparent cursor-pointer transition">
+          <svg viewBox="0 -11 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0.5" y="0.5" width="69" height="47" rx="5.5" fill="white" stroke="#D9D9D9"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M21.2505 32.5165H17.0099L13.8299 20.3847C13.679 19.8267 13.3585 19.3333 12.8871 19.1008C11.7106 18.5165 10.4142 18.0514 9 17.8169V17.3498H15.8313C16.7742 17.3498 17.4813 18.0514 17.5991 18.8663L19.2491 27.6173L23.4877 17.3498H27.6104L21.2505 32.5165ZM29.9675 32.5165H25.9626L29.2604 17.3498H33.2653L29.9675 32.5165ZM38.4467 21.5514C38.5646 20.7346 39.2717 20.2675 40.0967 20.2675C41.3931 20.1502 42.8052 20.3848 43.9838 20.9671L44.6909 17.7016C43.5123 17.2345 42.216 17 41.0395 17C37.1524 17 34.3239 19.1008 34.3239 22.0165C34.3239 24.2346 36.3274 25.3992 37.7417 26.1008C39.2717 26.8004 39.861 27.2675 39.7431 27.9671C39.7431 29.0165 38.5646 29.4836 37.3881 29.4836C35.9739 29.4836 34.5596 29.1338 33.2653 28.5494L32.5582 31.8169C33.9724 32.3992 35.5025 32.6338 36.9167 32.6338C41.2752 32.749 43.9838 30.6502 43.9838 27.5C43.9838 23.5329 38.4467 23.3004 38.4467 21.5514ZM58 32.5165L54.82 17.3498H51.4044C50.6972 17.3498 49.9901 17.8169 49.7544 18.5165L43.8659 32.5165H47.9887L48.8116 30.3004H53.8772L54.3486 32.5165H58ZM51.9936 21.4342L53.1701 27.1502H49.8723L51.9936 21.4342Z" fill="#172B85"/>
+          </svg>
           <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap">
           Visa
           <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
           </div>
         </div>
-        <div class="relative group flex items-center justify-center bg-transparent cursor-pointer transition hover:shadow-md">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 658 642"><path d="M514.9 474.3C514.9 481.1 510.3 486 503.7 486C496.9 486 492.5 480.8 492.5 474.3C492.5 467.8 496.9 462.6 503.7 462.6C510.3 462.6 514.9 467.8 514.9 474.3zM204.1 462.6C197 462.6 192.9 467.8 192.9 474.3C192.9 480.8 197 486 204.1 486C210.6 486 215 481.1 215 474.3C214.9 467.8 210.6 462.6 204.1 462.6zM321.6 462.3C316.2 462.3 312.9 465.8 312.1 471L331.2 471C330.3 465.3 326.8 462.3 321.6 462.3zM429.4 462.6C422.6 462.6 418.5 467.8 418.5 474.3C418.5 480.8 422.6 486 429.4 486C436.2 486 440.6 481.1 440.6 474.3C440.6 467.8 436.2 462.6 429.4 462.6zM535.3 488.7C535.3 489 535.6 489.2 535.6 489.8C535.6 490.1 535.3 490.3 535.3 490.9C535 491.2 535 491.4 534.8 491.7C534.5 492 534.3 492.2 533.7 492.2C533.4 492.5 533.2 492.5 532.6 492.5C532.3 492.5 532.1 492.5 531.5 492.2C531.2 492.2 531 491.9 530.7 491.7C530.4 491.4 530.2 491.2 530.2 490.9C529.9 490.4 529.9 490.1 529.9 489.8C529.9 489.3 529.9 489 530.2 488.7C530.2 488.2 530.5 487.9 530.7 487.6C531 487.3 531.2 487.3 531.5 487.1C532 486.8 532.3 486.8 532.6 486.8C533.1 486.8 533.4 486.8 533.7 487.1C534.2 487.4 534.5 487.4 534.8 487.6C535.1 487.8 535 488.2 535.3 488.7zM533.1 490.1C533.6 490.1 533.6 489.8 533.9 489.8C534.2 489.5 534.2 489.3 534.2 489C534.2 488.7 534.2 488.5 533.9 488.2C533.6 488.2 533.4 487.9 532.8 487.9L531.2 487.9L531.2 491.4L532 491.4L532 490L532.3 490L533.4 491.4L534.2 491.4L533.1 490.1zM608 145L608 497C608 523.5 586.5 545 560 545L80 545C53.5 545 32 523.5 32 497L32 145C32 118.5 53.5 97 80 97L560 97C586.5 97 608 118.5 608 145zM96 284.6C96 361.1 158.1 423.1 234.5 423.1C261.7 423.1 288.4 414.9 311 400C238.1 340.7 238.6 228.8 311 169.5C288.4 154.5 261.7 146.4 234.5 146.4C158.1 146.3 96 208.4 96 284.6zM320 393.4C390.5 338.4 390.2 231.2 320 175.9C249.8 231.2 249.5 338.5 320 393.4zM177.7 469.7C177.7 461 172 455.3 163 455C158.4 455 153.5 456.4 150.2 461.5C147.8 457.4 143.7 455 138 455C134.2 455 130.4 456.4 127.4 460.4L127.4 456L119.2 456L119.2 492.7L127.4 492.7C127.4 473.8 124.9 462.5 136.4 462.5C146.6 462.5 144.6 472.7 144.6 492.7L152.5 492.7C152.5 474.4 150 462.5 161.5 462.5C171.7 462.5 169.7 472.5 169.7 492.7L177.9 492.7L177.9 469.7L177.7 469.7zM222.6 456L214.7 456L214.7 460.4C212 457.1 208.2 455 203 455C192.7 455 184.8 463.2 184.8 474.3C184.8 485.5 192.7 493.6 203 493.6C208.2 493.6 212 491.7 214.7 488.2L214.7 492.8L222.6 492.8L222.6 456zM263.1 481.6C263.1 466.6 240.2 473.4 240.2 466.4C240.2 460.7 252.1 461.6 258.7 465.3L262 458.8C252.6 452.7 231.8 452.8 231.8 467C231.8 481.3 254.7 475.3 254.7 482C254.7 488.3 241.2 487.8 234 482.8L230.5 489.1C241.7 496.7 263.1 495.1 263.1 481.6zM298.5 490.9L296.3 484.1C292.5 486.2 284.1 488.5 284.1 480L284.1 463.4L297.2 463.4L297.2 456L284.1 456L284.1 444.8L275.9 444.8L275.9 456L268.3 456L268.3 463.3L275.9 463.3L275.9 480C275.9 497.6 293.2 494.4 298.5 490.9zM311.8 477.5L339.3 477.5C339.3 461.3 331.9 454.9 321.9 454.9C311.3 454.9 303.7 462.8 303.7 474.2C303.7 494.7 326.3 498.1 337.5 488.4L333.7 482.4C325.9 488.8 314.1 488.2 311.8 477.5zM370.9 456C366.3 454 359.3 454.2 355.7 460.4L355.7 456L347.5 456L347.5 492.7L355.7 492.7L355.7 472C355.7 460.4 365.2 461.9 368.5 463.6L370.9 456zM381.5 474.3C381.5 462.9 393.1 459.2 402.2 465.9L406 459.4C394.4 450.3 373.3 455.3 373.3 474.4C373.3 494.2 395.7 498.2 406 489.4L402.2 482.9C393 489.4 381.5 485.5 381.5 474.3zM448.2 456L440 456L440 460.4C431.7 449.4 410.1 455.6 410.1 474.3C410.1 493.5 432.5 499 440 488.2L440 492.8L448.2 492.8L448.2 456zM481.9 456C479.5 454.8 470.9 453.1 466.7 460.4L466.7 456L458.8 456L458.8 492.7L466.7 492.7L466.7 472C466.7 461 475.7 461.7 479.5 463.6L481.9 456zM522.2 441.1L514.3 441.1L514.3 460.4C506.1 449.5 484.4 455.3 484.4 474.3C484.4 493.7 506.9 498.9 514.3 488.2L514.3 492.8L522.2 492.8L522.2 441.1zM529.8 366L529.8 370.6L530.6 370.6L530.6 366L532.5 366L532.5 365.2L527.9 365.2L527.9 366L529.8 366zM536.4 489.8C536.4 489.3 536.4 488.7 536.1 488.2C535.8 487.9 535.6 487.4 535.3 487.1C535 486.8 534.5 486.6 534.2 486.3C533.7 486.3 533.1 486 532.6 486C532.3 486 531.8 486.3 531.2 486.3C530.7 486.6 530.4 486.8 530.1 487.1C529.6 487.4 529.3 487.9 529.3 488.2C529 488.7 529 489.3 529 489.8C529 490.1 529 490.6 529.3 491.2C529.3 491.5 529.6 492 530.1 492.3C530.4 492.6 530.6 492.8 531.2 493.1C531.7 493.4 532.3 493.4 532.6 493.4C533.1 493.4 533.7 493.4 534.2 493.1C534.5 492.8 535 492.6 535.3 492.3C535.6 492 535.8 491.5 536.1 491.2C536.4 490.6 536.4 490.1 536.4 489.8zM539.6 365.1L538.2 365.1L536.6 368.6L535 365.1L533.6 365.1L533.6 370.5L534.4 370.5L534.4 366.4L536 369.9L537.1 369.9L538.5 366.4L538.5 370.5L539.6 370.5L539.6 365.1zM544 284.6C544 208.4 481.9 146.3 405.5 146.3C378.3 146.3 351.6 154.5 329 169.4C401.1 228.7 402.2 340.9 329 399.9C351.6 414.9 378.5 423 405.5 423C481.9 423.1 544 361.1 544 284.6z"/></svg>
+        <div class="relative group flex items-center justify-center bg-transparent cursor-pointer transition">
+          <svg viewBox="0 -9 58 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0.5" y="0.5" width="57" height="39" rx="3.5" fill="white" stroke="#F3F3F3"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M21.2489 30.8906V32.3674V33.8443H20.6016V33.4857C20.3963 33.7517 20.0848 33.9186 19.6614 33.9186C18.8266 33.9186 18.1722 33.27 18.1722 32.3674C18.1722 31.4656 18.8266 30.8163 19.6614 30.8163C20.0848 30.8163 20.3963 30.9832 20.6016 31.2492V30.8906H21.2489ZM19.7419 31.4218C19.1816 31.4218 18.8387 31.8483 18.8387 32.3674C18.8387 32.8866 19.1816 33.3131 19.7419 33.3131C20.2773 33.3131 20.6387 32.905 20.6387 32.3674C20.6387 31.8299 20.2773 31.4218 19.7419 31.4218ZM43.1228 32.3674C43.1228 31.8483 43.4657 31.4218 44.026 31.4218C44.5621 31.4218 44.9228 31.8299 44.9228 32.3674C44.9228 32.905 44.5621 33.3131 44.026 33.3131C43.4657 33.3131 43.1228 32.8866 43.1228 32.3674ZM45.5338 29.7044V32.3674V33.8443H44.8858V33.4857C44.6804 33.7517 44.3689 33.9186 43.9455 33.9186C43.1107 33.9186 42.4563 33.27 42.4563 32.3674C42.4563 31.4656 43.1107 30.8163 43.9455 30.8163C44.3689 30.8163 44.6804 30.9832 44.8858 31.2492V29.7044H45.5338ZM29.2838 31.3914C29.7008 31.3914 29.9688 31.6509 30.0373 32.1079H28.4925C28.5616 31.6814 28.8225 31.3914 29.2838 31.3914ZM27.8138 32.3674C27.8138 31.4465 28.424 30.8163 29.2966 30.8163C30.1307 30.8163 30.7038 31.4465 30.7102 32.3674C30.7102 32.4537 30.7038 32.5344 30.6974 32.6143H28.4868C28.5802 33.1462 28.9601 33.3379 29.3771 33.3379C29.6758 33.3379 29.9938 33.2261 30.2433 33.0288L30.5605 33.5048C30.1991 33.8075 29.7885 33.9186 29.3401 33.9186C28.449 33.9186 27.8138 33.3068 27.8138 32.3674ZM37.1126 32.3674C37.1126 31.8483 37.4555 31.4218 38.0158 31.4218C38.5511 31.4218 38.9126 31.8299 38.9126 32.3674C38.9126 32.905 38.5511 33.3131 38.0158 33.3131C37.4555 33.3131 37.1126 32.8866 37.1126 32.3674ZM39.5228 30.8906V32.3674V33.8443H38.8755V33.4857C38.6695 33.7517 38.3587 33.9186 37.9352 33.9186C37.1004 33.9186 36.446 33.27 36.446 32.3674C36.446 31.4656 37.1004 30.8163 37.9352 30.8163C38.3587 30.8163 38.6695 30.9832 38.8755 31.2492V30.8906H39.5228ZM33.4569 32.3674C33.4569 33.2636 34.0857 33.9186 35.0452 33.9186C35.4936 33.9186 35.7923 33.8196 36.116 33.5663L35.8051 33.0472C35.5621 33.2205 35.3068 33.3131 35.026 33.3131C34.5091 33.3068 34.1292 32.9361 34.1292 32.3674C34.1292 31.7988 34.5091 31.4281 35.026 31.4218C35.3068 31.4218 35.5621 31.5144 35.8051 31.6877L36.116 31.1685C35.7923 30.9153 35.4936 30.8163 35.0452 30.8163C34.0857 30.8163 33.4569 31.4713 33.4569 32.3674ZM41.0177 31.2492C41.1859 30.9896 41.429 30.8163 41.8026 30.8163C41.9337 30.8163 42.1205 30.8411 42.2638 30.8969L42.0642 31.5024C41.9273 31.4465 41.7904 31.4281 41.6593 31.4281C41.2358 31.4281 41.0241 31.6997 41.0241 32.1885V33.8443H40.3761V30.8906H41.0177V31.2492ZM24.4505 31.1254C24.1389 30.9217 23.7098 30.8163 23.2364 30.8163C22.4822 30.8163 21.9967 31.1749 21.9967 31.762C21.9967 32.2437 22.3582 32.5407 23.024 32.6334L23.3298 32.6765C23.6848 32.7261 23.8524 32.8187 23.8524 32.9856C23.8524 33.2141 23.6157 33.3442 23.1737 33.3442C22.7253 33.3442 22.4017 33.2021 22.1835 33.0351L21.8784 33.5352C22.2334 33.7948 22.6818 33.9186 23.1673 33.9186C24.027 33.9186 24.5253 33.5168 24.5253 32.9545C24.5253 32.4353 24.1332 32.1637 23.4852 32.0711L23.1801 32.0272C22.9 31.9904 22.6754 31.9353 22.6754 31.7372C22.6754 31.5208 22.8871 31.3914 23.2421 31.3914C23.6221 31.3914 23.9899 31.5335 24.1703 31.6446L24.4505 31.1254ZM32.0184 31.2492C32.1859 30.9896 32.429 30.8163 32.8025 30.8163C32.9337 30.8163 33.1205 30.8411 33.2637 30.8969L33.0641 31.5024C32.9273 31.4465 32.7904 31.4281 32.6592 31.4281C32.2358 31.4281 32.0241 31.6997 32.0241 32.1885V33.8443H31.3768V30.8906H32.0184V31.2492ZM27.2784 30.8906H26.2198V29.9944H25.5654V30.8906H24.9616V31.4776H25.5654V32.8251C25.5654 33.5105 25.8334 33.9186 26.5991 33.9186C26.8799 33.9186 27.2036 33.8323 27.4089 33.6901L27.2221 33.1398C27.0289 33.2509 26.8172 33.3068 26.649 33.3068C26.3253 33.3068 26.2198 33.1087 26.2198 32.8123V31.4776H27.2784V30.8906ZM17.5997 31.9904V33.8443H16.9453V32.2005C16.9453 31.6997 16.7336 31.4218 16.2916 31.4218C15.8617 31.4218 15.563 31.6941 15.563 32.2069V33.8443H14.9086V32.2005C14.9086 31.6997 14.6912 31.4218 14.2613 31.4218C13.8186 31.4218 13.5321 31.6941 13.5321 32.2069V33.8443H12.8784V30.8906H13.5264V31.2548C13.7695 30.909 14.0803 30.8163 14.3982 30.8163C14.853 30.8163 15.1767 31.0144 15.382 31.3418C15.6564 30.9274 16.0485 30.8099 16.4285 30.8163C17.1513 30.8227 17.5997 31.2923 17.5997 31.9904Z" fill="#231F20"/>
+            <path d="M34.0465 25.8715H24.2359V8.3783H34.0465V25.8715Z" fill="#FF5F00"/>
+            <path d="M24.8583 17.1253C24.8583 13.5767 26.5328 10.4157 29.1405 8.37867C27.2336 6.88907 24.8269 5.99998 22.2114 5.99998C16.0194 5.99998 11 10.9809 11 17.1253C11 23.2697 16.0194 28.2506 22.2114 28.2506C24.8269 28.2506 27.2336 27.3615 29.1405 25.8719C26.5328 23.8349 24.8583 20.6739 24.8583 17.1253" fill="#EB001B"/>
+            <path d="M47.2818 17.1253C47.2818 23.2697 42.2624 28.2506 36.0704 28.2506C33.4548 28.2506 31.0482 27.3615 29.1405 25.8719C31.7489 23.8349 33.4235 20.6739 33.4235 17.1253C33.4235 13.5767 31.7489 10.4157 29.1405 8.37867C31.0482 6.88907 33.4548 5.99998 36.0704 5.99998C42.2624 5.99998 47.2818 10.9809 47.2818 17.1253" fill="#F79E1B"/>
+          </svg>
           <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap">
           MasterCards
           <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
           </div>
         </div>
-        <div class="relative group flex items-center justify-center bg-transparent cursor-pointer transition hover:shadow-md">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 658 642"><path d="M218.3 322.2C218.3 334.4 208.6 343.7 196.3 343.7C187.1 343.7 180.3 338.5 180.3 328.7C180.3 316.5 189.8 306.7 202 306.7C211.3 306.7 218.3 312.4 218.3 322.2zM112.5 273.7L107.8 273.7C106.3 273.7 104.8 274.7 104.6 276.4L100.3 303.1L108.5 302.8C119.5 302.8 128 301.3 130 288.6C132.3 275.2 123.8 273.7 112.5 273.7zM396.5 273.7L392 273.7C390.2 273.7 389 274.7 388.8 276.4L384.6 303.1L392.6 302.8C405.6 302.8 414.6 299.8 414.6 284.8C414.5 274.2 405 273.7 396.5 273.7zM608 144L608 496C608 522.5 586.5 544 560 544L80 544C53.5 544 32 522.5 32 496L32 144C32 117.5 53.5 96 80 96L560 96C586.5 96 608 117.5 608 144zM160.3 279.4C160.3 258.4 144.1 251.4 125.6 251.4L85.6 251.4C83.1 251.4 80.6 253.4 80.4 256.1L64 358.2C63.7 360.2 65.2 362.2 67.2 362.2L86.2 362.2C88.9 362.2 91.4 359.3 91.7 356.5L96.2 329.9C97.2 322.7 109.4 325.2 114.2 325.2C142.8 325.2 160.3 308.2 160.3 279.4zM244.5 288.2L225.5 288.2C221.7 288.2 221.5 293.7 221.3 296.4C215.5 287.9 207.1 286.4 197.6 286.4C173.1 286.4 154.4 307.9 154.4 331.6C154.4 351.1 166.6 363.8 186.1 363.8C195.1 363.8 206.3 358.9 212.6 351.9C212.1 353.4 211.6 356.6 211.6 358.1C211.6 360.4 212.6 362.1 214.8 362.1L232 362.1C234.7 362.1 237 359.2 237.5 356.4L247.7 292.1C248 290.2 246.5 288.2 244.5 288.2zM285 386.1L348.7 293.5C349.2 293 349.2 292.5 349.2 291.8C349.2 290.1 347.7 288.3 346 288.3L326.8 288.3C325.1 288.3 323.3 289.3 322.3 290.8L295.8 329.8L284.8 292.3C284 290.1 281.8 288.3 279.3 288.3L260.6 288.3C258.9 288.3 257.4 290.1 257.4 291.8C257.4 293 276.9 348.6 278.6 353.9C275.9 357.7 258.1 382.5 258.1 385.5C258.1 387.3 259.6 388.7 261.3 388.7L280.5 388.7C282.3 388.6 284 387.6 285 386.1zM444.3 279.4C444.3 258.4 428.1 251.4 409.6 251.4L369.9 251.4C367.2 251.4 364.7 253.4 364.4 256.1L348.2 358.1C348 360.1 349.5 362.1 351.4 362.1L371.9 362.1C373.9 362.1 375.4 360.6 375.9 358.9L380.4 329.9C381.4 322.7 393.6 325.2 398.4 325.2C426.8 325.2 444.3 308.2 444.3 279.4zM528.5 288.2L509.5 288.2C505.7 288.2 505.5 293.7 505.2 296.4C499.7 287.9 491.2 286.4 481.5 286.4C457 286.4 438.3 307.9 438.3 331.6C438.3 351.1 450.5 363.8 470 363.8C479.3 363.8 490.5 358.9 496.5 351.9C496.2 353.4 495.5 356.6 495.5 358.1C495.5 360.4 496.5 362.1 498.7 362.1L516 362.1C518.7 362.1 521 359.2 521.5 356.4L531.7 292.1C532 290.2 530.5 288.2 528.5 288.2zM576 254.9C576 252.9 574.5 251.4 572.8 251.4L554.3 251.4C552.8 251.4 551.3 252.6 551.1 254.1L534.9 358.1L534.6 358.6C534.6 360.4 536.1 362.1 538.1 362.1L554.6 362.1C557.1 362.1 559.6 359.2 559.8 356.4L576 255.2L576 254.9zM486 306.7C473.8 306.7 464.3 316.4 464.3 328.7C464.3 338.4 471.3 343.7 480.5 343.7C492.5 343.7 502.2 334.5 502.2 322.2C502.3 312.4 495.3 306.7 486 306.7z"/></svg>
+        <div class="relative group flex items-center justify-center bg-transparent cursor-pointer transition">
+          <svg viewBox="0 -9 58 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0.5" y="0.5" width="57" height="39" rx="3.5" fill="white" stroke="#F3F3F3"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M26.4388 20.2562L26.6913 18.6477L26.1288 18.6346H23.4429L25.3095 6.76505C25.3153 6.72911 25.3341 6.69575 25.3616 6.67201C25.3892 6.64827 25.4243 6.63525 25.4611 6.63525H29.9901C31.4937 6.63525 32.5313 6.94897 33.073 7.56826C33.327 7.85879 33.4887 8.16246 33.567 8.49653C33.6491 8.84713 33.6505 9.26596 33.5704 9.77689L33.5646 9.81405V10.1415L33.8186 10.2858C34.0324 10.3996 34.2024 10.5298 34.3328 10.6788C34.55 10.9273 34.6905 11.2431 34.7499 11.6173C34.8113 12.0022 34.791 12.4604 34.6905 12.979C34.5746 13.5755 34.3873 14.0951 34.1343 14.5202C33.9016 14.9119 33.6052 15.2369 33.2531 15.4886C32.9171 15.7279 32.5178 15.9095 32.0664 16.0257C31.6288 16.1399 31.1301 16.1975 30.583 16.1975H30.2305C29.9786 16.1975 29.7338 16.2886 29.5416 16.4517C29.3489 16.6183 29.2215 16.8459 29.1824 17.0947L29.1558 17.2396L28.7096 20.0747L28.6894 20.1787C28.684 20.2117 28.6748 20.2281 28.6613 20.2392C28.6493 20.2494 28.632 20.2562 28.615 20.2562H26.4388" fill="#28356A"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M34.0589 9.85181C34.0455 9.93848 34.03 10.027 34.0126 10.1181C33.4154 13.1934 31.372 14.2558 28.7623 14.2558H27.4335C27.1143 14.2558 26.8453 14.4881 26.7957 14.8038L25.9227 20.3573C25.8904 20.5647 26.0497 20.7514 26.2582 20.7514H28.615C28.894 20.7514 29.1311 20.5481 29.1751 20.2721L29.1982 20.1521L29.6419 17.3281L29.6705 17.1732C29.7139 16.8962 29.9515 16.6928 30.2305 16.6928H30.583C32.8663 16.6928 34.6538 15.7632 35.1763 13.0728C35.3944 11.9489 35.2815 11.0105 34.704 10.3505C34.5293 10.1516 34.3125 9.98635 34.0589 9.85181" fill="#298FC2"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M33.4342 9.60206C33.3429 9.57534 33.2488 9.5512 33.1522 9.52936C33.0551 9.50807 32.9557 9.48922 32.8533 9.47267C32.4951 9.41462 32.1025 9.38708 31.682 9.38708H28.1322C28.0447 9.38708 27.9617 9.40689 27.8874 9.44269C27.7236 9.52163 27.602 9.67707 27.5726 9.86736L26.8174 14.6641L26.7957 14.8039C26.8454 14.4882 27.1144 14.2558 27.4335 14.2558H28.7623C31.372 14.2558 33.4154 13.1929 34.0127 10.1181C34.0305 10.0271 34.0455 9.93856 34.0589 9.85189C33.9078 9.77146 33.7442 9.7027 33.568 9.64411C33.5244 9.62959 33.4795 9.61562 33.4342 9.60206" fill="#22284F"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M27.5726 9.86737C27.6021 9.67708 27.7236 9.52165 27.8874 9.44325C27.9622 9.40731 28.0447 9.38751 28.1322 9.38751H31.682C32.1025 9.38751 32.4951 9.41518 32.8534 9.47323C32.9557 9.48964 33.0551 9.50863 33.1522 9.52992C33.2488 9.55162 33.3429 9.5759 33.4342 9.60248C33.4795 9.61605 33.5244 9.63015 33.5684 9.64412C33.7446 9.70272 33.9084 9.77202 34.0595 9.85191C34.2372 8.71545 34.058 7.94168 33.4453 7.241C32.7698 6.46953 31.5507 6.1394 29.9906 6.1394H25.4615C25.1429 6.1394 24.8711 6.37174 24.8218 6.68803L22.9354 18.6796C22.8982 18.9168 23.0807 19.1309 23.3193 19.1309H26.1153L27.5726 9.86737" fill="#28356A"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M13.0946 23.5209H9.79248C9.56648 23.5209 9.3743 23.6855 9.339 23.9093L8.00345 32.4009C7.97695 32.5686 8.10638 32.7195 8.27584 32.7195H9.85225C10.0782 32.7195 10.2704 32.555 10.3057 32.3308L10.6659 30.0404C10.7006 29.8162 10.8932 29.6516 11.1188 29.6516H12.1641C14.3393 29.6516 15.5946 28.5959 15.9226 26.5042C16.0703 25.589 15.9288 24.87 15.5014 24.3664C15.0321 23.8134 14.1997 23.5209 13.0946 23.5209ZM13.4755 26.6224C13.2949 27.8106 12.3896 27.8106 11.5143 27.8106H11.0159L11.3655 25.5914C11.3863 25.4573 11.5021 25.3585 11.6374 25.3585H11.8658C12.4621 25.3585 13.0246 25.3585 13.3152 25.6994C13.4886 25.9027 13.5416 26.2049 13.4755 26.6224Z" fill="#28356A"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M23.0496 26.5199H21.4683C21.3336 26.5199 21.2171 26.6187 21.1964 26.7528L21.1264 27.1963L21.0159 27.0356C20.6736 26.5373 19.9101 26.3707 19.1483 26.3707C17.4008 26.3707 15.9084 27.698 15.6177 29.5598C15.4666 30.4885 15.6814 31.3766 16.2068 31.9959C16.6887 32.5653 17.3782 32.8026 18.1985 32.8026C19.6065 32.8026 20.3871 31.8947 20.3871 31.8947L20.3167 32.3354C20.2902 32.5038 20.4196 32.6549 20.5881 32.6549H22.0124C22.2389 32.6549 22.4301 32.4903 22.4659 32.2661L23.3205 26.8385C23.3475 26.6714 23.2185 26.5199 23.0496 26.5199ZM20.8453 29.6064C20.6928 30.5122 19.9759 31.1204 19.0613 31.1204C18.6022 31.1204 18.2353 30.9727 17.9995 30.6929C17.7658 30.415 17.6771 30.0194 17.7513 29.5787C17.8939 28.6805 18.6229 28.0524 19.5235 28.0524C19.9725 28.0524 20.3375 28.2022 20.578 28.4843C20.8188 28.7695 20.9145 29.1676 20.8453 29.6064Z" fill="#28356A"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M31.3495 26.6556H29.7604C29.6088 26.6556 29.4664 26.7312 29.3805 26.8576L27.1888 30.095L26.2598 26.9839C26.2014 26.7892 26.0223 26.6556 25.8195 26.6556H24.2581C24.0682 26.6556 23.9365 26.8416 23.9968 27.0208L25.7471 32.1718L24.1016 34.5014C23.9722 34.6849 24.1025 34.9372 24.3261 34.9372H25.9132C26.0639 34.9372 26.2048 34.8635 26.2903 34.7397L31.5754 27.089C31.702 26.906 31.572 26.6556 31.3495 26.6556" fill="#28356A"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M36.6469 23.5209H33.3444C33.1189 23.5209 32.9267 23.6855 32.8914 23.9093L31.5559 32.4009C31.5294 32.5686 31.6588 32.7195 31.8273 32.7195H33.5221C33.6794 32.7195 33.8141 32.6044 33.8387 32.4475L34.2178 30.0404C34.2525 29.8162 34.4453 29.6516 34.6707 29.6516H35.7156C37.8912 29.6516 39.1461 28.5959 39.4745 26.5042C39.6227 25.589 39.4803 24.87 39.0529 24.3664C38.584 23.8134 37.7521 23.5209 36.6469 23.5209ZM37.0279 26.6224C36.8478 27.8106 35.9424 27.8106 35.0666 27.8106H34.5689L34.9189 25.5914C34.9396 25.4573 35.0545 25.3585 35.1902 25.3585H35.4186C36.0144 25.3585 36.5774 25.3585 36.868 25.6994C37.0414 25.9027 37.094 26.2049 37.0279 26.6224Z" fill="#298FC2"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M46.5999 26.5199H45.0195C44.8839 26.5199 44.7685 26.6187 44.7482 26.7528L44.6782 27.1963L44.5671 27.0356C44.2248 26.5373 43.4619 26.3707 42.6999 26.3707C40.9526 26.3707 39.4607 27.698 39.1701 29.5598C39.0194 30.4885 39.2332 31.3766 39.7585 31.9959C40.2415 32.5653 40.9299 32.8026 41.7503 32.8026C43.1582 32.8026 43.9389 31.8947 43.9389 31.8947L43.8685 32.3354C43.842 32.5038 43.9713 32.6549 44.1408 32.6549H45.5647C45.7902 32.6549 45.9823 32.4903 46.0176 32.2661L46.8727 26.8385C46.8988 26.6714 46.7693 26.5199 46.5999 26.5199ZM44.3958 29.6064C44.2442 30.5122 43.5262 31.1204 42.6116 31.1204C42.1534 31.1204 41.7856 30.9727 41.5498 30.6929C41.3163 30.415 41.2283 30.0194 41.3016 29.5787C41.4451 28.6805 42.1732 28.0524 43.0738 28.0524C43.5228 28.0524 43.8878 28.2022 44.1283 28.4843C44.3701 28.7695 44.4657 29.1676 44.3958 29.6064Z" fill="#298FC2"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M48.3324 23.7543L46.9771 32.4013C46.9506 32.569 47.0799 32.7199 47.2484 32.7199H48.611C48.8375 32.7199 49.0296 32.5554 49.0643 32.3312L50.4008 23.84C50.4275 23.6724 50.298 23.5209 50.1295 23.5209H48.6038C48.4691 23.5213 48.3532 23.6202 48.3324 23.7543" fill="#298FC2"/>
+          </svg>
           <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap">
           PayPal
           <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
           </div>
         </div>
-        <div class="relative group flex items-center justify-center bg-transparent cursor-pointer transition hover:shadow-md">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 658 642"><path d="M524.4 284.8C515.5 284.8 505.7 291.5 505.7 307.5L542.4 307.5C542.4 291.5 533.1 284.8 524.4 284.8zM407 287.4C398.8 287.4 393.7 290.3 390 294.4L390.2 347.2C393.7 350.9 398.7 353.9 407 353.9C420.1 353.9 428.9 339.6 428.9 320.5C428.9 301.9 419.9 287.3 407 287.4zM560 96L80 96C53.5 96 32 117.5 32 144L32 496C32 522.5 53.5 544 80 544L560 544C586.5 544 608 522.5 608 496L608 144C608 117.5 586.5 96 560 96zM154.2 345.1C154.2 370.7 133.9 385.2 104.3 385.4C92.1 385.4 78.7 383 65.5 377.3L65.5 343.4C77.5 349.8 92.6 354.7 104.4 354.7C112.3 354.7 118 352.6 118 346C118 329 64 335.4 64 296.1C64 270.9 83.2 255.9 112 255.9C123.8 255.9 135.5 257.7 147.3 262.4L147.3 295.8C136.5 290 122.8 286.7 112 286.7C104.5 286.7 99.9 288.9 99.9 294.4C99.9 310.4 154.2 302.8 154.2 345.1zM223 288.5L196 288.5L196 339C196 359.9 218.5 353.4 223 351.6L223 380.5C218.3 383.1 209.7 385.2 198.1 385.2C177 385.2 161.2 369.7 161.2 348.7L161.4 234.8L196.1 227.4L196.1 258.2L223 258.2L223 288.5zM297 290.9C292.5 289.4 278.3 287.3 269.9 298.3L269.9 382.7L234.4 382.7L234.4 258.2L265.1 258.2L267.3 268.7C275.6 253.4 292.2 256.5 296.9 258.2L297 258.2L297 290.9zM341.1 382.7L305.4 382.7L305.4 258.2L341.1 258.2L341.1 382.7zM341.1 239.8L305.4 247.4L305.4 218.5L341.1 210.9L341.1 239.8zM415.2 385.3C402.8 385.3 395.2 380 390.1 376.3L390 416.5L354.5 424L354.5 258.2L385.8 258.2L387.6 267C392.5 262.5 401.5 255.9 415.4 255.9C440.3 255.9 463.8 278.4 463.8 319.7C463.8 364.8 440.6 385.2 415.2 385.3zM575.6 333.8L506.1 333.8C507.7 350.4 519.9 355.3 533.7 355.3C547.8 355.3 558.9 352.3 568.6 347.4L568.6 376C558.9 381.3 546.2 385.2 529.2 385.2C494.6 385.2 470.4 363.5 470.4 320.7C470.4 284.5 490.9 255.8 524.7 255.8C558.4 255.8 576 284.5 576 320.9C576 324.4 575.7 331.8 575.6 333.8z"/></svg>
+        <div class="relative group flex items-center justify-center bg-transparent cursor-pointer transition">
+          <svg viewBox="0 -11 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0.5" y="0.5" width="69" height="47" rx="5.5" fill="white" stroke="#D9D9D9"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M37.6109 16.2838L34.055 17.047V14.164L37.6109 13.415V16.2838ZM45.0057 17.8808C43.6173 17.8808 42.7248 18.5308 42.229 18.9831L42.0448 18.1069H38.9281V34.5849L42.4698 33.8359L42.484 29.8365C42.994 30.2039 43.7448 30.7268 44.9915 30.7268C47.5273 30.7268 49.8365 28.6918 49.8365 24.2119C49.8223 20.1136 47.4848 17.8808 45.0057 17.8808ZM44.1556 27.6177C43.3198 27.6177 42.8239 27.321 42.4839 26.9535L42.4698 21.7105C42.8381 21.3007 43.3481 21.0181 44.1556 21.0181C45.4448 21.0181 46.3373 22.4595 46.3373 24.3108C46.3373 26.2045 45.4589 27.6177 44.1556 27.6177ZM61 24.3532C61 20.7354 59.2433 17.8808 55.8858 17.8808C52.5142 17.8808 50.4742 20.7354 50.4742 24.325C50.4742 28.5787 52.8825 30.7268 56.3392 30.7268C58.025 30.7268 59.3 30.3452 60.2633 29.8082V26.9818C59.3 27.4623 58.195 27.7591 56.7925 27.7591C55.4183 27.7591 54.2 27.2786 54.0442 25.611H60.9717C60.9717 25.5332 60.9768 25.3565 60.9826 25.1528L60.9826 25.1526V25.1525V25.1524V25.1523V25.1523C60.9906 24.8753 61 24.5486 61 24.3532ZM54.0016 23.0107C54.0016 21.4138 54.9791 20.7496 55.8716 20.7496C56.7358 20.7496 57.6566 21.4138 57.6566 23.0107H54.0016ZM34.0548 18.121H37.6107V30.4866H34.0548V18.121ZM30.0176 18.121L30.2443 19.1668C31.0801 17.6405 32.7376 17.9514 33.1909 18.121V21.3714C32.7518 21.2159 31.3351 21.0181 30.4993 22.1063V30.4866H26.9576V18.121H30.0176ZM23.1607 15.0543L19.704 15.7892L19.6899 27.109C19.6899 29.2005 21.2624 30.7409 23.359 30.7409C24.5207 30.7409 25.3707 30.529 25.8382 30.2746V27.4058C25.3849 27.5895 23.1465 28.2396 23.1465 26.148V21.1311H25.8382V18.121H23.1465L23.1607 15.0543ZM14.7884 20.9475C14.0375 20.9475 13.5842 21.1594 13.5842 21.7106C13.5842 22.3124 14.3644 22.5771 15.3323 22.9055C16.9102 23.4409 18.9871 24.1455 18.9959 26.7557C18.9959 29.2854 16.97 30.741 14.0234 30.741C12.805 30.741 11.4733 30.5007 10.1558 29.9355V26.572C11.3458 27.2221 12.8475 27.7026 14.0234 27.7026C14.8167 27.7026 15.3834 27.4906 15.3834 26.8405C15.3834 26.174 14.5376 25.8693 13.5166 25.5015C11.9616 24.9413 10 24.2346 10 21.8802C10 19.3788 11.9125 17.8808 14.7884 17.8808C15.9642 17.8808 17.1259 18.0645 18.3017 18.5309V21.8519C17.225 21.2725 15.865 20.9475 14.7884 20.9475Z" fill="#6461FC"/>
+          </svg>
           <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap">
           Stripes
           <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>

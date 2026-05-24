@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Services\Frontend\CategoryService;
 use App\Services\Frontend\ProductService;
 use Illuminate\Http\Request;
+use App\Models\Category;
+use App\Models\Brand;
 
 class CategoryController extends Controller
 {
@@ -25,9 +27,9 @@ class CategoryController extends Controller
         $category = $this->categoryService->getCategoryBySlug($slug);
         
         // Get filter categories for sidebar (all active categories)
-        $filterCategories = \App\Models\Category::where('status', 1)
-            ->orderBy('name')
-            ->get();
+        $filterCategories = Category::where('status', 1)->orderBy('name')->get();
+        // Get filter brands for sidebar (all active brands)
+        $brands = Brand::where('status', 1)->orderBy('name')->get();
         
         $filters = [];
         
@@ -39,12 +41,16 @@ class CategoryController extends Controller
             $filters['categories'] = $request->categories;
         }
 
+        if ($request->has('brands')) {
+            $filters['brands'] = $request->brands;
+        }
+
         $products = $this->productService->getCategoryProducts($category, $filters);
         
         if ($request->ajax()) {
-            return view('frontend.category.partials.products', compact('products', 'category'))->render();
+            return view('frontend.category.partials.products', compact('products', 'category', 'brands'))->render();
         }
         
-        return view('frontend.category.listing', compact('category', 'products', 'filterCategories'));
+        return view('frontend.category.listing', compact('category', 'products', 'filterCategories', 'brands'));
     }
 }

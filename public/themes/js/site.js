@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
   // set CSS variable for header height so the mobile drawer and sidebar
   // can be positioned correctly under the sticky header regardless of
   // device or font-size. Re-compute on resize.
@@ -12,12 +12,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
   setHeaderHeight();
-  window.addEventListener('resize', function () {
+  window.addEventListener('resize', function() {
     clearTimeout(window._headerHeightTimeout);
     window._headerHeightTimeout = setTimeout(setHeaderHeight, 120);
   });
   var current = window.location.pathname.split("/").pop() || "index.html";
-  document.querySelectorAll("[data-nav]").forEach(function (link) {
+  document.querySelectorAll("[data-nav]").forEach(function(link) {
     if (link.getAttribute("href") === current) {
       link.classList.add("active");
       link.setAttribute("aria-current", "page");
@@ -26,25 +26,25 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  document.querySelectorAll("[data-cart-add]").forEach(function (button) {
-    button.addEventListener("click", function () {
+  document.querySelectorAll("[data-cart-add]").forEach(function(button) {
+    button.addEventListener("click", function() {
       var count = document.querySelector("[data-cart-count]");
       if (!count) return;
       count.textContent = String(Number(count.textContent || "0") + 1);
     });
   });
 
-  document.querySelectorAll("[data-tab-target]").forEach(function (button) {
-    button.addEventListener("click", function () {
+  document.querySelectorAll("[data-tab-target]").forEach(function(button) {
+    button.addEventListener("click", function() {
       var targetId = button.getAttribute("data-tab-target");
       var panel = document.getElementById(targetId);
       if (!panel) return;
 
-      document.querySelectorAll("[data-tab-target]").forEach(function (tab) {
+      document.querySelectorAll("[data-tab-target]").forEach(function(tab) {
         tab.classList.remove("active");
         tab.setAttribute("aria-selected", "false");
       });
-      document.querySelectorAll("[data-tab-panel]").forEach(function (item) {
+      document.querySelectorAll("[data-tab-panel]").forEach(function(item) {
         item.classList.add("hidden");
       });
 
@@ -54,8 +54,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  document.querySelectorAll("[data-view-toggle]").forEach(function (button) {
-    button.addEventListener("click", function () {
+  document.querySelectorAll("[data-view-toggle]").forEach(function(button) {
+    button.addEventListener("click", function() {
       var view = button.getAttribute("data-view-toggle");
       var container = button.closest('section') || document;
       var products = container.querySelector("[data-related-products]") || document.querySelector("[data-related-products]");
@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var toggles = container.querySelectorAll("[data-view-toggle]");
       if (!toggles || toggles.length === 0) toggles = document.querySelectorAll("[data-view-toggle]");
 
-      toggles.forEach(function (toggle) {
+      toggles.forEach(function(toggle) {
         var active = toggle === button;
         toggle.classList.toggle("active", active);
         toggle.setAttribute("aria-pressed", active ? "true" : "false");
@@ -87,7 +87,11 @@ document.addEventListener("DOMContentLoaded", function () {
         nav.classList.remove("open");
         nav.setAttribute('aria-hidden', 'true');
       }
-      try { openButton.focus(); } catch (e) { /* ignore focus errors */ }
+      try {
+        openButton.focus();
+      } catch (e) {
+        /* ignore focus errors */
+      }
     } else {
       // fallback: close known mobile nav if present
       nav = document.getElementById('mobile-navigation');
@@ -108,8 +112,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (main) main.removeAttribute('aria-hidden');
   }
 
-  document.querySelectorAll("[data-mobile-toggle]").forEach(function (button) {
-    button.addEventListener("click", function () {
+  document.querySelectorAll("[data-mobile-toggle]").forEach(function(button) {
+    button.addEventListener("click", function() {
       var navId = button.getAttribute("aria-controls");
       var nav = navId ? document.getElementById(navId) : null;
       if (!nav) return;
@@ -126,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
           nav.setAttribute('aria-hidden', 'false');
           var main = document.querySelector('main');
           if (main) main.setAttribute('aria-hidden', 'true');
-          setTimeout(function () {
+          setTimeout(function() {
             var first = nav.querySelector('a,button,input,select');
             if (first && typeof first.focus === 'function') first.focus();
           }, 200);
@@ -140,13 +144,15 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // allow close buttons inside mobile navs to close the drawer
-  document.querySelectorAll("[data-mobile-close]").forEach(function (btn) {
-    btn.addEventListener('click', function () { closeMobileMenu(); });
+  document.querySelectorAll("[data-mobile-close]").forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      closeMobileMenu();
+    });
   });
 
   // Close mobile menu when a nav link is clicked (mobile)
-  document.querySelectorAll("[data-nav]").forEach(function (link) {
-    link.addEventListener("click", function () {
+  document.querySelectorAll("[data-nav]").forEach(function(link) {
+    link.addEventListener("click", function() {
       closeMobileMenu();
     });
   });
@@ -167,26 +173,33 @@ document.addEventListener("DOMContentLoaded", function () {
   function closeSidebar() {
     document.body.classList.remove('sidebar-open');
     var toggles = document.querySelectorAll('[data-sidebar-toggle][aria-expanded="true"]');
-    toggles.forEach(function (t) { t.setAttribute('aria-expanded', 'false'); });
+    toggles.forEach(function(t) {
+      t.setAttribute('aria-expanded', 'false');
+    });
     var bd = document.querySelector('.sidebar-backdrop');
-    if (bd) { bd.style.display = 'none'; bd.onclick = null; }
+    if (bd) {
+      bd.style.display = 'none';
+      bd.onclick = null;
+    }
     var main = document.querySelector('main');
     if (main) main.removeAttribute('aria-hidden');
   }
 
-  document.querySelectorAll('[data-sidebar-toggle]').forEach(function (button) {
-    button.addEventListener('click', function () {
+  document.querySelectorAll('[data-sidebar-toggle]').forEach(function(button) {
+    button.addEventListener('click', function() {
       var expanded = button.getAttribute('aria-expanded') === 'true';
       button.setAttribute('aria-expanded', String(!expanded));
       document.body.classList.toggle('sidebar-open', !expanded);
       var bd = ensureBackdrop();
       bd.style.display = !expanded ? 'block' : 'none';
-      bd.onclick = function () { closeSidebar(); };
+      bd.onclick = function() {
+        closeSidebar();
+      };
     });
   });
 
   // Close mobile menu on Escape
-  document.addEventListener("keydown", function (e) {
+  document.addEventListener("keydown", function(e) {
     if (e.key === "Escape" || e.key === "Esc") {
       // close mobile menu if open
       closeMobileMenu();
@@ -201,14 +214,14 @@ document.addEventListener("DOMContentLoaded", function () {
   (function initCarousels() {
     var autoplayDelay = 8000;
     var carousels = document.querySelectorAll('.carousel');
-    
+
     carousels.forEach(function(carousel) {
       var track = carousel.querySelector('.carousel-track');
       var slides = Array.from(carousel.querySelectorAll('.carousel-slide'));
-      
+
       // Force slides to be visible and track to have proper width
       if (!track || slides.length === 0) return;
-      
+
       var prevBtn = carousel.querySelector('.carousel-arrow.left');
       var nextBtn = carousel.querySelector('.carousel-arrow.right');
       var dots = Array.from(carousel.querySelectorAll('.carousel-dot'));
@@ -233,7 +246,7 @@ document.addEventListener("DOMContentLoaded", function () {
       function update() {
         track.style.transition = 'transform 640ms cubic-bezier(.2,.9,.2,1)';
         track.style.transform = 'translateX(' + (-index * width) + 'px)';
-        
+
         // Update dots
         if (dots && dots.length === slides.length) {
           dots.forEach(function(dot, i) {
@@ -243,49 +256,67 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
-      function goTo(i) { 
-        index = (i + slides.length) % slides.length; 
-        update(); 
+      function goTo(i) {
+        index = (i + slides.length) % slides.length;
+        update();
       }
-      function next() { goTo(index + 1); }
-      function prev() { goTo(index - 1); }
 
-      function start() { 
-        if (timer) clearInterval(timer); 
-        timer = setInterval(function() { 
-          if (!isPaused) next(); 
-        }, autoplayDelay); 
+      function next() {
+        goTo(index + 1);
       }
-      function stop() { if (timer) { clearInterval(timer); timer = null; } }
-      function pause() { isPaused = true; }
-      function resume() { isPaused = false; }
 
-      window.addEventListener('resize', function() { 
-        refreshSizes(); 
-        update(); 
+      function prev() {
+        goTo(index - 1);
+      }
+
+      function start() {
+        if (timer) clearInterval(timer);
+        timer = setInterval(function() {
+          if (!isPaused) next();
+        }, autoplayDelay);
+      }
+
+      function stop() {
+        if (timer) {
+          clearInterval(timer);
+          timer = null;
+        }
+      }
+
+      function pause() {
+        isPaused = true;
+      }
+
+      function resume() {
+        isPaused = false;
+      }
+
+      window.addEventListener('resize', function() {
+        refreshSizes();
+        update();
       });
 
       if (nextBtn) {
-        nextBtn.addEventListener('click', function() { 
-          next(); 
-          pause(); 
-          setTimeout(resume, autoplayDelay); 
+        nextBtn.addEventListener('click', function() {
+          next();
+          pause();
+          setTimeout(resume, autoplayDelay);
         });
       }
       if (prevBtn) {
-        prevBtn.addEventListener('click', function() { 
-          prev(); 
-          pause(); 
-          setTimeout(resume, autoplayDelay); 
+        prevBtn.addEventListener('click', function() {
+          prev();
+          pause();
+          setTimeout(resume, autoplayDelay);
         });
       }
 
       if (dots && dots.length === slides.length) {
         dots.forEach(function(dot, i) {
-          dot.addEventListener('click', function() { 
-            goTo(i); 
-            pause(); 
-            setTimeout(resume, autoplayDelay); 
+          dot.addEventListener('click', function() {
+            goTo(i);
+            pause();
+            setTimeout(resume, autoplayDelay);
           });
         });
       }
@@ -296,17 +327,17 @@ document.addEventListener("DOMContentLoaded", function () {
         if (nextBtn) nextBtn.style.opacity = '1';
         pause();
       });
-      
+
       carousel.addEventListener('mouseleave', function() {
         if (prevBtn) prevBtn.style.opacity = '0';
         if (nextBtn) nextBtn.style.opacity = '0';
         resume();
       });
-      
+
       // Initially hide buttons
       if (prevBtn) prevBtn.style.opacity = '0';
       if (nextBtn) nextBtn.style.opacity = '0';
-      
+
       // ========== NEW: MOUSE SCROLL WHEEL SUPPORT ==========
       carousel.addEventListener('wheel', function(e) {
         e.preventDefault();
@@ -317,11 +348,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         pause();
         setTimeout(resume, autoplayDelay);
-      }, { passive: false });
-      
+      }, {
+        passive: false
+      });
+
       // ========== KEYBOARD NAVIGATION (already works with tabindex) ==========
       carousel.setAttribute('tabindex', '0');
-      
+
       carousel.addEventListener('keydown', function(e) {
         if (e.key === 'ArrowLeft') {
           prev();
@@ -341,18 +374,23 @@ document.addEventListener("DOMContentLoaded", function () {
         currentTranslate = -index * width;
         track.style.transition = 'none';
         pause();
-      }, { passive: true });
-      
+      }, {
+        passive: true
+      });
+
       track.addEventListener('touchmove', function(e) {
         var dx = e.touches[0].clientX - startX;
         track.style.transform = 'translateX(' + (currentTranslate + dx) + 'px)';
-      }, { passive: true });
-      
+      }, {
+        passive: true
+      });
+
       track.addEventListener('touchend', function(e) {
         var dx = e.changedTouches[0].clientX - startX;
         track.style.transition = 'transform 320ms cubic-bezier(.2,.9,.2,1)';
         if (Math.abs(dx) > (width * 0.15) || Math.abs(dx) > 40) {
-          if (dx < 0) next(); else prev();
+          if (dx < 0) next();
+          else prev();
         } else {
           update();
         }
@@ -371,7 +409,7 @@ document.addEventListener("DOMContentLoaded", function () {
   window.toggleSidebarSubmenu = function(element) {
     const submenu = element.nextElementSibling;
     const icon = element.querySelector('.sidebar-toggle-icon');
-    
+
     if (submenu) {
       if (submenu.style.display === 'none' || submenu.style.display === '') {
         submenu.style.display = 'block';
@@ -388,17 +426,17 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener('DOMContentLoaded', function() {
   // Get all toggle buttons
   const toggleButtons = document.querySelectorAll('.sidebar-toggle-btn');
-  
+
   toggleButtons.forEach(button => {
     button.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
-      
+
       // Get target dropdown ID from data-target attribute
       const targetId = this.getAttribute('data-target');
       const targetDropdown = document.getElementById(targetId);
       const icon = this.querySelector('.sidebar-icon');
-      
+
       if (targetDropdown) {
         // Toggle visibility
         if (targetDropdown.classList.contains('hidden')) {
@@ -420,14 +458,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // Banner carousel with auto-slide
 (function initBannerCarousel() {
   var carousels = document.querySelectorAll('.banner-carousel');
-  
+
   carousels.forEach(function(carousel) {
     var track = carousel.querySelector('.banner-track');
     var slides = carousel.querySelectorAll('.banner-slide');
     var dots = carousel.querySelectorAll('.banner-dot');
-    
+
     if (!track || slides.length === 0) return;
-    
+
     var currentIndex = 0;
     var autoplayDelay = 5000; // 5 seconds
     var timer = null;
@@ -437,16 +475,16 @@ document.addEventListener('DOMContentLoaded', function() {
       if (index >= slides.length) index = 0;
       if (index < 0) index = slides.length - 1;
       currentIndex = index;
-      
+
       // Scroll to slide
       var targetSlide = slides[currentIndex];
       var scrollPosition = targetSlide.offsetLeft - (track.offsetWidth - targetSlide.offsetWidth) / 2;
-      
+
       track.scrollTo({
         left: scrollPosition,
         behavior: 'smooth'
       });
-      
+
       // Update dots
       updateDots();
     }
@@ -496,11 +534,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update current index on manual scroll
     track.addEventListener('scroll', function() {
       var scrollCenter = this.scrollLeft + (this.offsetWidth / 2);
-      
+
       slides.forEach(function(slide, index) {
         var slideLeft = slide.offsetLeft;
         var slideRight = slideLeft + slide.offsetWidth;
-        
+
         if (scrollCenter >= slideLeft && scrollCenter < slideRight) {
           if (currentIndex !== index) {
             currentIndex = index;
@@ -522,7 +560,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Pause on touch
     track.addEventListener('touchstart', function() {
       isPaused = true;
-    }, {passive: true});
+    }, {
+      passive: true
+    });
 
     track.addEventListener('touchend', function() {
       setTimeout(function() {
@@ -540,13 +580,13 @@ document.querySelectorAll('.flex.overflow-x-auto.snap-x').forEach(function(conta
   container.addEventListener('scroll', function() {
     var dots = this.parentElement.querySelectorAll('.banner-dot');
     if (!dots.length) return;
-    
+
     var scrollPosition = this.scrollLeft + (this.offsetWidth / 2);
     var items = this.querySelectorAll('.flex-shrink-0');
-    
+
     items.forEach(function(item, index) {
       if (scrollPosition >= item.offsetLeft && scrollPosition < item.offsetLeft + item.offsetWidth) {
-        dots.forEach(function(d) { 
+        dots.forEach(function(d) {
           d.classList.remove('bg-gray-800');
           d.classList.add('bg-gray-300');
         });
@@ -556,5 +596,208 @@ document.querySelectorAll('.flex.overflow-x-auto.snap-x').forEach(function(conta
         }
       }
     });
+  });
+});
+
+// Mobile Navigation Product Filter 
+document.addEventListener('DOMContentLoaded', function() {
+  const filterDrawer = document.getElementById('mobile-filter-drawer');
+  const filterToggle = document.getElementById('mobile-filter-toggle');
+  const filterClose = document.getElementById('mobile-filter-close');
+  const filterOverlay = document.getElementById('mobile-filter-overlay');
+  const filterApply = document.getElementById('mobile-filter-apply');
+  const filterReset = document.getElementById('mobile-filter-reset');
+  const desktopReset = document.getElementById('desktop-filter-reset');
+
+  let isDrawerOpen = false;
+
+  // Toggle function
+  function openDrawer() {
+    filterDrawer.classList.remove('-translate-x-full');
+    filterDrawer.classList.add('translate-x-0');
+    filterOverlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    isDrawerOpen = true;
+  }
+
+  function closeDrawer() {
+    filterDrawer.classList.remove('translate-x-0');
+    filterDrawer.classList.add('-translate-x-full');
+    filterOverlay.classList.add('hidden');
+    document.body.style.overflow = '';
+    isDrawerOpen = false;
+  }
+
+  // Toggle drawer on button click (open/close)
+  if (filterToggle) {
+    filterToggle.addEventListener('click', function() {
+      if (isDrawerOpen) {
+        closeDrawer();
+      } else {
+        openDrawer();
+      }
+    });
+  }
+
+  // Close on close button
+  if (filterClose) {
+    filterClose.addEventListener('click', closeDrawer);
+  }
+
+  // Close on overlay click
+  if (filterOverlay) {
+    filterOverlay.addEventListener('click', closeDrawer);
+  }
+
+  // Close on escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && isDrawerOpen) {
+      closeDrawer();
+    }
+  });
+
+  // Reset all filters function
+  function resetAllFilters() {
+    // Uncheck all category filters
+    document.querySelectorAll('.category-filter').forEach(function(checkbox) {
+      checkbox.checked = false;
+    });
+
+    // Uncheck all price filters
+    document.querySelectorAll('.price-filter').forEach(function(checkbox) {
+      checkbox.checked = false;
+    });
+
+    // Uncheck all brand filters
+    document.querySelectorAll('.brand-filter').forEach(function(checkbox) {
+        checkbox.checked = false;
+    });
+
+    // Clear URL parameters and reload products
+    let newUrl = window.location.pathname;
+    window.history.pushState({}, "", newUrl);
+
+    // Reload products
+    if (typeof loadProducts === 'function') {
+      loadProducts();
+    }
+  }
+
+  // Mobile reset button - does NOT close drawer
+  if (filterReset) {
+    filterReset.addEventListener('click', function() {
+      resetAllFilters();
+      // REMOVED: drawer close code
+    });
+  }
+
+  // Desktop reset button
+  if (desktopReset) {
+    desktopReset.addEventListener('click', function() {
+      resetAllFilters();
+    });
+  }
+});
+
+$(document).ready(function() {
+  function getUrlParams() {
+    let params = new URLSearchParams(window.location.search);
+    let prices = params.get('price');
+    let categories = params.get('categories');
+    let brands = params.get('brands');
+    return {
+      prices: prices ? prices.split(',') : [],
+      categories: categories ? categories.split(',') : [],
+      brands: brands ? brands.split(',') : []
+    };
+  }
+
+  function syncCheckboxesWithUrl() {
+    let selected = getUrlParams();
+
+    $('.price-filter').each(function() {
+      $(this).prop('checked', selected.prices.includes($(this).val()));
+    });
+
+    $('.category-filter').each(function() {
+      $(this).prop('checked', selected.categories.includes($(this).val()));
+    });
+
+    $('.brand-filter').each(function() {
+      $(this).prop('checked', selected.brands.includes($(this).val()));
+    });
+  }
+
+  syncCheckboxesWithUrl();
+
+  $('.price-filter').on('change', function() {
+    loadProducts();
+  });
+
+  $('.category-filter').on('change', function() {
+    loadProducts();
+  });
+
+  $('.brand-filter').on('change', function() {
+    loadProducts();
+  });
+
+  function loadProducts() {
+    let prices = [];
+    let categories = [];
+    let brands = [];
+
+    $('.price-filter:checked').each(function() {
+      prices.push($(this).val());
+    });
+
+    $('.category-filter:checked').each(function() {
+      categories.push($(this).val());
+    });
+
+    $('.brand-filter:checked').each(function() {
+      brands.push($(this).val());
+    });
+
+    let params = new URLSearchParams();
+
+    if (prices.length > 0) {
+      params.set('price', prices.join(','));
+    }
+
+    if (categories.length > 0) {
+      params.set('categories', categories.join(','));
+    }
+
+    if (brands.length > 0) {
+      params.set('brands', brands.join(','));
+    }
+
+    let newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+
+    window.history.pushState({}, "", newUrl);
+
+    $.ajax({
+      url: newUrl,
+      type: "GET",
+      beforeSend: function() {
+        $('#products-grid-container').html('<div class="flex justify-center items-center min-h-[200px]"><div class="text-center"><div class="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-b-blue-500 mx-auto"></div><p class="mt-2 text-sm text-gray-600">Loading Products...</p></div></div>');
+      },
+      success: function(response) {
+        // Extract only the products-grid-container from response
+        let html = $(response).find('#products-grid-container').html();
+        if (html) {
+          $('#products-grid-container').html(html);
+        } else {
+          // Fallback if response doesn't have the container
+          $('#products-grid-container').html(response);
+        }
+      }
+    });
+  }
+
+  $(window).on('popstate', function() {
+    syncCheckboxesWithUrl();
+    loadProducts();
   });
 });

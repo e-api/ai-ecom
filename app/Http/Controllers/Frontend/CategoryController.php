@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\Frontend\CategoryService;
 use App\Services\Frontend\ProductService;
 use Illuminate\Http\Request;
+use App\Models\ProductVariant;
 use App\Models\Category;
 use App\Models\Brand;
 
@@ -30,7 +31,9 @@ class CategoryController extends Controller
         $filterCategories = Category::where('status', 1)->orderBy('name')->get();
         // Get filter brands for sidebar (all active brands)
         $brands = Brand::where('status', 1)->orderBy('name')->get();
-        
+        // Get filter sizes for sidebar (all active sizes)
+        $sizes = ProductVariant::where('status', 1)->select('size')->distinct()->orderBy('size')->get();
+
         $filters = [];
         
         if ($request->has('price')) {
@@ -45,12 +48,16 @@ class CategoryController extends Controller
             $filters['brands'] = $request->brands;
         }
 
+        if ($request->has('sizes')) {
+            $filters['sizes'] = $request->sizes;
+        }
+
         $products = $this->productService->getCategoryProducts($category, $filters);
         
         if ($request->ajax()) {
-            return view('frontend.category.partials.products', compact('products', 'category', 'brands'))->render();
+            return view('frontend.category.partials.products', compact('products', 'category', 'brands', 'sizes'))->render();
         }
         
-        return view('frontend.category.listing', compact('category', 'products', 'filterCategories', 'brands'));
+        return view('frontend.category.listing', compact('category', 'products', 'filterCategories', 'brands', 'sizes'));
     }
 }

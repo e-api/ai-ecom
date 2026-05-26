@@ -121,6 +121,16 @@ class ProductService
             $query->whereIn('brand_id', $brands);
         }
 
+        /*
+        | NEW: Size Filters
+        */
+        if (!empty($filters['sizes'])) {
+            $sizes = explode(',', $filters['sizes']);
+            $query->whereHas('variants', function ($variantQuery) use ($sizes) {
+                $variantQuery->whereIn('size', $sizes)->where('status', 1);
+            });
+        }
+
         return $query
             ->latest()
             ->take($limit)

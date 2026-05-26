@@ -705,10 +705,12 @@ $(document).ready(function() {
     let prices = params.get('price');
     let categories = params.get('categories');
     let brands = params.get('brands');
+    let sizes = params.get('sizes');
     return {
       prices: prices ? prices.split(',') : [],
       categories: categories ? categories.split(',') : [],
-      brands: brands ? brands.split(',') : []
+      brands: brands ? brands.split(',') : [],
+      sizes: sizes ? sizes.split(',') : []
     };
   }
 
@@ -726,6 +728,9 @@ $(document).ready(function() {
     $('.brand-filter').each(function() {
       $(this).prop('checked', selected.brands.includes($(this).val()));
     });
+    $('.size-filter').each(function() {
+      $(this).prop('checked', selected.sizes.includes($(this).val()));
+    });
   }
 
   syncCheckboxesWithUrl();
@@ -742,10 +747,15 @@ $(document).ready(function() {
     loadProducts();
   });
 
+  $('.size-filter').on('change', function() {
+    loadProducts();
+  });
+
   function loadProducts() {
     let prices = [];
     let categories = [];
     let brands = [];
+    let sizes = [];
 
     $('.price-filter:checked').each(function() {
       prices.push($(this).val());
@@ -758,7 +768,11 @@ $(document).ready(function() {
     $('.brand-filter:checked').each(function() {
       brands.push($(this).val());
     });
-
+    
+    $('.size-filter:checked').each(function() {
+      sizes.push($(this).val());
+    });
+    
     let params = new URLSearchParams();
 
     if (prices.length > 0) {
@@ -771,6 +785,10 @@ $(document).ready(function() {
 
     if (brands.length > 0) {
       params.set('brands', brands.join(','));
+    }
+
+    if (sizes.length > 0) {
+      params.set('sizes', sizes.join(','));
     }
 
     let newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');

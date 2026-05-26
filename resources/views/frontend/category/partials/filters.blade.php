@@ -65,29 +65,53 @@
       </div>
     </div>
     {{-- Brand Filter --}}
-        @if($brands->count() > 0)
-        <div class="filter-group mb-4">
-            <div class="flex items-stretch">
-                <h6 class="font-semibold text-md flex-1 px-1 py-0 rounded-l-md text-gray-800 flex items-center">Brands</h6>
-                <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="brand-filter-dropdown">
-                    <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
-            </div>
-            <div id="brand-filter-dropdown" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100 space-y-1">
-                @foreach($brands as $brand)
-                    <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
-                        <input type="checkbox"
-                            class="filter-checkbox brand-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
-                            value="{{ $brand->id }}"
-                            {{ request()->brands && in_array($brand->id, explode(',', request()->brands)) ? 'checked' : '' }}>
-                        <span class="text-gray-700 text-[12px]">{{ $brand->name }}</span>
-                    </label>
-                @endforeach
-            </div>
-        </div>
-        @endif
+    @if($brands->count() > 0)
+    <div class="filter-group">
+      <div class="flex items-stretch">
+        <h6 class="font-semibold text-md flex-1 px-1 py-0 rounded-l-md text-gray-800 flex items-center">Brands</h6>
+        <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="brand-filter-dropdown">
+          <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
+      <div id="brand-filter-dropdown" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100 space-y-1">
+        @foreach($brands as $brand)
+        <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+        <input type="checkbox"
+        class="filter-checkbox brand-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
+        value="{{ $brand->id }}"
+        {{ request()->brands && in_array($brand->id, explode(',', request()->brands)) ? 'checked' : '' }}>
+        <span class="text-gray-700 text-[12px]">{{ $brand->name }}</span>
+        </label>
+        @endforeach
+      </div>
+    </div>
+    @endif
+    {{-- Size Filter --}}
+    @if($sizes->count() > 0)
+    <div class="filter-group mb-4">
+      <div class="flex items-stretch">
+        <h6 class="font-semibold text-md flex-1 px-1 py-0 rounded-l-md text-gray-800 flex items-center">Sizes</h6>
+        <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="size-filter-dropdown">
+          <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
+      <div id="size-filter-dropdown" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100 space-y-1">
+        @foreach($sizes as $size)
+        <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+        <input type="checkbox"
+        class="filter-checkbox size-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
+        value="{{ $size->size }}"
+        {{ request()->sizes && in_array($size->size, explode(',', request()->sizes)) ? 'checked' : '' }}>
+        <span class="text-gray-700 text-[12px]">{{ $size->size }}</span>
+        </label>
+        @endforeach
+      </div>
+    </div>
+    @endif
   </div>
   {{-- Mobile Filter Button (Only visible on mobile) --}}
   <div class="lg:hidden fixed bottom-4 right-4 z-50">
@@ -188,6 +212,28 @@
                 value="{{ $brand->id }}"
                 {{ request()->brands && in_array($brand->id, explode(',', request()->brands)) ? 'checked' : '' }}>
                 <span class="text-gray-700 text-sm">{{ $brand->name }}</span>
+            </label>
+            @endforeach
+          </div>
+        </div>
+        {{-- Size Filter --}}
+        <div class="filter-group">
+          <div class="flex items-stretch">
+            <h6 class="font-semibold text-md flex-1 px-1 py-0 rounded-l-md text-gray-800 flex items-center">Sizes</h6>
+            <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="size-filter-dropdown-mobile">
+              <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+          <div id="size-filter-dropdown-mobile" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100 space-y-1">
+            @foreach($sizes as $size)
+            <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+              <input type="checkbox"
+                class="filter-checkbox size-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
+                value="{{ $size->size }}"
+                {{ request()->sizes && in_array($size->size, explode(',', request()->sizes)) ? 'checked' : '' }}>
+                <span class="text-gray-700 text-sm">{{ $size->size }}</span>
             </label>
             @endforeach
           </div>

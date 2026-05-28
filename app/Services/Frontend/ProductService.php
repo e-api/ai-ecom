@@ -130,6 +130,23 @@ class ProductService
                 $variantQuery->whereIn('size', $sizes)->where('status', 1);
             });
         }
+        
+        /*
+        | NEW: Dynamic Attribute Filters
+        */
+        if (!empty($filters['attribute_values'])) {
+        
+            $attributes = explode(',', $filters['attribute_values']);
+        
+            $query->whereHas('attributeValues', function ($attributeQuery) use ($attributes) {
+        
+                $attributeQuery->whereIn(
+                    'attribute_values.id',
+                    $attributes
+                );
+        
+            });
+        }
 
         return $query
             ->latest()

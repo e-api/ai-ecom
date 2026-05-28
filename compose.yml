@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:${POSTGRES_VERSION}
+    container_name: ${APP_NAME}-postgres
+    deploy:
+      resources:
+        limits:
+          cpus: ${POSTGRES_CPUS}
+          memory: ${POSTGRES_MEMORY_LIMIT}
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    labels:
+      createdBy: "bt_apps"
+    networks:
+      - baota_net
+
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION}
+    container_name: ${APP_NAME}-php
+    deploy:
+      resources:
+        limits:
+          cpus: ${PHP_CPUS}
+          memory: ${PHP_MEMORY_LIMIT}
+    restart: always
+    volumes:
+      - ${PROJECT_PATH}:/var/www
+    working_dir: /var/www
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: ${APP_NAME}-postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${PHP_FPM_PORT}:9000"
+    labels:
+      createdBy: "bt_apps"
+    networks:
+      - baota_net
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  baota_net:
+    external: true

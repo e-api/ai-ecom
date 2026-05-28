@@ -7,6 +7,7 @@ use App\Services\Frontend\CategoryService;
 use App\Services\Frontend\ProductService;
 use Illuminate\Http\Request;
 use App\Models\ProductVariant;
+use App\Models\Attribute;
 use App\Models\Category;
 use App\Models\Brand;
 
@@ -33,6 +34,14 @@ class CategoryController extends Controller
         $brands = Brand::where('status', 1)->orderBy('name')->get();
         // Get filter sizes for sidebar (all active sizes)
         $sizes = ProductVariant::where('status', 1)->select('size')->distinct()->orderBy('size')->get();
+        // Get Product Attributes for sidebar (all active attribute_values)
+        $attributes = Attribute::where('status', 1)->whereHas('values.products')
+            ->with([
+                'values' => function ($query) {
+                    $query->whereHas('products')
+                        ->orderBy('value');
+                }
+            ])->orderBy('name')->get();
 
         $filters = [];
         
@@ -51,6 +60,10 @@ class CategoryController extends Controller
         if ($request->has('sizes')) {
             $filters['sizes'] = $request->sizes;
         }
+        
+        if ($request->has('attribute_values')) {
+            $filters['attribute_values'] = $request->attribute_values;
+        }
 
         $products = $this->productService->getCategoryProducts($category, $filters);
         
@@ -58,6 +71,6 @@ class CategoryController extends Controller
             return view('frontend.category.partials.products', compact('products', 'category', 'brands', 'sizes'))->render();
         }
         
-        return view('frontend.category.listing', compact('category', 'products', 'filterCategories', 'brands', 'sizes'));
+        return view('frontend.category.listing', compact('category', 'products', 'filterCategories', 'brands', 'sizes', 'attributes'));
     }
 }

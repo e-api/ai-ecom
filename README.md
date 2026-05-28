@@ -41,6 +41,137 @@ php artisan boost:install
 
 Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
 
+## Docker Setup (aaPanel + Docker)
+
+### Prerequisites
+- aaPanel with Nginx installed
+- Docker and Docker Compose
+- Domain pointed to your server
+
+### One-Time Setup
+
+```bash
+cd /www/wwwroot/default/ai-ecom && cp .env .env.example
+
+# 1. Build and start containers
+docker compose up -d --build
+
+# 2. Fix permissions (match Docker www-data UID 33)
+chown -R 33:33 .
+
+# 3. Remove aaPanel open_basedir restriction
+rm -f public/.user.ini
+
+# or add this line to .user.ini: 
+cat > /www/wwwroot/default/your_project/public/.user.ini << 'EOF'
+  open_basedir=/www/wwwroot/default/your_project/:/tmp/:/var/www/:/var/www/public/
+EOF
+
+# 4. Laravel setup
+docker compose exec php php artisan key:generate
+docker compose exec php php artisan migrate --seed
+
+# 5. Storage link (use HOST path)
+rm -f public/storage
+ln -s /www/wwwroot/default/ai-ecom/storage/app/public public/storage
+chmod -R 775 storage
+
+# 6. Filament & Livewire assets
+docker compose exec php php artisan filament:assets
+docker compose exec php php artisan vendor:publish --tag=livewire:assets --force
+
+# 7. Optimize
+docker compose exec php php artisan optimize
+
+# 8. Start/Stop
+docker compose up -d
+docker compose down
+
+# 9. Artisan
+docker compose exec php php artisan migrate
+docker compose exec php php artisan cache:clear
+
+# 10. Composer
+docker compose exec php composer install
+docker compose exec php composer update
+
+# 11. PostgreSQL
+docker compose exec postgres psql -U postgres -d ecom
+
+# View logs
+docker compose logs -f
+
+# === Nginx: add these following things ===
+# 1. Setup URL Rewrite for Laravel in Nginx config: 
+
+# 2. Set Directory at:
+/www/wwwroot/default/your-project  
+# and Running Directory at: 
+/www/wwwroot/default/your-project/public
+# or in your Nginx config, set: 
+root /www/wwwroot/default/your-project/public;
+# 3. In PHP block: 
+// Remove or comment out any existing PHP location blocks, then add this:
+#include enable-php-00.conf;
+location ~ \.php$ {
+  include fastcgi.conf;
+  fastcgi_pass 127.0.0.1:9000;
+  fastcgi_param SCRIPT_FILENAME /var/www/public$fastcgi_script_name;
+}
+  
+location = /index.php {
+  include fastcgi.conf;
+  fastcgi_pass 127.0.0.1:9000;
+  fastcgi_param SCRIPT_FILENAME /var/www/public$fastcgi_script_name;
+}
+# 4. Storage block:
+location /storage/ {
+  alias /www/wwwroot/default/your-project/storage/app/public/;
+  expires 30d;
+  add_header Cache-Control "public, immutable";
+}
+```
+
+## Docker Setup (aaPanel Reverse Proxy + Docker)
+
+### Prerequisites
+- aaPanel with Nginx and PHP Service installed on Host
+- Docker [Postgres] running on Host
+- Domain pointed to your server
+
+### One-Time Setup
+
+```bash
+cd /www/wwwroot/default/ai-ecom && cp .env .env.example
+
+# Install 
+composer install
+
+# Update
+composer update
+
+# Key Generate
+php artisan key:generate
+
+# Migrate Database
+php artisan migrate --seed
+
+# Storage Link
+php artisan storage:link
+
+# Cache clear
+php artisan cache:clear
+
+# Logs
+compose logs -f
+
+# === Nginx: add these following things ===
+# proxy_set_header server block
+proxy_set_header X-Forwarded-Proto $scheme; # Add this
+proxy_set_header X-Forwarded-Host $host; # Add this
+proxy_set_header X-Forwarded-Port $server_port; # Add this
+
+```
 ## Contributing
 
 Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).

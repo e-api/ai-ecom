@@ -672,6 +672,16 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.brand-filter').forEach(function(checkbox) {
         checkbox.checked = false;
     });
+    
+    // Uncheck all size filters
+    document.querySelectorAll('.size-filter').forEach(function(checkbox) {
+        checkbox.checked = false;
+    });
+    
+    // Uncheck all attribute filters
+    document.querySelectorAll('.attribute-filter').forEach(function(checkbox) {
+        checkbox.checked = false;
+    });
 
     // Clear URL parameters and reload products
     let newUrl = window.location.pathname;
@@ -706,11 +716,13 @@ $(document).ready(function() {
     let categories = params.get('categories');
     let brands = params.get('brands');
     let sizes = params.get('sizes');
+    let sizes = params.get('attributes');
     return {
       prices: prices ? prices.split(',') : [],
       categories: categories ? categories.split(',') : [],
       brands: brands ? brands.split(',') : [],
-      sizes: sizes ? sizes.split(',') : []
+      sizes: sizes ? sizes.split(',') : [],
+      attributes: attributes ? attributes.split(',') : []
     };
   }
 
@@ -731,6 +743,9 @@ $(document).ready(function() {
     $('.size-filter').each(function() {
       $(this).prop('checked', selected.sizes.includes($(this).val()));
     });
+    $('.attribute-filter').each(function() {
+      $(this).prop('checked', selected.attributes.includes($(this).val()));
+    });
   }
 
   syncCheckboxesWithUrl();
@@ -750,12 +765,17 @@ $(document).ready(function() {
   $('.size-filter').on('change', function() {
     loadProducts();
   });
+  
+  $('.attribute-filter').on('change', function() {
+    loadProducts();
+  });
 
   function loadProducts() {
     let prices = [];
     let categories = [];
     let brands = [];
     let sizes = [];
+    let attributes = [];
 
     $('.price-filter:checked').each(function() {
       prices.push($(this).val());
@@ -770,6 +790,10 @@ $(document).ready(function() {
     });
     
     $('.size-filter:checked').each(function() {
+      sizes.push($(this).val());
+    });
+    
+    $('.attribute-filter:checked').each(function() {
       sizes.push($(this).val());
     });
     
@@ -789,6 +813,10 @@ $(document).ready(function() {
 
     if (sizes.length > 0) {
       params.set('sizes', sizes.join(','));
+    }
+    
+    if (attributes.length > 0) {
+      params.set('attributes', attributes.join(','));
     }
 
     let newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');

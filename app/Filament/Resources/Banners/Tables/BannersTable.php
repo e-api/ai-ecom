@@ -27,7 +27,7 @@ class BannersTable
                 ])
             ->columns([
                 ImageColumn::make('image')
-                    ->disk('public')
+                    ->disk(env('FILESYSTEM_DISK', config('filesystems.default')))
                     ->height(50),
                 TextColumn::make('title')
                     ->searchable()

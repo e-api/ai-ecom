@@ -18,7 +18,9 @@ class BrandForm
                 TextInput::make('slug')
                     ->required(),
                 FileUpload::make('image')
-                    ->image(),
+                    ->image()
+                    ->directory('brands')
+                    ->disk(env('FILESYSTEM_DISK', config('filesystems.default'))),
                 Toggle::make('status')
                     ->required(),
             ]);

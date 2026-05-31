@@ -1,4 +1,8 @@
 *.log
+.atmp
+.cache
+.config
+.local
 .DS_Store
 .env
 .env.backup

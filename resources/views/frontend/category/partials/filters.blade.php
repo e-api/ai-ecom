@@ -268,38 +268,37 @@
         </div>
         {{-- Attribute Filter --}}
         @if($attributes->count() > 0)
+        @foreach($attributes as $attribute)
         <div class="filter-group">
-            <div class="flex items-stretch">
-                <h6 class="font-semibold text-md flex-1 px-1 py-0 rounded-l-md text-gray-800 flex items-center">Attributes</h6>
-                <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="attribute-filter-dropdown-mobile">
-                    <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
-            </div>
-            <div id="attribute-filter-dropdown-mobile" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100 space-y-2">
-                @foreach($attributes as $attribute)
-                    <div class="attribute-group">
-                        @if($attribute->values->count() > 0)
-                        <div class="font-semibold text-sm text-gray-700 mb-1 pl-2">{{ $attribute->name }}</div>
-                        <div class="space-y-1 ml-2">
-                            @foreach($attribute->values as $value)
-                                <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
-                                    <input type="checkbox"
-                                        class="filter-checkbox attribute-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
-                                        value="{{ $value->id }}"
-                                        {{ request()->attribute_values && in_array($value->id, explode(',', request()->attribute_values)) ? 'checked' : '' }}>
-                                    <span class="text-gray-700 text-sm">{{ $value->value }}</span>
-                                </label>
-                            @endforeach
-                        </div>
-                        @endif
-                    </div>
+          @if($attribute->values->count() > 0)
+          <div class="flex items-stretch">
+            <h6 class="font-semibold text-md flex-1 px-1 py-0 rounded-l-md text-gray-800 flex items-center">{{ $attribute->name }}</h6>
+            <button class="sidebar-toggle-btn px-3 py-2 rounded-r-md hover:bg-transparent transition-all duration-200 flex items-center justify-center" data-target="attribute-filter-dropdown-mobile">
+              <svg class="sidebar-icon h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+          <div id="attribute-filter-dropdown-mobile" class="sidebar-dropdown hidden mt-1 ml-3 pl-2 border-l-2 border-gray-100 space-y-2">
+            <div class="attribute-group">
+              <div class="space-y-1 ml-2">
+                @foreach($attribute->values as $value)
+                <label class="flex items-center cursor-pointer py-1 hover:bg-gray-50 px-2 rounded-md transition">
+                <input type="checkbox"
+                class="filter-checkbox attribute-filter w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary mr-2"
+                value="{{ $value->id }}"
+                {{ request()->attribute_values && in_array($value->id, explode(',', request()->attribute_values)) ? 'checked' : '' }}>
+                <span class="text-gray-700 text-sm">{{ $value->value }}</span>
+                </label>
                 @endforeach
+              </div>
+              </div
             </div>
+            @endif
+          </div>
+          @endforeach
+          @endif
         </div>
-        @endif
-      </div>
       {{-- Footer with Apply Button --}}
       <div class="p-4 border-t border-gray-200 space-y-2">
         <button id="mobile-filter-reset" class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-200 transition">Reset All Filters</button>

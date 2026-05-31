@@ -46,7 +46,7 @@ class ProductsTable
                     ->numeric()
                     ->sortable(),
                 ImageColumn::make('image')
-                    ->disk('public'),
+                    ->disk(env('FILESYSTEM_DISK', config('filesystems.default'))),
                 IconColumn::make('featured')
                     ->boolean(),
                 IconColumn::make('status')

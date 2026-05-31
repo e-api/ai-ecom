@@ -30,7 +30,8 @@ class BrandsTable
                     ->searchable(),
                 TextColumn::make('slug')
                     ->searchable(),
-                ImageColumn::make('image'),
+                ImageColumn::make('image')
+                    ->disk(env('FILESYSTEM_DISK', config('filesystems.default'))),
                 IconColumn::make('status')
                     ->boolean(),
                 TextColumn::make('created_at')

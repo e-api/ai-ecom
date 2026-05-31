@@ -20,7 +20,7 @@ class BannerForm
                 
                 FileUpload::make('image')
                     ->image()
-                    ->disk('public') // important
+                    ->disk(env('FILESYSTEM_DISK', config('filesystems.default'))) // important
                     ->directory('banners')
                     ->required(),
                 

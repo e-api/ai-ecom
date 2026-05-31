@@ -153,4 +153,34 @@ class ProductService
             ->take($limit)
             ->get();
     }
+
+    /*
+    | Product Detail
+    */
+    public function getProductBySlug($slug)
+    {
+        return Product::with([
+            'images',
+            'variants',
+            'brand',
+            'category',
+            'attributeValues.attribute'
+        ])
+        ->where('slug', $slug)
+        ->where('status', 1)
+        ->firstOrFail();
+    }
+
+    /*
+    Related Products
+    */
+    public function getRelatedProducts($product, $limit = 4)
+    {
+        return Product::active()
+            ->where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->latest()
+            ->take($limit)
+            ->get();
+    }
 }

@@ -76,6 +76,8 @@ rm -f public/storage
 ln -s /www/wwwroot/default/ai-ecom/storage/app/public public/storage
 chmod -R 775 storage
 
+curl -s -X PUT https://site.1byte.pp.ua/s3/ecom-bucket
+
 # 6. Filament & Livewire assets
 docker compose exec php php artisan filament:assets
 docker compose exec php php artisan vendor:publish --tag=livewire:assets --force
@@ -103,7 +105,56 @@ docker compose logs -f
 
 # === Nginx: add these following things ===
 # 1. Setup URL Rewrite for Laravel in Nginx config: 
+# For files with extensions (images, uploads)
+location ~ ^/s3/.*\. {
+    allow all;
+    modsecurity off;
+    rewrite ^/s3/(.*) /$1 break;
+    proxy_pass http://127.0.0.1:4566;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    add_header Access-Control-Allow-Origin $http_origin always;
+    add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+    add_header Access-Control-Allow-Headers "Content-Type, Authorization, X-Amz-*, X-Requested-With" always;
+    add_header Access-Control-Expose-Headers "ETag, X-Amz-*" always;
+    if ($request_method = OPTIONS) {
+        return 204;
+    }
+    client_max_body_size 100M;
+}
 
+# For all other S3 requests (listings, bucket operations, no extension)
+location /s3/ {
+    allow all;
+    modsecurity off;
+    rewrite ^/s3/(.*) /$1 break;
+    proxy_pass http://127.0.0.1:4566;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    add_header Access-Control-Allow-Origin $http_origin always;
+    add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+    add_header Access-Control-Allow-Headers "Content-Type, Authorization, X-Amz-*, X-Requested-With" always;
+    add_header Access-Control-Expose-Headers "ETag, X-Amz-*" always;
+    if ($request_method = OPTIONS) {
+        return 204;
+    }
+    client_max_body_size 100M;
+}
+
+# Security Section
+set $bypass_security 0;
+if ($uri ~* "^/s3/") {
+    set $bypass_security 1;
+}
+
+# Skip geo-block for S3 proxy
+    if ($uri ~* "^/s3/") {
+        set $check_geo 0;
+    }
 # 2. Set Directory at:
 /www/wwwroot/default/your-project  
 # and Running Directory at: 

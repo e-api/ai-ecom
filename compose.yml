@@ -13,6 +13,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
       - postgres_data:/var/lib/postgresql
     ports:
       - "${POSTGRES_PORT}:5432"
@@ -35,6 +37,8 @@ services:
           memory: ${PHP_MEMORY_LIMIT}
     restart: always
     volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
       - ${PROJECT_PATH}:/var/www
     working_dir: /var/www
     environment:
@@ -44,6 +48,13 @@ services:
       DB_DATABASE: ${POSTGRES_DB}
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
+      FILESYSTEM_DISK: ${FILESYSTEM_DISK}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      AWS_BUCKET: ${AWS_BUCKET}
+      AWS_ENDPOINT: ${AWS_ENDPOINT}
+      AWS_USE_PATH_STYLE_ENDPOINT: ${AWS_USE_PATH_STYLE_ENDPOINT}
     ports:
       - "${PHP_FPM_PORT}:9000"
     labels:
@@ -51,8 +62,25 @@ services:
     networks:
       - baota_net
 
+  floci:
+    image: floci/floci:latest
+    container_name: ${APP_NAME}-floci
+    environment:
+      - FLOCI_STORAGE_MODE=persistent
+      - FLOCI_STORAGE_SERVICES_S3_MODE=persistent
+    ports:
+      - "127.0.0.1:4566:4566"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - floci_data:/app/data
+    networks:
+      - baota_net
+
 volumes:
   postgres_data:
+    driver: local
+  floci_data:
     driver: local
 
 networks:

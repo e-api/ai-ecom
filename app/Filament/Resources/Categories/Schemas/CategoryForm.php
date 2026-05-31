@@ -38,7 +38,8 @@ class CategoryForm
 
             FileUpload::make('image')
                 ->image()
-                ->directory('categories'),
+                ->directory('categories')
+                ->disk(env('FILESYSTEM_DISK', config('filesystems.default'))),
 
             TextInput::make('position')
                 ->numeric()

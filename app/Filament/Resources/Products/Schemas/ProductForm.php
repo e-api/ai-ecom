@@ -75,7 +75,7 @@ class ProductForm
                             FileUpload::make('image')
                                 ->image()
                                 ->directory('products')
-                                ->disk('public')
+                                ->disk(env('FILESYSTEM_DISK', config('filesystems.default')))
                                 ->visibility('public')
                                 ->required(),
                             
@@ -115,7 +115,7 @@ class ProductForm
                             FileUpload::make('image')
                                 ->image()
                                 ->directory('products')
-                                ->disk('public')
+                                ->disk(env('FILESYSTEM_DISK', config('filesystems.default')))
                                 ->visibility('public')
                                 ->required(),
                             

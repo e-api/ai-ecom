@@ -60,9 +60,49 @@
                           </div>
                           @endforeach
                       </div>
-                  </div>
-                  @endif
-              </div>
+               </div>
+               @endif
+
+               {{-- Color Variations --}}
+               @if($colorVariations->count() > 0 || $product->color)
+               <div class="mt-4">
+                   <h3 class="text-sm font-semibold mb-2">Available Colors:</h3>
+                   <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-4 gap-2">
+                       {{-- Current product's color card (active) --}}
+                       @if($product->color)
+                       <div class="color-variant block rounded-lg overflow-hidden border-2 border-primary transition-all text-center">
+                           @php
+                               $currentImageModel = $product->images->where('position', 1)->first();
+                               $currentImagePath = $currentImageModel ? $currentImageModel->image : $product->image;
+                           @endphp
+                           <img src="{{ $currentImagePath ? Storage::url($currentImagePath) : 'https://placehold.co/400x400/e5e7eb/9ca3af?text='.urlencode($product->color) }}" 
+                               alt="{{ $product->color }}"
+                               class="w-full aspect-square object-cover">
+                           <div class="p-1 text-center text-xs font-medium bg-white">
+                               {{ $product->color }}
+                           </div>
+                       </div>
+                       @endif
+                       {{-- Other color variants --}}
+                       @foreach($colorVariations as $colorVar)
+                       <a href="{{ url('product/'.$colorVar->slug) }}" 
+                          class="color-variant block rounded-lg overflow-hidden border-2 border-gray-200 hover:border-primary transition-all text-center">
+                           @php
+                               $colorImageModel = $colorVar->images->where('position', 1)->first();
+                               $colorImagePath = $colorImageModel ? $colorImageModel->image : $colorVar->image;
+                           @endphp
+                           <img src="{{ $colorImagePath ? Storage::url($colorImagePath) : 'https://placehold.co/400x400/e5e7eb/9ca3af?text='.urlencode($colorVar->color) }}" 
+                               alt="{{ $colorVar->color }}"
+                               class="w-full aspect-square object-cover">
+                           <div class="p-1 text-center text-xs font-medium bg-white">
+                               {{ $colorVar->color }}
+                           </div>
+                       </a>
+                       @endforeach
+                   </div>
+               </div>
+               @endif
+               </div>
 
               {{-- Zoom Column (in-flow) --}}
               <div id="zoom-column" class="hidden md:flex md:items-start md:justify-center">
@@ -73,42 +113,90 @@
 
               {{-- Product Info --}}
               <div>
-                  <p class="mb-2 text-sm font-bold uppercase tracking-wider text-blue-700">{{ $product->category->name }} / {{ $product->brand->name ?? 'General' }}</p>
-                  <h1 class="text-3xl font-black tracking-tight md:text-4xl">{{ $product->name }}</h1>
-                  
-                  <div class="mt-3">
-                      <span id="product-price" class="text-3xl font-black">${{ number_format($product->price, 2) }}</span>
-                      @if($product->sale_price)
-                          <span class="text-lg text-gray-400 line-through ml-2">${{ number_format($product->price, 2) }}</span>
+                  {{-- Breadcrumb style category/brand --}}
+                  <p class="mb-1 text-sm text-gray-500">
+                      <a href="{{ url($product->category->slug) }}" class="text-blue-600 hover:text-blue-800 hover:underline">{{ $product->category->name }}</a>
+                      @if($product->brand)
+                      <span class="mx-1">›</span>
+                      <a href="#" class="text-blue-600 hover:text-blue-800 hover:underline">{{ $product->brand->name }}</a>
                       @endif
+                  </p>
+                  <h1 class="text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">{{ $product->name }}</h1>
+                  
+                  {{-- Rating placeholder (Amazon-style) --}}
+                  <div class="flex items-center gap-2 mt-1">
+                      <div class="flex items-center text-yellow-400 text-sm">
+                          ★★★★★
+                      </div>
+                      <span class="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">113 ratings</span>
+                      <span class="text-gray-300">|</span>
+                      <span class="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">{{ $product->variants->count() }} answered questions</span>
                   </div>
                   
-                  <p class="mt-5 leading-7 text-gray-700">{{ $product->description }}</p>
-                  
-                  {{-- Selected Size Display --}}
-                  <div class="mt-4 p-3 bg-gray-50 rounded-lg">
-                      <span class="text-sm text-gray-600">Selected Size:</span>
-                      <span id="selected-size" class="font-semibold ml-2">{{ $product->variants->first()->size ?? 'N/A' }}</span>
-                      <span class="text-sm text-gray-600 ml-4">Available:</span>
-                      <span id="selected-stock" class="font-semibold">{{ $product->variants->first()->stock ?? $product->stock }}</span>
+                  {{-- Price --}}
+                  <div class="mt-3 border-t border-b border-gray-200 py-3">
+                      @if($product->sale_price)
+                      <div class="flex items-baseline gap-2">
+                          <span class="text-xs text-gray-500">List Price:</span>
+                          <span class="text-sm text-gray-400 line-through">${{ number_format($product->price, 2) }}</span>
+                      </div>
+                      @endif
+                      <div class="flex items-baseline gap-2">
+                          <span class="text-xs text-gray-500">{{ $product->sale_price ? 'Sale Price:' : 'Price:' }}</span>
+                          <span id="product-price" class="text-2xl font-bold text-gray-900">${{ number_format($product->sale_price ?? $product->price, 2) }}</span>
+                      </div>
+                      <div class="flex items-center gap-1 mt-1">
+                          <span class="text-sm text-gray-600">FREE delivery</span>
+                          <span class="text-sm font-medium text-gray-900">{{ \Carbon\Carbon::now()->addDays(rand(3, 7))->format('l, F d') }}</span>
+                      </div>
+                      <p class="text-sm text-gray-600 mt-1">Or fastest delivery <span class="font-medium text-gray-900">{{ \Carbon\Carbon::now()->addDays(rand(1, 2))->format('l, F d') }}</span></p>
                   </div>
                   
-                  <div class="mt-6 grid gap-3 sm:grid-cols-2">
-                      <label class="block">
-                          <span class="mb-1 block text-sm font-bold">Quantity</span>
-                          <input class="form-control" type="number" id="quantity" value="1" min="1" max="{{ $product->variants->first()->stock ?? $product->stock }}">
-                      </label>
+                  {{-- Description snippet --}}
+                  <p class="mt-3 text-sm leading-6 text-gray-700">{{ $product->short_description ?? $product->description }}</p>
+                  
+                  {{-- Size & Stock info --}}
+                  <div class="mt-3 flex items-center gap-4 text-sm">
+                      <div>
+                          <span class="text-gray-500">Size:</span>
+                          <span id="selected-size" class="font-semibold text-gray-900 ml-1">{{ $product->variants->first()->size ?? 'N/A' }}</span>
+                      </div>
+                      <div>
+                          <span class="text-gray-500">Stock:</span>
+                          <span id="selected-stock" class="font-semibold {{ ($product->variants->first()->stock ?? $product->stock) > 0 ? 'text-green-600' : 'text-red-600' }} ml-1">{{ $product->variants->first()->stock ?? $product->stock }}</span>
+                      </div>
                   </div>
                   
-                  <div class="mt-6 flex flex-wrap gap-3">
-                      <button data-cart-add class="btn-go rounded-md px-6 py-3 font-bold">Add to cart</button>
-                      <a class="rounded-md border border-gray-300 bg-white px-6 py-3 font-bold text-gray-800 hover:bg-gray-50 transition" href="{{ url('cart.html') }}">View cart</a>
+                  {{-- Quantity with +/- buttons (Amazon-style) --}}
+                  <div class="mt-4">
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Quantity:</label>
+                      <div class="inline-flex items-center border border-gray-300 rounded-md overflow-hidden">
+                          <button type="button" onclick="decrementQty()" class="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition border-r border-gray-300 text-lg font-medium select-none">−</button>
+                          <input type="number" id="quantity" value="1" min="1" max="{{ $product->variants->first()->stock ?? $product->stock }}" 
+                              class="w-14 h-9 text-center text-sm font-medium text-gray-900 border-0 focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                          <button type="button" onclick="incrementQty()" class="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition border-l border-gray-300 text-lg font-medium select-none">+</button>
+                      </div>
+                  </div>
+                  
+                  {{-- Action Buttons --}}
+                  <div class="mt-5 flex flex-col gap-2">
+                      <button data-cart-add class="w-full rounded-full bg-yellow-400 hover:bg-yellow-500 px-6 py-3 font-bold text-sm text-gray-900 transition shadow-sm">Add to Cart</button>
+                      <button class="w-full rounded-full bg-orange-500 hover:bg-orange-600 px-6 py-3 font-bold text-sm text-white transition shadow-sm">Buy Now</button>
+                  </div>
+                  
+                  {{-- Extra info --}}
+                  <div class="mt-4 text-xs text-gray-500 space-y-1">
+                      <p><span class="font-medium text-gray-700">Ships from:</span> AI Ecom Store</p>
+                      <p><span class="font-medium text-gray-700">Sold by:</span> AI Ecom Store</p>
+                      @if($product->sku)
+                      <p><span class="font-medium text-gray-700">SKU:</span> {{ $product->sku }}</p>
+                      @endif
                   </div>
               </div>
           </div>
         {{-- Tabs Section (Description, Details, Reviews) --}}
           <section class="muted-box overflow-hidden">
-              <div class="flex flex-wrap border-b border-gray-200 bg-gray-50 p-2" role="tablist" aria-label="Product information">
+              <div class="flex flex-wrap gap-1 border-b border-gray-200 bg-gray-50 p-2" role="tablist" aria-label="Product information">
                   <button class="tab-button active rounded-md px-4 py-2 text-sm font-black" type="button" role="tab" aria-selected="true" data-tab-target="product-details">Product Details</button>
                   <button class="tab-button rounded-md px-4 py-2 text-sm font-black" type="button" role="tab" aria-selected="false" data-tab-target="product-description">Description</button>
                   <button class="tab-button rounded-md px-4 py-2 text-sm font-black" type="button" role="tab" aria-selected="false" data-tab-target="product-reviews">Reviews</button>
@@ -191,59 +279,59 @@
                       <a class="text-link text-sm font-bold" href="{{ url($product->category->slug) }}">View all</a>
                   </div>
               </div>
-                            <div class="relative">
-                                    <div class="flex items-center justify-between md:hidden mb-3">
-                                            <button id="related-prev" class="related-nav-btn px-3 py-2 rounded-md border bg-white shadow-sm text-lg">‹</button>
-                                            <div class="text-sm text-gray-600">Related</div>
-                                            <button id="related-next" class="related-nav-btn px-3 py-2 rounded-md border bg-white shadow-sm text-lg">›</button>
+                <div class="relative">
+                    <div class="flex items-center justify-between md:hidden mb-3">
+                        <button id="related-prev" class="related-nav-btn px-3 py-2 rounded-md border bg-white shadow-sm text-lg">‹</button>
+                        <div class="text-sm text-gray-600">Related</div>
+                        <button id="related-next" class="related-nav-btn px-3 py-2 rounded-md border bg-white shadow-sm text-lg">›</button>
+                    </div>
+
+                    <div id="related-products" data-related-products class="related-products grid gap-3 sm:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                        @foreach($relatedProducts as $relatedProduct)
+                        @php $imageUrl = $relatedProduct->image ? Storage::url($relatedProduct->image) : 'https://placehold.co/400x400/e5e7eb/9ca3af?text=No+Image'; @endphp
+                        <article class="product-card relative group bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col">
+                            <div class="product-image-container relative w-full overflow-hidden bg-gray-100 flex-shrink-0">
+                                <a href="{{ url('product/'.$relatedProduct->slug) }}" class="absolute inset-0">
+                                    <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style="background-image: url('{{ $imageUrl }}');"></div>
+                                </a>
+                                @if($relatedProduct->sale_price)
+                                    <div class="absolute top-0 left-2 z-10">
+                                        <span class="bg-red-500 text-white text-[8px] sm:text-xs font-bold px-1.5 py-0.5 rounded">SALE</span>
                                     </div>
-
-                                    <div id="related-products" data-related-products class="related-products grid gap-3 sm:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                                            @foreach($relatedProducts as $relatedProduct)
-                                            @php $imageUrl = $relatedProduct->image ? Storage::url($relatedProduct->image) : 'https://placehold.co/400x400/e5e7eb/9ca3af?text=No+Image'; @endphp
-                                            <article class="product-card relative group bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col">
-                                                <div class="product-image-container relative w-full overflow-hidden bg-gray-100 flex-shrink-0">
-                                                    <a href="{{ url('product/'.$relatedProduct->slug) }}" class="absolute inset-0">
-                                                        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style="background-image: url('{{ $imageUrl }}');"></div>
-                                                    </a>
-                                                    @if($relatedProduct->sale_price)
-                                                        <div class="absolute top-0 left-2 z-10">
-                                                            <span class="bg-red-500 text-white text-[8px] sm:text-xs font-bold px-1.5 py-0.5 rounded">SALE</span>
-                                                        </div>
-                                                    @endif
-                                                </div>
-
-                                                <div class="product-info flex flex-col flex-1 p-4">
-                                                    <a href="{{ url('product/'.$relatedProduct->slug) }}" class="card-link block">
-                                                        <h3 class="font-bold text-gray-800 hover:text-primary transition-colors line-clamp-2">{{ $relatedProduct->name }}</h3>
-                                                    </a>
-
-                                                    <div class="price-container mt-auto flex items-center justify-between gap-2">
-                                                        <div class="flex items-baseline gap-1 flex-wrap">
-                                                            @if($relatedProduct->sale_price)
-                                                                <span class="current-price font-bold text-primary">${{ number_format($relatedProduct->sale_price, 2) }}</span>
-                                                                <span class="old-price text-gray-400 line-through text-[9px]">${{ number_format($relatedProduct->price, 2) }}</span>
-                                                            @else
-                                                                <span class="current-price font-bold text-gray-800">${{ number_format($relatedProduct->price, 2) }}</span>
-                                                            @endif
-                                                        </div>
-
-                                                        <div class="flex items-center gap-1 sm:gap-1">
-                                                            <a class="btn-go flex items-center justify-center transition-transform hover:scale-105 bg-gray-100 text-gray-700 hover:bg-primary hover:text-white rounded-md px-2 py-1 text-xs" href="{{ url('product/'.$relatedProduct->slug) }}">
-                                                                <i class="fa-solid fa-magnifying-glass-plus sm:mr-1"></i>
-                                                                <span class="hidden sm:inline">View</span>
-                                                            </a>
-                                                            <button type="button" class="btn-go flex items-center justify-center transition-transform hover:scale-105 bg-gray-100 text-gray-700 hover:bg-primary hover:text-white rounded-md px-2 py-1 text-xs" data-product-id="{{ $relatedProduct->id }}" data-cart-add>
-                                                                <i class="fa-solid fa-cart-arrow-down sm:mr-1"></i>
-                                                                <span class="hidden sm:inline">Add</span>
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </article>
-                                            @endforeach
-                                    </div>
+                                @endif
                             </div>
+
+                            <div class="product-info flex flex-col flex-1 p-4">
+                                <a href="{{ url('product/'.$relatedProduct->slug) }}" class="card-link block">
+                                    <h3 class="font-bold text-gray-800 hover:text-primary transition-colors line-clamp-2">{{ $relatedProduct->name }}</h3>
+                                </a>
+
+                                <div class="price-container mt-auto flex items-center justify-between gap-2">
+                                    <div class="flex items-baseline gap-1 flex-wrap">
+                                        @if($relatedProduct->sale_price)
+                                            <span class="current-price font-bold text-primary">${{ number_format($relatedProduct->sale_price, 2) }}</span>
+                                            <span class="old-price text-gray-400 line-through text-[9px]">${{ number_format($relatedProduct->price, 2) }}</span>
+                                        @else
+                                            <span class="current-price font-bold text-gray-800">${{ number_format($relatedProduct->price, 2) }}</span>
+                                        @endif
+                                    </div>
+
+                                    <div class="flex items-center gap-1 sm:gap-1">
+                                        <a class="btn-go flex items-center justify-center transition-transform hover:scale-105 bg-gray-100 text-gray-700 hover:bg-primary hover:text-white rounded-md px-2 py-1 text-xs" href="{{ url('product/'.$relatedProduct->slug) }}">
+                                            <i class="fa-solid fa-magnifying-glass-plus sm:mr-1"></i>
+                                            <span class="hidden sm:inline">View</span>
+                                        </a>
+                                        <button type="button" class="btn-go flex items-center justify-center transition-transform hover:scale-105 bg-gray-100 text-gray-700 hover:bg-primary hover:text-white rounded-md px-2 py-1 text-xs" data-product-id="{{ $relatedProduct->id }}" data-cart-add>
+                                            <i class="fa-solid fa-cart-arrow-down sm:mr-1"></i>
+                                            <span class="hidden sm:inline">Add</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                        @endforeach
+                    </div>
+                </div>
           </section>
           @endif
       </div>
@@ -484,6 +572,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
 });
 
+// Quantity +/- functions
+function decrementQty() {
+    const qty = document.getElementById('quantity');
+    const val = parseInt(qty.value);
+    if (val > parseInt(qty.min || 1)) {
+        qty.value = val - 1;
+    }
+}
+
+function incrementQty() {
+    const qty = document.getElementById('quantity');
+    const val = parseInt(qty.value);
+    const max = parseInt(qty.max || 999);
+    if (val < max) {
+        qty.value = val + 1;
+    }
+}
+
 // Size selection function
 function selectSize(element, imageUrl, price, size) {
     // Update main image
@@ -635,6 +741,37 @@ function selectSize(element, imageUrl, price, size) {
 
 .size-thumbnail:hover {
     transform: scale(1.02);
+}
+
+.color-variant {
+    transition: all 0.2s ease;
+}
+
+.color-variant img {
+    width: 100%;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+}
+
+/* Active state for size thumbnails and color variants */
+.size-thumbnail.border-primary,
+.color-variant.border-primary {
+    box-shadow: 0 0 0 2px var(--primary-hover);
+    border-color: var(--primary-hover) !important;
+}
+
+.tab-button.active {
+    background: var(--primary-hover);  /* Changes button background */
+    color: white;  /* White text for contrast */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-color: var(--primary-hover);
+}
+
+/* Optional: Hover effect for tabs */
+.tab-button:hover {
+    background: var(--primary-hover);
+    color: white;
+    transition: all 0.2s ease;
 }
 
 .size-thumbnail img {

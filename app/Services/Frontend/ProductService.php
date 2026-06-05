@@ -183,4 +183,20 @@ class ProductService
             ->take($limit)
             ->get();
     }
+
+    /*
+    Product Color Variation
+    */
+    public function getProductColorVariations($product)
+    {
+        if (empty($product->product_family)) {
+            return collect();
+        }
+
+        return Product::with('brand')
+            ->where('product_family', $product->product_family)
+            ->where('id', '!=', $product->id)
+            ->where('status', 1)
+            ->get();
+    }
 }

@@ -29,9 +29,16 @@ class ProductController extends Controller
         $relatedProducts = $this->productService
             ->getRelatedProducts($product);
 
+        /*
+        | Product Color Variations
+        */
+        $colorVariations = $this->productService
+            ->getProductColorVariations($product);
+
         return view('frontend.product.detail', compact(
             'product',
-            'relatedProducts'
+            'relatedProducts',
+            'colorVariations'
         ));
     }
 }

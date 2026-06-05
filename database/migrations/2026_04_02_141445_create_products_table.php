@@ -22,6 +22,9 @@ return new class extends Migration
         
             $table->string('name');
             $table->string('slug')->unique();
+
+            $table->string('product_family')->nullable();
+            $table->string('color')->nullable();
         
             $table->text('description')->nullable();
             $table->text('short_description')->nullable();

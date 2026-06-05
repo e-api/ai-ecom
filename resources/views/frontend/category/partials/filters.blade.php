@@ -140,7 +140,6 @@
         </div>
         @endforeach
     @endif
-  </div>
   {{-- Mobile Filter Button (Only visible on mobile) --}}
   <div class="lg:hidden fixed bottom-4 right-4 z-50">
     <button id="mobile-filter-toggle" class="bg-primary text-white rounded-full p-4 shadow-lg flex items-center justify-center">
@@ -292,7 +291,7 @@
                 </label>
                 @endforeach
               </div>
-              </div
+              </div>
             </div>
             @endif
           </div>

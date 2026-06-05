@@ -716,13 +716,14 @@ $(document).ready(function() {
     let categories = params.get('categories');
     let brands = params.get('brands');
     let sizes = params.get('sizes');
-    let sizes = params.get('attributes');
+    let attribute_values = params.get('attribute_values');
+
     return {
       prices: prices ? prices.split(',') : [],
       categories: categories ? categories.split(',') : [],
       brands: brands ? brands.split(',') : [],
       sizes: sizes ? sizes.split(',') : [],
-      attributes: attributes ? attributes.split(',') : []
+      attribute_values: attribute_values ? attribute_values.split(',') : []
     };
   }
 
@@ -740,11 +741,13 @@ $(document).ready(function() {
     $('.brand-filter').each(function() {
       $(this).prop('checked', selected.brands.includes($(this).val()));
     });
+    
     $('.size-filter').each(function() {
       $(this).prop('checked', selected.sizes.includes($(this).val()));
     });
+    
     $('.attribute-filter').each(function() {
-      $(this).prop('checked', selected.attributes.includes($(this).val()));
+      $(this).prop('checked', selected.attribute_values.includes($(this).val())); 
     });
   }
 
@@ -775,7 +778,7 @@ $(document).ready(function() {
     let categories = [];
     let brands = [];
     let sizes = [];
-    let attributes = [];
+    let attribute_values = [];
 
     $('.price-filter:checked').each(function() {
       prices.push($(this).val());
@@ -794,7 +797,7 @@ $(document).ready(function() {
     });
     
     $('.attribute-filter:checked').each(function() {
-      sizes.push($(this).val());
+      attribute_values.push($(this).val());  
     });
     
     let params = new URLSearchParams();
@@ -815,8 +818,8 @@ $(document).ready(function() {
       params.set('sizes', sizes.join(','));
     }
     
-    if (attributes.length > 0) {
-      params.set('attributes', attributes.join(','));
+    if (attribute_values.length > 0) {
+      params.set('attribute_values', attribute_values.join(',')); 
     }
 
     let newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
@@ -827,15 +830,13 @@ $(document).ready(function() {
       url: newUrl,
       type: "GET",
       beforeSend: function() {
-        $('#products-grid-container').html('<div class="flex justify-center items-center min-h-[200px]"><div class="text-center"><div class="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-b-blue-500 mx-auto"></div><p class="mt-2 text-sm text-gray-600">Loading Products...</p></div></div>');
+        $('#products-grid-container').html('<div class="flex justify-center items-center min-h-[200px]"><div class="text-center"><div class="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-primary mx-auto"></div><p class="mt-2 text-sm text-gray-600">Loading Products...</p></div></div>');
       },
       success: function(response) {
-        // Extract only the products-grid-container from response
         let html = $(response).find('#products-grid-container').html();
         if (html) {
           $('#products-grid-container').html(html);
         } else {
-          // Fallback if response doesn't have the container
           $('#products-grid-container').html(response);
         }
       }

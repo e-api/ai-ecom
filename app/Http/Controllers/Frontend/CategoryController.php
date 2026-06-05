@@ -68,7 +68,7 @@ class CategoryController extends Controller
         $products = $this->productService->getCategoryProducts($category, $filters);
         
         if ($request->ajax()) {
-            return view('frontend.category.partials.products', compact('products', 'category', 'brands', 'sizes'))->render();
+            return view('frontend.category.partials.products', compact('products', 'category', 'brands', 'sizes', 'attributes'))->render();
         }
         
         return view('frontend.category.listing', compact('category', 'products', 'filterCategories', 'brands', 'sizes', 'attributes'));

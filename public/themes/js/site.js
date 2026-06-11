@@ -26,13 +26,9 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   });
 
-  document.querySelectorAll("[data-cart-add]").forEach(function(button) {
-    button.addEventListener("click", function() {
-      var count = document.querySelector("[data-cart-count]");
-      if (!count) return;
-      count.textContent = String(Number(count.textContent || "0") + 1);
-    });
-  });
+  // Cart add handled by jQuery #addToCartBtn click handler below (in $(document).ready)
+  // Removed legacy vanilla [data-cart-add] handler that only incremented the counter
+  // without making an AJAX call to the server.
 
   document.querySelectorAll("[data-tab-target]").forEach(function(button) {
     button.addEventListener("click", function() {
@@ -710,141 +706,217 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 $(document).ready(function() {
-  function getUrlParams() {
-    let params = new URLSearchParams(window.location.search);
-    let prices = params.get('price');
-    let categories = params.get('categories');
-    let brands = params.get('brands');
-    let sizes = params.get('sizes');
-    let attribute_values = params.get('attribute_values');
+    function getUrlParams() {
+        let params = new URLSearchParams(window.location.search);
+        let prices = params.get('price');
+        let categories = params.get('categories');
+        let brands = params.get('brands');
+        let sizes = params.get('sizes');
+        let attribute_values = params.get('attribute_values');
 
-    return {
-      prices: prices ? prices.split(',') : [],
-      categories: categories ? categories.split(',') : [],
-      brands: brands ? brands.split(',') : [],
-      sizes: sizes ? sizes.split(',') : [],
-      attribute_values: attribute_values ? attribute_values.split(',') : []
-    };
-  }
-
-  function syncCheckboxesWithUrl() {
-    let selected = getUrlParams();
-
-    $('.price-filter').each(function() {
-      $(this).prop('checked', selected.prices.includes($(this).val()));
-    });
-
-    $('.category-filter').each(function() {
-      $(this).prop('checked', selected.categories.includes($(this).val()));
-    });
-
-    $('.brand-filter').each(function() {
-      $(this).prop('checked', selected.brands.includes($(this).val()));
-    });
-    
-    $('.size-filter').each(function() {
-      $(this).prop('checked', selected.sizes.includes($(this).val()));
-    });
-    
-    $('.attribute-filter').each(function() {
-      $(this).prop('checked', selected.attribute_values.includes($(this).val())); 
-    });
-  }
-
-  syncCheckboxesWithUrl();
-
-  $('.price-filter').on('change', function() {
-    loadProducts();
-  });
-
-  $('.category-filter').on('change', function() {
-    loadProducts();
-  });
-
-  $('.brand-filter').on('change', function() {
-    loadProducts();
-  });
-
-  $('.size-filter').on('change', function() {
-    loadProducts();
-  });
-  
-  $('.attribute-filter').on('change', function() {
-    loadProducts();
-  });
-
-  function loadProducts() {
-    let prices = [];
-    let categories = [];
-    let brands = [];
-    let sizes = [];
-    let attribute_values = [];
-
-    $('.price-filter:checked').each(function() {
-      prices.push($(this).val());
-    });
-
-    $('.category-filter:checked').each(function() {
-      categories.push($(this).val());
-    });
-
-    $('.brand-filter:checked').each(function() {
-      brands.push($(this).val());
-    });
-    
-    $('.size-filter:checked').each(function() {
-      sizes.push($(this).val());
-    });
-    
-    $('.attribute-filter:checked').each(function() {
-      attribute_values.push($(this).val());  
-    });
-    
-    let params = new URLSearchParams();
-
-    if (prices.length > 0) {
-      params.set('price', prices.join(','));
+        return {
+            prices: prices ? prices.split(',') : [],
+            categories: categories ? categories.split(',') : [],
+            brands: brands ? brands.split(',') : [],
+            sizes: sizes ? sizes.split(',') : [],
+            attribute_values: attribute_values ? attribute_values.split(',') : []
+        };
     }
 
-    if (categories.length > 0) {
-      params.set('categories', categories.join(','));
+    function syncCheckboxesWithUrl() {
+        let selected = getUrlParams();
+
+        $('.price-filter').each(function() {
+            $(this).prop('checked', selected.prices.includes($(this).val()));
+        });
+
+        $('.category-filter').each(function() {
+            $(this).prop('checked', selected.categories.includes($(this).val()));
+        });
+
+        $('.brand-filter').each(function() {
+            $(this).prop('checked', selected.brands.includes($(this).val()));
+        });
+        
+        $('.size-filter').each(function() {
+            $(this).prop('checked', selected.sizes.includes($(this).val()));
+        });
+        
+        $('.attribute-filter').each(function() {
+            $(this).prop('checked', selected.attribute_values.includes($(this).val()));
+        });
     }
 
-    if (brands.length > 0) {
-      params.set('brands', brands.join(','));
-    }
-
-    if (sizes.length > 0) {
-      params.set('sizes', sizes.join(','));
-    }
-    
-    if (attribute_values.length > 0) {
-      params.set('attribute_values', attribute_values.join(',')); 
-    }
-
-    let newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-
-    window.history.pushState({}, "", newUrl);
-
-    $.ajax({
-      url: newUrl,
-      type: "GET",
-      beforeSend: function() {
-        $('#products-grid-container').html('<div class="flex justify-center items-center min-h-[200px]"><div class="text-center"><div class="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-primary mx-auto"></div><p class="mt-2 text-sm text-gray-600">Loading Products...</p></div></div>');
-      },
-      success: function(response) {
-        let html = $(response).find('#products-grid-container').html();
-        if (html) {
-          $('#products-grid-container').html(html);
-        } else {
-          $('#products-grid-container').html(response);
-        }
-      }
-    });
-  }
-
-  $(window).on('popstate', function() {
     syncCheckboxesWithUrl();
-    loadProducts();
-  });
+
+    $('.price-filter').on('change', function() {
+        loadProducts();
+    });
+
+    $('.category-filter').on('change', function() {
+        loadProducts();
+    });
+
+    $('.brand-filter').on('change', function() {
+        loadProducts();
+    });
+
+    $('.size-filter').on('change', function() {
+        loadProducts();
+    });
+    
+    $('.attribute-filter').on('change', function() {
+        loadProducts();
+    });
+
+    function loadProducts() {
+        let prices = [];
+        let categories = [];
+        let brands = [];
+        let sizes = [];
+        let attribute_values = [];
+
+        $('.price-filter:checked').each(function() {
+            prices.push($(this).val());
+        });
+
+        $('.category-filter:checked').each(function() {
+            categories.push($(this).val());
+        });
+
+        $('.brand-filter:checked').each(function() {
+            brands.push($(this).val());
+        });
+        
+        $('.size-filter:checked').each(function() {
+            sizes.push($(this).val());
+        });
+        
+        $('.attribute-filter:checked').each(function() {
+            attribute_values.push($(this).val());
+        });
+        
+        let params = new URLSearchParams();
+
+        if (prices.length > 0) {
+            params.set('price', prices.join(','));
+        }
+
+        if (categories.length > 0) {
+            params.set('categories', categories.join(','));
+        }
+
+        if (brands.length > 0) {
+            params.set('brands', brands.join(','));
+        }
+
+        if (sizes.length > 0) {
+            params.set('sizes', sizes.join(','));
+        }
+        
+        if (attribute_values.length > 0) {
+            params.set('attribute_values', attribute_values.join(','));
+        }
+
+        let newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+
+        window.history.pushState({}, "", newUrl);
+
+        $.ajax({
+            url: newUrl,
+            type: "GET",
+            beforeSend: function() {
+                $('#products-grid-container').html('<div class="flex justify-center items-center min-h-[200px]"><div class="text-center"><div class="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-primary mx-auto"></div><p class="mt-2 text-sm text-gray-600">Loading Products...</p></div></div>');
+            },
+            success: function(response) {
+                let html = $(response).find('#products-grid-container').html();
+                if (html) {
+                    $('#products-grid-container').html(html);
+                } else {
+                    $('#products-grid-container').html(response);
+                }
+            }
+        });
+    }
+
+    /*
+    | Add To Cart
+    */
+    $('#addToCartBtn').on('click', function() {
+        let product_id = $('#product_id').val();
+        let variant_id = $('#variant_id').val();
+        let quantity = $('#quantity').val();
+        let config = window.siteConfig || {};
+
+        console.log('Product ID:', product_id);
+        console.log('Variant ID:', variant_id);
+        console.log('Quantity:', quantity);
+
+        // Validate size selection if variant select exists
+        if ($('#variant_id').length && variant_id == "") {
+            alert('Please select size.');
+            return false;
+        }
+
+        // Validate quantity
+        if (!quantity || quantity < 1) {
+            alert('Please enter a valid quantity.');
+            return false;
+        }
+
+        $.ajax({
+            url: config.routes ? config.routes.cartAdd : '/cart/add',
+            type: "POST",
+            data: {
+                _token: config.csrfToken || '',
+                product_id: product_id,
+                variant_id: variant_id,
+                quantity: quantity
+            },
+            beforeSend: function() {
+                console.log('Sending request...');
+                $('#addToCartBtn')
+                    .prop('disabled', true)
+                    .text('Adding...');
+            },
+            success: function(response) {
+                console.log('Response:', response);
+                if (response.status) {
+                    alert(response.message);
+                    updateCartCount();
+                } else {
+                    alert(response.message || 'Something went wrong');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.log('Error:', xhr);
+                console.log('Status:', status);
+                console.log('Error:', error);
+                let message = xhr.responseJSON?.message || 'Something went wrong. Please try again.';
+                alert(message);
+            },
+            complete: function() {
+                $('#addToCartBtn')
+                    .prop('disabled', false)
+                    .html('Add to Cart');
+            }
+        });
+    });
+
+    // Optional: Update cart count function
+    function updateCartCount() {
+        let config = window.siteConfig || {};
+        $.ajax({
+            url: config.routes ? config.routes.cartCount : '/cart/count',
+            type: "GET",
+            success: function(response) {
+                $('[data-cart-count]').text(response.count);
+            }
+        });
+    }
+
+    $(window).on('popstate', function() {
+        syncCheckboxesWithUrl();
+        loadProducts();
+    });
 });

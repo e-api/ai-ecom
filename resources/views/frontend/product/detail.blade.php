@@ -528,8 +528,12 @@
           {{-- Action Buttons --}}
           <div class="mt-5 flex flex-col gap-2">
             <div id="action-buttons-wrapper" class="flex flex-col gap-2" data-initial-stock="{{ $product->variants->first()->stock ?? $product->stock }}">
-              <button id="btn-add-to-cart" data-cart-add type="button" class="w-full rounded-full bg-yellow-400 hover:bg-yellow-500 px-6 py-3 font-bold text-sm text-gray-900 transition shadow-sm">Add to Cart</button>
-              <button id="btn-buy-now" type="button" class="w-full rounded-full bg-orange-500 hover:bg-orange-600 px-6 py-3 font-bold text-sm text-white transition shadow-sm">Buy Now</button>
+              <form id="addToCartForm">
+                @csrf
+                <input type="hidden" id="product_id" value="{{ $product->id }}">
+                <button id="addToCartBtn" data-cart-add type="button" class="w-full rounded-full bg-yellow-400 hover:bg-yellow-500 px-6 py-3 font-bold text-sm text-gray-900 transition shadow-sm">Add to Cart</button>
+                <button id="btn-buy-now" type="button" class="w-full rounded-full bg-orange-500 hover:bg-orange-600 px-6 py-3 font-bold text-sm text-white transition shadow-sm">Buy Now</button>
+              </form>
             </div>
             <div id="stock-message" class="text-sm text-gray-600" style="display:none;">Currently unavailable — we don’t know when or if this item will be back in stock.</div>
           </div>

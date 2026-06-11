@@ -58,7 +58,18 @@
         <a class="cart-button rounded-md bg-white/10 px-3 py-2 text-sm font-bold flex items-center gap-2" href="{{ url('cart.html') }}" aria-label="View cart">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4"></path><circle cx="9" cy="20" r="1"></circle><circle cx="20" cy="20" r="1"></circle></svg>
           <span class="sr-only">Cart</span>
-          <span data-cart-count>3</span>
+          <span data-cart-count>@php
+            if (auth()->check()) {
+                echo \App\Models\CartItem::where('user_id', auth()->id())->sum('quantity');
+            } else {
+                $cart = session()->get('cart', []);
+                $count = 0;
+                foreach ($cart as $item) {
+                    $count += $item['quantity'] ?? 0;
+                }
+                echo $count;
+            }
+          @endphp</span>
         </a>
 
         {{-- Desktop: Login Button (logged out) --}}

@@ -72,23 +72,39 @@
           @endphp</span>
         </a>
 
-        {{-- Desktop: Login Button (logged out) --}}
-        <a class="btn-login rounded-md px-4 py-2 font-bold hidden sm:inline-flex items-center gap-2" href="{{ url('login.html') }}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-          </svg>
-          Login
-        </a>
+        {{-- Desktop: Buttons (logged out) --}}
+        @guest
+            <div class="hidden sm:flex items-center gap-3">
+                {{-- Register Button --}}
+                <a class="btn-register rounded-md px-4 py-2 font-bold inline-flex items-center gap-2" href="{{ route('register') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                    Register
+                </a>
 
-        {{-- Desktop: User Avatar (logged in) - Hidden by default --}}
-        <div class="hidden sm:flex items-center gap-2 cursor-pointer" id="desktop-user-menu">
-          <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
-            JD
-          </div>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
+                {{-- Login Button --}}
+                <a class="btn-login rounded-md px-4 py-2 font-bold inline-flex items-center gap-2" href="">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    Login
+                </a>
+            </div>
+        @endguest
+
+        {{-- Desktop: Logout Button (logged in) --}}
+        @auth
+            <form method="POST" action="{{ route('logout') }}" class="hidden sm:inline">
+                @csrf
+                <button type="submit" class="btn-logout rounded-md px-4 py-2 font-bold inline-flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    Logout
+                </button>
+            </form>
+        @endauth
       </div>
     </div>
 

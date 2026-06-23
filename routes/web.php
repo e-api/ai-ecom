@@ -6,6 +6,7 @@ use App\Http\Controllers\Frontend\CategoryController;
 use App\Http\Controllers\Frontend\ProductController;
 use App\Http\Controllers\Frontend\CartController;
 use App\Http\Controllers\Frontend\RegisterController;
+use App\Http\Controllers\Frontend\LoginController;
 
 // Route::get('/', function () {
 //     // return view('welcome');
@@ -13,6 +14,14 @@ use App\Http\Controllers\Frontend\RegisterController;
 // });
 
 Route::get('/', [HomeController::class, 'Index']);
+/*
+| User Login Form Route
+*/
+Route::get('/login',[LoginController::class, 'login'])->name('login');
+/*
+| Store Logged in User Route
+*/
+Route::post('/login', [LoginController::class, 'store'])->name('login.store');
 /*
 NEW: Display Register Form Route
 */

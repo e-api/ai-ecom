@@ -1,51 +1,29 @@
 @extends('frontend.layouts.app')
-@section('title', 'User Registration')
-@section('body-class', 'register-page')
+@section('title', 'User Login')
+@section('body-class', 'login-page')
 
 @section('content')
   <div class="col-span-full flex items-center justify-center min-h-[70vh] py-8">
     <div class="w-full max-w-md">
       <div class="bg-white rounded-xl shadow-lg p-8">
         <div class="text-center mb-8">
-          <h1 class="text-2xl font-black text-gray-800">Create Account</h1>
-          <p class="text-sm text-gray-500 mt-1">Join us and start shopping today</p>
+          <h1 class="text-2xl font-black text-gray-800">Welcome Back</h1>
+          <p class="text-sm text-gray-500 mt-1">Sign in to your account to continue</p>
         </div>
 
         {{-- Alert Message Container --}}
         <div id="alert-message" class="hidden mb-4 p-4 rounded-lg text-sm font-medium" role="alert"></div>
 
-        <form method="POST" action="{{ route('register') }}" class="space-y-5" id="register-form">
+        <form method="POST" action="{{ route('login.store') }}" class="space-y-5" id="login-form">
           @csrf
-
-          {{-- Name --}}
-          <div>
-            <label for="name" class="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
-            <input id="name" type="text" name="name" value="{{ old('name') }}" autofocus
-              class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition"
-              placeholder="John Doe">
-            @error('name')
-              <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-            @enderror
-          </div>
 
           {{-- Email --}}
           <div>
             <label for="email" class="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
-            <input id="email" type="email" name="email" value="{{ old('email') }}"
+            <input id="email" type="email" name="email" value="{{ old('email') }}" autofocus
               class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition"
               placeholder="john@example.com">
             @error('email')
-              <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-            @enderror
-          </div>
-
-          {{-- Phone --}}
-          <div>
-            <label for="phone" class="block text-sm font-semibold text-gray-700 mb-1">Phone Number</label>
-            <input id="phone" type="tel" name="phone" value="{{ old('phone') }}"
-              class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition"
-              placeholder="0123456789">
-            @error('phone')
               <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
             @enderror
           </div>
@@ -61,38 +39,20 @@
             @enderror
           </div>
 
-          {{-- Password Confirmation --}}
-          <div>
-            <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 mb-1">Confirm Password</label>
-            <input id="password_confirmation" type="password" name="password_confirmation"
-              class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition"
-              placeholder="••••••••">
-            @error('password')
-              <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-            @enderror
-          </div>
-
-          {{-- Terms & Conditions --}}
-          <div>
-            <div class="flex items-start">
-              <input id="terms" type="checkbox" name="terms"
-                class="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <label for="terms" class="ml-2 text-sm text-gray-600">
-                I agree to the
-                <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">Terms of Service</a>
-                and
-                <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">Privacy Policy</a>
-              </label>
+          {{-- Remember Me & Forgot Password --}}
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <input id="remember" type="checkbox" name="remember"
+                class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+              <label for="remember" class="ml-2 text-sm text-gray-600">Remember me</label>
             </div>
-            @error('terms')
-              <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-            @enderror
+            <a href="#" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Forgot password?</a>
           </div>
 
           {{-- Submit Button --}}
           <button type="submit"
             class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-            Create Account
+            Sign In
           </button>
         </form>
 
@@ -106,10 +66,10 @@
           </div>
         </div>
 
-        {{-- Login Link --}}
+        {{-- Register Link --}}
         <p class="text-center text-sm text-gray-600">
-          Already have an account?
-          <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-800 font-semibold">Sign in</a>
+          Don't have an account?
+          <a href="{{ route('register') }}" class="text-blue-600 hover:text-blue-800 font-semibold">Create one</a>
         </p>
       </div>
     </div>
@@ -119,12 +79,12 @@
 @push('scripts')
 <script>
   $(function() {
-    $('#register-form').on('submit', function(e) {
+    $('#login-form').on('submit', function(e) {
       e.preventDefault();
       var form = $(this);
       var alertBox = $('#alert-message');
       var submitBtn = form.find('button[type="submit"]');
-      submitBtn.prop('disabled', true).text('Creating...');
+      submitBtn.prop('disabled', true).text('Signing In...');
 
       // Hide previous alert
       alertBox.addClass('hidden').removeClass('bg-green-100 text-green-800 bg-red-100 text-red-800');
@@ -138,7 +98,13 @@
             alertBox.removeClass('hidden')
               .addClass('bg-green-100 text-green-800')
               .html('<span class="font-bold">Success!</span> ' + response.message);
-            form[0].reset();
+
+            // Redirect after a brief delay
+            if (response.redirect) {
+              setTimeout(function() {
+                window.location.href = response.redirect;
+              }, 800);
+            }
           }
         },
         error: function(xhr) {
@@ -170,7 +136,7 @@
           }
         },
         complete: function() {
-          submitBtn.prop('disabled', false).text('Create Account');
+          submitBtn.prop('disabled', false).text('Sign In');
         }
       });
     });

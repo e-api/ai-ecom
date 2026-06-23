@@ -84,7 +84,7 @@
                 </a>
 
                 {{-- Login Button --}}
-                <a class="btn-login rounded-md px-4 py-2 font-bold inline-flex items-center gap-2" href="">
+                <a class="btn-login rounded-md px-4 py-2 font-bold inline-flex items-center gap-2" href="{{ route('login') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                     </svg>
@@ -188,7 +188,7 @@
         <a data-nav class="store-link px-2 rounded-lg font-medium transition-all duration-200 text-white hover:bg-white/10" href="{{ url('contact.html') }}">Contact</a>
       </div>
       <div class="hidden lg:flex items-center gap-3">
-        <a class="rounded-md border border-gray-300 bg-white px-4 py-2 font-bold text-gray-800" href="{{ url('register.html') }}">Create account</a>
+        <a class="rounded-md border border-gray-300 bg-white px-4 py-2 font-bold text-gray-800" href="{{ route('register') }}">Create account</a>
       </div>
     </nav>
 
@@ -205,33 +205,40 @@
         {{-- Mobile User Section --}}
         <div class="mb-4 p-3 rounded-lg bg-white/5 border border-white/10">
           {{-- Logged Out State --}}
+          @guest
           <div class="mobile-logged-out">
-            <a href="{{ url('login.html') }}" class="flex items-center gap-2 text-white hover:bg-white/10 rounded-md p-2 transition">
+            <a href="{{ route('login') }}" class="flex items-center gap-2 text-white hover:bg-white/10 rounded-md p-2 transition">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
               </svg>
               <span class="font-bold">Login / Register</span>
             </a>
           </div>
+          @endguest
 
-          {{-- Logged In State (Hidden by default) --}}
-          <div class="mobile-logged-in hidden">
+          {{-- Logged In State --}}
+          @auth
+          <div class="mobile-logged-in">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
-                JD
+                {{ substr(auth()->user()->name, 0, 2) }}
               </div>
               <div class="flex-1">
-                <p class="text-white font-bold text-sm">John Doe</p>
-                <p class="text-white/60 text-xs">john@example.com</p>
+                <p class="text-white font-bold text-sm">{{ auth()->user()->name }}</p>
+                <p class="text-white/60 text-xs">{{ auth()->user()->email }}</p>
               </div>
             </div>
             <div class="mt-3 pt-3 border-t border-white/10 grid grid-cols-2 gap-2">
               <a href="{{ url('account.html') }}" class="text-white text-sm hover:bg-white/10 rounded-md p-2 transition text-center">My Account</a>
               <a href="{{ url('orders.html') }}" class="text-white text-sm hover:bg-white/10 rounded-md p-2 transition text-center">Orders</a>
               <a href="{{ url('wishlist.html') }}" class="text-white text-sm hover:bg-white/10 rounded-md p-2 transition text-center">Wishlist</a>
-              <a href="{{ url('logout.html') }}" class="text-red-400 text-sm hover:bg-white/10 rounded-md p-2 transition text-center">Logout</a>
+              <form method="POST" action="{{ route('logout') }}" class="col-span-1">
+                @csrf
+                <button type="submit" class="w-full text-red-400 text-sm hover:bg-white/10 rounded-md p-2 transition text-center">Logout</button>
+              </form>
             </div>
           </div>
+          @endauth
         </div>
 
         {{-- Mobile Currency Swapper --}}

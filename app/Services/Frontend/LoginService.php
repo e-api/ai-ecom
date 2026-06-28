@@ -4,15 +4,18 @@ namespace App\Services\Frontend;
 
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use App\Services\Frontend\CartService;
 
 class LoginService
 {
+    protected $cartService;
     /**
      * Create a new class instance.
      */
-    public function __construct()
+    public function __construct(CartService $cartService)
     {
         //
+        $this->cartService = $cartService;
     }
 
     public function login(
@@ -33,6 +36,11 @@ class LoginService
         request()
             ->session()
             ->regenerate();
+
+        /*
+        | Move Session Cart
+        */
+        $this->cartService->moveSessionCartToDatabase();
 
         return true;
     }

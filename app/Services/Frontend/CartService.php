@@ -58,7 +58,7 @@ class CartService
         } else {
             $cart[$key] = [
                 'product_id' => $product->id,
-                'variant_id' => $data['variant_id'] ?? null,
+                'product_variant_id' => $data['variant_id'] ?? null, // ✅ Consistent naming
                 'name' => $product->name,
                 'image' => $product->image,
                 'price' => $variant ? $variant->price : ($product->sale_price ?? $product->price),
@@ -69,5 +69,73 @@ class CartService
         session()->put('cart', $cart);
 
         return true;
+    }
+
+    /*
+    | Move Session Cart To Database |
+    */
+
+    public function moveSessionCartToDatabase()
+    {
+        /*
+        | User Authentication |
+        */
+        if (!auth()->check()) {
+            return;
+        }
+
+        /*
+        | Get Session Cart |
+        */
+        $cart = session('cart', []);
+
+        /*
+        | Empty Cart |
+        */
+        if (empty($cart)) {
+            return;
+        }
+
+        /*
+        | Save Cart Items|
+        */
+        foreach ($cart as $item) {
+            $cartItem = CartItem::where(
+                'user_id',
+                auth()->id()
+            )
+            ->where(
+                'product_variant_id',
+                $item['product_variant_id']
+            )
+            ->first();
+
+            /*
+            | Existing Product
+            */
+            if ($cartItem) {
+                $cartItem->increment(
+                    'quantity',
+                    $item['quantity']
+                );
+            }
+
+            /* 
+            | New Product 
+            */
+            else {
+                CartItem::create([
+                    'user_id' => auth()->id(),
+                    'product_id' => $item['product_id'],
+                    'product_variant_id' => $item['product_variant_id'],
+                    'quantity' => $item['quantity'],
+                ]);
+            }
+        }
+
+        /*
+        | Clear Session Cart
+        */
+        session()->forget('cart');
     }
 }

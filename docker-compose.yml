@@ -1,0 +1,201 @@
+services:
+  # --- Your Laravel Application (PHP) ---
+  php:
+    build:
+      context: /www/wwwroot/default/ecom
+      dockerfile: Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.5}
+    container_name: ${APP_NAME:-laravel}-php
+    deploy:
+      resources:
+        limits:
+          cpus: ${PHP_CPUS:-1}
+          memory: ${PHP_MEMORY_LIMIT:-512MB}
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${PROJECT_PATH:-/www/wwwroot/default/ecom}:/var/www
+    working_dir: /var/www
+    environment:
+      # Database - Connect to Floci's RDS
+      DB_CONNECTION: pgsql
+      DB_HOST: ${APP_NAME:-laravel}-floci
+      DB_PORT: 7003
+      DB_DATABASE: ${POSTGRES_DB:-ecom}
+      DB_USERNAME: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      
+      # S3 - Connect to Floci's S3 via public domain
+      FILESYSTEM_DISK: s3
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
+      AWS_BUCKET: ${AWS_BUCKET:-ecom-bucket}
+      AWS_URL: ${APP_URL}/s3/ecom-bucket
+      AWS_ENDPOINT: ${APP_URL}/s3
+      AWS_USE_PATH_STYLE_ENDPOINT: true
+      
+      # SQS
+      QUEUE_CONNECTION: sqs
+      SQS_ENDPOINT: http://${APP_NAME:-laravel}-floci:4566
+      SQS_PREFIX: http://${APP_NAME:-laravel}-floci:4566/000000000000
+      SQS_QUEUE: ${SQS_QUEUE:-default}
+      
+      # Laravel specific
+      APP_ENV: ${APP_ENV:-local}
+      APP_DEBUG: ${APP_DEBUG:-true}
+      APP_URL: ${APP_URL:-http://localhost}
+      SESSION_DRIVER: database
+      SESSION_LIFETIME: 120
+      
+      # Mail
+      MAIL_MAILER: ${MAIL_MAILER:-smtp}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-null}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
+    ports:
+      - "127.0.0.1:${PHP_FPM_PORT:-9000}:9000"
+    labels:
+      createdBy: "bt_apps"
+    networks:
+      - baota_net
+    depends_on:
+      - floci
+      - floci-api
+      - floci-ui
+
+  # --- Floci Runtime (Core) ---
+  floci:
+    image: floci/floci:latest
+    container_name: ${APP_NAME:-laravel}-floci
+    deploy:
+      resources:
+        limits:
+          cpus: ${FLOCI_CPUS:-1}
+          memory: ${FLOCI_MEMORY_LIMIT:-512MB}
+    restart: always
+    environment:
+      - FLOCI_STORAGE_MODE=persistent
+      - FLOCI_STORAGE_SERVICES_S3_MODE=persistent
+      - FLOCI_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      # RDS configuration
+      - FLOCI_RDS_MODE=persistent
+      - FLOCI_RDS_DB_INSTANCE_IDENTIFIER=${RDS_INSTANCE_IDENTIFIER:-laravel-db}
+      - FLOCI_RDS_ENGINE=${RDS_ENGINE:-postgres}
+      - FLOCI_RDS_ENGINE_VERSION=${RDS_ENGINE_VERSION:-18.4}
+      - FLOCI_RDS_DB_NAME=${POSTGRES_DB:-ecom}
+      - FLOCI_RDS_MASTER_USERNAME=${POSTGRES_USER:-postgres}
+      - FLOCI_RDS_MASTER_PASSWORD=${POSTGRES_PASSWORD}
+      - FLOCI_RDS_PORT=5432
+      - FLOCI_RDS_ALLOCATED_STORAGE=${RDS_ALLOCATED_STORAGE:-20}
+      - FLOCI_RDS_BACKUP_RETENTION_PERIOD=${RDS_BACKUP_RETENTION:-7}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    ports:
+      - "127.0.0.1:${FLOCI_PORT:-4566}:4566"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - floci_data:/app/data
+      - floci_rds_data:/var/lib/postgresql/rds
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    labels:
+      createdBy: "bt_apps"
+    networks:
+      - baota_net
+
+  # --- Floci API ---
+  floci-api:
+    image: floci/floci-api:latest
+    container_name: ${APP_NAME:-laravel}-floci-api
+    deploy:
+      resources:
+        limits:
+          cpus: ${FLOCI_API_CPUS:-1}
+          memory: ${FLOCI_API_MEMORY_LIMIT:-512MB}
+    restart: always
+    environment:
+      - FLOCI_ENDPOINT=http://${APP_NAME:-laravel}-floci:4566
+      - AWS_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - PORT=4501
+      - CORS_ALLOW_ORIGIN=*
+      - CORS_ALLOW_METHODS=GET,POST,PUT,DELETE,OPTIONS
+      - CORS_ALLOW_HEADERS=Content-Type,Authorization,X-Requested-With
+    ports:
+      - "127.0.0.1:4501:4501"
+    labels:
+      createdBy: "bt_apps"
+    networks:
+      - baota_net
+    depends_on:
+      - floci
+
+  # --- Floci UI ---
+  floci-ui:
+    image: floci/floci-ui:latest
+    container_name: ${APP_NAME:-laravel}-floci-ui
+    deploy:
+      resources:
+        limits:
+          cpus: ${FLOCI_UI_CPUS:-1}
+          memory: ${FLOCI_UI_MEMORY_LIMIT:-512MB}
+    restart: always
+    environment:
+      - VITE_API_URL=https://${FLOCI_DOMAIN:-localhost}/api
+      - VITE_APP_URL=https://${FLOCI_DOMAIN:-localhost}
+      - VITE_MOCK_MODE=false
+    ports:
+      - "127.0.0.1:4500:4500"
+    labels:
+      createdBy: "bt_apps"
+    networks:
+      - baota_net
+    depends_on:
+      - floci-api
+
+  # --- Optional: Keep PostgreSQL for migration ---
+  postgres:
+    image: postgres:${POSTGRES_VERSION:-18.4-alpine3.23}
+    container_name: ${APP_NAME:-laravel}-postgres
+    deploy:
+      resources:
+        limits:
+          cpus: ${POSTGRES_CPUS:-1}
+          memory: ${POSTGRES_MEMORY_LIMIT:-512MB}
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ecom}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    labels:
+      createdBy: "bt_apps"
+    networks:
+      - baota_net
+    # Remove or comment this service when you fully migrate to RDS
+
+volumes:
+  floci_data:
+    driver: local
+  floci_rds_data:
+    driver: local
+  postgres_data:
+    driver: local
+
+networks:
+  baota_net:
+    external: true

@@ -842,23 +842,25 @@ $(document).ready(function() {
     /*
     | Add To Cart
     */
-    $('#addToCartBtn').on('click', function() {
+    $(document).on('click', '#addToCartBtn', function() {
+        let button = $(this);
         let product_id = $('#product_id').val();
-        let variant_id = $('#variant_id').val();
-        let quantity = $('#quantity').val();
+        let variantInput = $('#variant_id');
+        let variant_id = variantInput.length ? variantInput.val() : null;
+        let quantity = parseInt($('#quantity').val(), 10);
         let config = window.siteConfig || {};
+        let originalText = button.html();
 
-        console.log('Product ID:', product_id);
-        console.log('Variant ID:', variant_id);
-        console.log('Quantity:', quantity);
+        if (!product_id) {
+            alert('Product is missing. Please refresh the page and try again.');
+            return false;
+        }
 
-        // Validate size selection if variant select exists
-        if ($('#variant_id').length && variant_id == "") {
+        if (variantInput.length && variant_id === '') {
             alert('Please select size.');
             return false;
         }
 
-        // Validate quantity
         if (!quantity || quantity < 1) {
             alert('Please enter a valid quantity.');
             return false;
@@ -874,43 +876,43 @@ $(document).ready(function() {
                 quantity: quantity
             },
             beforeSend: function() {
-                console.log('Sending request...');
-                $('#addToCartBtn')
+                button
                     .prop('disabled', true)
                     .text('Adding...');
             },
             success: function(response) {
-                console.log('Response:', response);
                 if (response.status) {
-                    alert(response.message);
-                    updateCartCount();
+                    $('[data-cart-count]').text(response.cartCount ?? 0);
+
+                    if (window.toastr) {
+                        toastr.success(response.message || 'Product added to cart successfully.');
+                    } else {
+                        alert(response.message || 'Product added to cart successfully.');
+                    }
                 } else {
-                    alert(response.message || 'Something went wrong');
+                    alert(response.message || 'Something went wrong.');
+                    updateCartCount();
                 }
             },
-            error: function(xhr, status, error) {
-                console.log('Error:', xhr);
-                console.log('Status:', status);
-                console.log('Error:', error);
+            error: function(xhr) {
                 let message = xhr.responseJSON?.message || 'Something went wrong. Please try again.';
                 alert(message);
             },
             complete: function() {
-                $('#addToCartBtn')
+                button
                     .prop('disabled', false)
-                    .html('Add to Cart');
+                    .html(originalText || 'Add to Cart');
             }
         });
     });
 
-    // Optional: Update cart count function
     function updateCartCount() {
         let config = window.siteConfig || {};
         $.ajax({
             url: config.routes ? config.routes.cartCount : '/cart/count',
             type: "GET",
             success: function(response) {
-                $('[data-cart-count]').text(response.count);
+                $('[data-cart-count]').text(response.count ?? 0);
             }
         });
     }

@@ -1,6 +1,79 @@
 @extends('frontend.layouts.app')
 @section('title', $product->meta_title ?? $product->name)
 @section('content')
+@php
+  $familyVariationProducts = collect([$product])->merge($colorVariations);
+  $serviceProviderProducts = $familyVariationProducts->filter(fn ($variation) =>
+    $product->product_grade === null
+    || $product->product_grade === ''
+    || $variation->product_grade === $product->product_grade
+  );
+  $productGradeProducts = $familyVariationProducts->filter(fn ($variation) =>
+    $product->service_provider === null
+    || $product->service_provider === ''
+    || $variation->service_provider === $product->service_provider
+  );
+
+  $matchingVariation = function ($variations, array $matches) {
+    return $variations->first(function ($variation) use ($matches) {
+      $hasComparableValue = false;
+
+      foreach ($matches as $field => $value) {
+        if ($value === null || $value === '') {
+          continue;
+        }
+
+        $hasComparableValue = true;
+
+        if ($variation->{$field} !== $value) {
+          return false;
+        }
+      }
+
+      return $hasComparableValue;
+    });
+  };
+
+  $serviceProviderOptions = $serviceProviderProducts
+    ->filter(fn ($variation) => !empty($variation->service_provider))
+    ->groupBy(fn ($variation) => strtolower($variation->service_provider))
+    ->map(function ($variations) use ($product, $matchingVariation) {
+      $variation = $matchingVariation($variations, [
+        'product_grade' => $product->product_grade,
+        'color' => $product->color,
+      ])
+        ?? $matchingVariation($variations, ['product_grade' => $product->product_grade])
+        ?? $matchingVariation($variations, ['color' => $product->color])
+        ?? $variations->sortBy(fn ($item) => strtolower($item->product_grade ?? ''))->first();
+
+      return [
+        'label' => $variation->service_provider,
+        'slug' => $variation->slug,
+      ];
+    })
+    ->sortBy(fn ($option) => strtolower($option['label']))
+    ->values();
+
+  $productGradeOptions = $productGradeProducts
+    ->filter(fn ($variation) => !empty($variation->product_grade))
+    ->groupBy(fn ($variation) => strtolower($variation->product_grade))
+    ->map(function ($variations) use ($product, $matchingVariation) {
+      $variation = $matchingVariation($variations, [
+        'service_provider' => $product->service_provider,
+        'color' => $product->color,
+      ])
+        ?? $matchingVariation($variations, ['service_provider' => $product->service_provider])
+        ?? $matchingVariation($variations, ['color' => $product->color])
+        ?? $variations->sortBy(fn ($item) => strtolower($item->service_provider ?? ''))->first();
+
+      return [
+        'label' => $variation->product_grade,
+        'slug' => $variation->slug,
+      ];
+    })
+    ->sortBy(fn ($option) => strtolower($option['label']))
+    ->values();
+@endphp
 <div class="col-span-full">
   <section class="space-y-6">
     <div class="space-y-8">
@@ -31,7 +104,7 @@
             <a class="text-[#565959] hover:text-[#565959] hover:underline text-[12px]">{{ $product->name }}</a>
           </p>
           {{-- Image Gallery with thumbnail strip --}}
-          @php 
+          @php
             $primaryImage = $product->images->where('position', 1)->first();
             $allProductImages = $product->images->sortBy('position');
           @endphp
@@ -74,8 +147,8 @@
             </div>
             {{-- Main Image --}}
             <div class="relative overflow-hidden rounded-lg bg-gray-100 mb-3 md:mb-0 md:flex-1">
-              <img id="main-image" 
-                src="{{ Storage::url($primaryImage->image ?? $product->image) }}" 
+              <img id="main-image"
+                src="{{ Storage::url($primaryImage->image ?? $product->image) }}"
                 data-zoom-src="{{ Storage::url($primaryImage->image ?? $product->image) }}"
                 alt="{{ $product->name }}"
                 class="w-full aspect-square object-cover cursor-crosshair">
@@ -101,8 +174,9 @@
             <div class="flex flex-wrap gap-2">
               @foreach($product->variants as $index => $variant)
               @php $variantImage = $product->images->where('position', $index + 1)->first(); @endphp
-              <button type="button" 
+              <button type="button"
                 class="size-pill cursor-pointer rounded-md border px-3 py-1.5 text-sm font-medium {{ $loop->first ? 'border-primary bg-blue-50 text-blue-700' : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400' }} transition-all"
+                data-variant-id="{{ $variant->id }}"
                 data-size="{{ $variant->size }}"
                 data-price="{{ $variant->price }}"
                 data-sku="{{ $variant->sku }}"
@@ -138,7 +212,7 @@
               @endphp
               @foreach($allColors as $cv)
               @php $imgUrl = $cv['image'] ? Storage::url($cv['image']) : 'https://placehold.co/400x400/e5e7eb/9ca3af?text='.urlencode($cv['color']); @endphp
-              <a href="{{ url('product/'.$cv['slug']) }}" 
+              <a href="{{ url('product/'.$cv['slug']) }}"
                 class="color-variant block rounded-lg overflow-hidden border-2 {{ $cv['slug'] == $product->slug ? 'border-primary' : 'border-gray-200' }} hover:border-primary transition-all text-center"
                 data-color="{{ $cv['color'] }}" data-image="{{ $imgUrl }}" data-zoom="{{ $imgUrl }}">
                 <img src="{{ $imgUrl }}" alt="{{ $cv['color'] }}" class="w-full aspect-square object-cover">
@@ -154,91 +228,100 @@
           <div class="mt-4 md:hidden">
             <div class="rounded-lg bg-white text-sm">
                 {{-- Service Provider Row (Amazon-style inline twister) --}}
+                @if($product->service_provider)
                 <div class="py-1">
                   <div class="flex items-center justify-between">
                     <div class="flex items-baseline gap-1">
                       <span class="text-gray-600">Service provider:</span>
-                      <span class="font-bold text-gray-900">Tracfone</span>
+                      <span class="font-bold text-gray-900">{{ $product->service_provider }}</span>
                     </div>
                   </div>
                   <div class="mt-2">
                     <div class="flex flex-wrap gap-2">
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:text-blue-600 cursor-pointer transition">AT&T</span>
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:text-blue-600 cursor-pointer transition">Boost Mobile</span>
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:text-blue-600 cursor-pointer transition">Cricket</span>
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-dashed border-gray-300 text-sm text-gray-400 bg-gray-50 cursor-not-allowed">GSM Carriers</span>
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-dashed border-gray-300 text-sm text-gray-400 bg-gray-50 cursor-not-allowed">T-Mobile</span>
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-primary bg-blue-50 text-sm text-blue-700 font-medium cursor-pointer transition">Tracfone</span>
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-dashed border-gray-300 text-sm text-gray-400 bg-gray-50 cursor-not-allowed">Unlocked</span>
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-dashed border-gray-300 text-sm text-gray-400 bg-gray-50 cursor-not-allowed">Verizon</span>
+                      @foreach($serviceProviderOptions as $providerOption)
+                        @if($providerOption['label'] == $product->service_provider)
+                          <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-primary bg-blue-50 text-sm text-blue-700 font-medium cursor-pointer transition">
+                            {{ $providerOption['label'] }}
+                          </span>
+                        @else
+                          <a href="{{ url('product/'.$providerOption['slug']) }}"
+                            class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:text-blue-600 transition">
+                            {{ $providerOption['label'] }}
+                          </a>
+                        @endif
+                      @endforeach
                     </div>
                   </div>
                 </div>
-                {{-- Product Grade Row --}}
+                @endif
+                {{-- Product Grade Row (Amazon-style inline twister) --}}
+                @if($product->product_grade)
                 <div class="py-1">
                   <div class="flex items-center justify-between">
                     <div class="flex items-baseline gap-1">
                       <span class="text-gray-600">Product grade:</span>
-                      <span class="font-bold text-gray-900">Renewed</span>
+                      <span class="font-bold text-gray-900">{{ $product->product_grade }}</span>
                     </div>
                   </div>
                   <div class="mt-2">
                     <div class="flex flex-wrap gap-2">
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-primary bg-blue-50 text-sm text-blue-700 font-medium cursor-pointer transition">Renewed</span>
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:text-blue-600 cursor-pointer transition">Renewed Premium</span>
+                      @foreach($productGradeOptions as $gradeOption)
+                        @if($gradeOption['label'] == $product->product_grade)
+                          <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-primary bg-blue-50 text-sm text-blue-700 font-medium cursor-pointer transition">
+                            {{ $gradeOption['label'] }}
+                          </span>
+                        @else
+                          <a href="{{ url('product/'.$gradeOption['slug']) }}"
+                            class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:text-blue-600 transition">
+                            {{ $gradeOption['label'] }}
+                          </a>
+                        @endif
+                      @endforeach
                     </div>
                   </div>
                 </div>
-                {{-- Specifications Table (Amazon-style) with collapsible rows --}}
+                @endif
+                {{-- Specifications Table (Amazon-style) with specific rows and collapsible toggle --}}
+                @php
+                    $specLabels = ['Brand', 'Operating System', 'Ram Memory Installed Size', 'CPU Model', 'CPU Speed', 'Memory Storage Capacity', 'Screen Size', 'Resolution', 'Refresh Rate', 'Model Name'];
+                    $specs = $product->specifications ?? [];
+                    $specValues = [];
+                    foreach ($specs as $section) {
+                        foreach ($section['items'] as $item) {
+                            $specValues[$item['label']] = $item['value'];
+                        }
+                    }
+                    $specRows = [];
+                    foreach ($specLabels as $label) {
+                        if (isset($specValues[$label])) {
+                            $specRows[] = ['label' => $label, 'value' => $specValues[$label]];
+                        }
+                    }
+                    $visibleSpecs = array_slice($specRows, 0, 6);
+                    $extraSpecs = array_slice($specRows, 6);
+                @endphp
                 <div class="py-1 border-b border-gray-200">
                   <table class="w-full specs-table">
                     <tbody>
+                      @foreach($visibleSpecs as $item)
                       <tr>
-                        <td class="pr-4 w-2/5 align-top py-1"><span class="font-bold text-gray-900">Brand</span></td>
-                        <td class="align-top py-1"><span class="text-gray-700">Apple</span></td>
+                        <td class="pr-4 w-2/5 align-top py-1"><span class="font-bold text-gray-900">{{ $item['label'] }}</span></td>
+                        <td class="align-top py-1"><span class="text-gray-700">{{ $item['value'] }}</span></td>
                       </tr>
-                      <tr>
-                        <td class="pr-4 w-2/5 align-top py-1"><span class="font-bold text-gray-900">Operating System</span></td>
-                        <td class="align-top py-1"><span class="text-gray-700">iOS 16</span></td>
-                      </tr>
-                      <tr>
-                        <td class="pr-4 w-2/5 align-top py-1"><span class="font-bold text-gray-900">Memory Storage Capacity</span></td>
-                        <td class="align-top py-1"><span class="text-gray-700">128 GB</span></td>
-                      </tr>
-                      <tr>
-                        <td class="pr-4 w-2/5 align-top py-1"><span class="font-bold text-gray-900">Model Name</span></td>
-                        <td class="align-top py-1"><span class="text-gray-700">iPhone 17</span></td>
-                      </tr>
-                      <tr>
-                        <td class="pr-4 w-2/5 align-top py-1"><span class="font-bold text-gray-900">Wireless Carrier</span></td>
-                        <td class="align-top py-1"><span class="text-gray-700">Tracfone</span></td>
-                      </tr>
-                      <tr>
-                        <td class="pr-4 w-2/5 align-top py-1"><span class="font-bold text-gray-900">Cellular Technology</span></td>
-                        <td class="align-top py-1"><span class="text-gray-700">5G</span></td>
-                      </tr>
+                      @endforeach
                     </tbody>
                   </table>
+                  @if(count($extraSpecs) > 0)
                   {{-- Collapsible extra rows --}}
                   <div id="specs-mobile-extra" class="hidden">
                     <table class="w-full specs-table">
                       <tbody>
+                        @foreach($extraSpecs as $item)
                         <tr>
-                          <td class="pr-4 w-2/5 align-top py-1.5"><span class="font-bold text-gray-900">Color</span></td>
-                          <td class="align-top py-1.5"><span class="text-gray-700">(PRODUCT) RED</span></td>
+                          <td class="pr-4 w-2/5 align-top py-1.5"><span class="font-bold text-gray-900">{{ $item['label'] }}</span></td>
+                          <td class="align-top py-1.5"><span class="text-gray-700">{{ $item['value'] }}</span></td>
                         </tr>
-                        <tr>
-                          <td class="pr-4 w-2/5 align-top py-1.5"><span class="font-bold text-gray-900">Wireless network technology</span></td>
-                          <td class="align-top py-1.5"><span class="text-gray-700">Wi-Fi</span></td>
-                        </tr>
-                        <tr>
-                          <td class="pr-4 w-2/5 align-top py-1.5"><span class="font-bold text-gray-900">SIM card slot count</span></td>
-                          <td class="align-top py-1.5"><span class="text-gray-700">Dual SIM</span></td>
-                        </tr>
-                        <tr>
-                          <td class="pr-4 w-2/5 align-top py-1.5"><span class="font-bold text-gray-900">Connector Type</span></td>
-                          <td class="align-top py-1.5"><span class="text-gray-700">Lightning</span></td>
-                        </tr>
+                        @endforeach
                       </tbody>
                     </table>
                   </div>
@@ -248,21 +331,23 @@
                     </svg>
                     <span class="toggle-text">See more</span>
                   </button>
+                  @endif
                 </div>
                 {{-- About this item --}}
+                @php $aboutItems = array_filter(array_map('trim', explode("\n", $product->description ?? ''))); @endphp
                 <div class="py-3">
                   <h3 class="font-bold text-gray-900 mb-2">About this item</h3>
+                  @if(count($aboutItems) > 0)
                   <ul class="list-disc ml-4 text-sm text-gray-700 space-y-1.5">
-                    <li>This device is locked to TracFone only and not compatible with any other carrier.</li>
-                    <li>Please check with your carrier to verify compatibility.</li>
-                    <li>When you receive the phone, insert a SIM card from a compatible carrier. Then, turn it on, connect to Wi-Fi, and follow the on screen prompts to activate service.</li>
-                    <li>The device does not come with headphones or a SIM card. It does include a generic (Mfi certified) charger and charging cable.</li>
-                    <li>Tested for battery health and guaranteed to have a minimum battery capacity of 80%.</li>
+                    @foreach($aboutItems as $item)
+                    <li>{{ $item }}</li>
+                    @endforeach
                   </ul>
+                  @else
+                  <p class="text-sm text-gray-500">No description available.</p>
+                  @endif
                   <div class="mt-3 space-y-1">
-                    <a href="https://www.amazon.com/Apple-iPhone-13-128GB-Blue/dp/B0DK81H7QX/ref=sr_1_1?crid=37XA8CF7N12JI&dib=eyJ2IjoiMSJ9.b8TgvfBA0_M8weoe9Ko-sqy3GaGWotxgPetwwIdgCOUsQHqrLAduhNTpILr_7AnVLcvzoPmWR6BA3bxFwrKkBNOVvR871cAwQcWg2G76EaCIhWj3TlA2msAepS3ibrBpOrpUMgzsuYl-f_Ci0jD3lGodSYCrFKuBiOQMf8Yd1qI3MDv2I1NQ7VOQOUchKBOCMJ8V-eYazWhKJ3z2Yi8bK8kCl3xeyXKnZNAwZyU_8JU.cuoWSfSMcjq_AxEeKiBkIM_5NO0tY6C7kpITVI9tX9Q&dib_tag=se&keywords=iphone&qid=1780744606&sprefix=iphone%2Caps%2C382&sr=8-1&th=1#productDetails" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-600 hover:text-blue-800 hover:underline">› See more product details</a>
-                    <br>
-                    <a href="https://www.amazon.com/Apple-iPhone-13-128GB-Blue/dp/B0DK81H7QX/ref=sr_1_1?crid=37XA8CF7N12JI&dib=eyJ2IjoiMSJ9.b8TgvfBA0_M8weoe9Ko-sqy3GaGWotxgPetwwIdgCOUsQHqrLAduhNTpILr_7AnVLcvzoPmWR6BA3bxFwrKkBNOVvR871cAwQcWg2G76EaCIhWj3TlA2msAepS3ibrBpOrpUMgzsuYl-f_Ci0jD3lGodSYCrFKuBiOQMf8Yd1qI3MDv2I1NQ7VOQOUchKBOCMJ8V-eYazWhKJ3z2Yi8bK8kCl3xeyXKnZNAwZyU_8JU.cuoWSfSMcjq_AxEeKiBkIM_5NO0tY6C7kpITVI9tX9Q&dib_tag=se&keywords=iphone&qid=1780744606&sprefix=iphone%2Caps%2C382&sr=8-1&th=1#" target="_blank" rel="noopener noreferrer" class="text-xs text-gray-500 hover:text-gray-700 hover:underline">Report an issue with this product or seller</a>
+                    <a href="#product-details" class="text-sm text-blue-600 hover:text-blue-800 hover:underline">› See more product details</a>
                   </div>
                 </div>
               </div>
@@ -308,12 +393,13 @@
             </div>
             @if($product->variants->count() > 0)
             <div id="zoom-size-thumbnails" class="mt-2 hidden md:block">
-              <h3 class="text-sm font-semibold mb-2">Size: <span id="h3-zoom-selected-size" class="ml-1 font-medium text-gray-700">{{ $product->variants->first()->size ?? 'N/A' }}</span></h3>
+              <h3 class="text-sm mb-2">Size: <span id="h3-zoom-selected-size" class="ml-1 font-medium">{{ $product->variants->first()->size ?? 'N/A' }}</span></h3>
               <div class="flex flex-wrap gap-2">
                 @foreach($product->variants as $index => $variant)
                 @php $variantImage = $product->images->where('position', $index + 1)->first(); @endphp
-                <button type="button" 
+                <button type="button"
                   class="size-pill cursor-pointer rounded-md border px-3 py-1.5 text-sm font-medium {{ $loop->first ? 'border-primary bg-blue-50 text-blue-700' : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400' }} transition-all"
+                  data-variant-id="{{ $variant->id }}"
                   data-size="{{ $variant->size }}"
                   data-price="{{ $variant->price }}"
                   data-sku="{{ $variant->sku }}"
@@ -329,7 +415,7 @@
             @endif
             @if($colorVariations->count() > 0 || $product->color)
             <div id="zoom-color-variants" class="mt-2 hidden md:block">
-              <h3 class="text-sm font-semibold mb-2">Available colors: <span id="h3-zoom-available-colors" class="ml-1 text-gray-700 font-medium">{{ $product->color ?? ($colorVariations->first()->color ?? '') }}</span></h3>
+              <h3 class="text-sm mb-2">Available colors: <span id="h3-zoom-available-colors" class="ml-1 font-medium">{{ $product->color ?? ($colorVariations->first()->color ?? '') }}</span></h3>
               <div class="grid grid-cols-8 gap-1">
                   @php
                   $allColors = collect();
@@ -347,12 +433,12 @@
                   @endphp
                   @foreach($allColors as $cv)
                   @php $imgUrl = $cv['image'] ? Storage::url($cv['image']) : 'https://placehold.co/400x400/e5e7eb/9ca3af?text='.urlencode($cv['color']); @endphp
-                  <a href="{{ url('product/'.$cv['slug']) }}" 
+                  <a href="{{ url('product/'.$cv['slug']) }}"
                     class="color-variant block rounded-md overflow-hidden border {{ $cv['slug'] == $product->slug ? 'border-primary' : 'border-gray-200' }} hover:border-primary transition-all text-center"
                     data-color="{{ $cv['color'] }}" data-image="{{ $imgUrl }}" data-zoom="{{ $imgUrl }}">
                     <img src="{{ $imgUrl }}" alt="{{ $cv['color'] }}" class="w-full aspect-square object-cover">
                     <div class="py-0.5 text-center text-[9px] font-medium bg-white truncate">
-                        {{ Str::limit($cv['color'], 6) }}
+                        {{ Str::limit($cv['color'], 20) }}
                     </div>
                   </a>
                   @endforeach
@@ -363,95 +449,100 @@
             <div id="product-specs" class="mt-4 hidden md:block">
               <div class="rounded-lg bg-white text-sm">
                 {{-- Service Provider Row (Amazon-style inline twister) --}}
+                @if($product->service_provider)
                 <div class="py-1">
                   <div class="flex items-center justify-between">
                     <div class="flex items-baseline gap-1">
                       <span class="text-gray-600">Service provider:</span>
-                      <span class="font-bold text-gray-900">Tracfone</span>
+                      <span class="font-bold text-gray-900">{{ $product->service_provider }}</span>
                     </div>
                   </div>
-                  <div class="mt-2">
+                    <div class="mt-2">
                     <div class="flex flex-wrap gap-2">
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:text-blue-600 cursor-pointer transition">AT&T</span>
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:text-blue-600 cursor-pointer transition">Boost Mobile</span>
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:text-blue-600 cursor-pointer transition">Cricket</span>
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-dashed border-gray-300 text-sm text-gray-400 bg-gray-50 cursor-not-allowed">GSM Carriers</span>
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-dashed border-gray-300 text-sm text-gray-400 bg-gray-50 cursor-not-allowed">T-Mobile</span>
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-primary bg-blue-50 text-sm text-blue-700 font-medium cursor-pointer transition">Tracfone</span>
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-dashed border-gray-300 text-sm text-gray-400 bg-gray-50 cursor-not-allowed">Unlocked</span>
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-dashed border-gray-300 text-sm text-gray-400 bg-gray-50 cursor-not-allowed">Verizon</span>
+                      @foreach($serviceProviderOptions as $providerOption)
+                        @if($providerOption['label'] == $product->service_provider)
+                          <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-primary bg-blue-50 text-sm text-blue-700 font-medium cursor-pointer transition">
+                            {{ $providerOption['label'] }}
+                          </span>
+                        @else
+                          <a href="{{ url('product/'.$providerOption['slug']) }}"
+                            class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:text-blue-600 transition">
+                            {{ $providerOption['label'] }}
+                          </a>
+                        @endif
+                      @endforeach
                     </div>
                   </div>
                 </div>
-                {{-- Product Grade Row --}}
+                @endif
+                {{-- Product Grade Row (Amazon-style inline twister) --}}
+                @if($product->product_grade)
                 <div class="py-1">
                   <div class="flex items-center justify-between">
                     <div class="flex items-baseline gap-1">
                       <span class="text-gray-600">Product grade:</span>
-                      <span class="font-bold text-gray-900">Renewed</span>
+                      <span class="font-bold text-gray-900">{{ $product->product_grade }}</span>
                     </div>
                   </div>
-                  <div class="mt-2">
+                    <div class="mt-2">
                     <div class="flex flex-wrap gap-2">
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-primary bg-blue-50 text-sm text-blue-700 font-medium cursor-pointer transition">Renewed</span>
-                      <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:text-blue-600 cursor-pointer transition">Renewed Premium</span>
+                      @foreach($productGradeOptions as $gradeOption)
+                        @if($gradeOption['label'] == $product->product_grade)
+                          <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-primary bg-blue-50 text-sm text-blue-700 font-medium cursor-pointer transition">
+                            {{ $gradeOption['label'] }}
+                          </span>
+                        @else
+                          <a href="{{ url('product/'.$gradeOption['slug']) }}"
+                            class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:text-blue-600 transition">
+                            {{ $gradeOption['label'] }}
+                          </a>
+                        @endif
+                      @endforeach
                     </div>
                   </div>
                 </div>
-                {{-- Specifications Table (Amazon-style) with collapsible rows --}}
+                @endif
+                {{-- Specifications Table (Amazon-style) with specific rows and collapsible toggle --}}
+                @php
+                    $specLabels = ['Brand', 'Operating System', 'Ram Memory Installed Size', 'Memory Storage Capacity', 'Screen Size', 'CPU Model', 'CPU Speed', 'Resolution', 'Refresh Rate', 'Model Name', 'Color', 'Wireless Carrier', 'Wireless Provider', 'Cellular Technology', 'Connectivity Technology', 'Color'];
+                    $specs = $product->specifications ?? [];
+                    $specValues = [];
+                    foreach ($specs as $section) {
+                        foreach ($section['items'] as $item) {
+                            $specValues[$item['label']] = $item['value'];
+                        }
+                    }
+                    $specRows = [];
+                    foreach ($specLabels as $label) {
+                        if (isset($specValues[$label])) {
+                            $specRows[] = ['label' => $label, 'value' => $specValues[$label]];
+                        }
+                    }
+                    $visibleSpecs = array_slice($specRows, 0, 6);
+                    $extraSpecs = array_slice($specRows, 6);
+                @endphp
                 <div class="py-1 border-b border-gray-200">
                   <table class="w-full specs-table">
                     <tbody>
+                      @foreach($visibleSpecs as $item)
                       <tr>
-                        <td class="pr-4 w-2/5 align-top py-1"><span class="font-bold text-gray-900">Brand</span></td>
-                        <td class="align-top py-1"><span class="text-gray-700">{{ $product->brand->name }}</span></td>
+                        <td class="pr-4 w-2/5 align-top py-1"><span class="font-bold text-gray-900">{{ $item['label'] }}</span></td>
+                        <td class="align-top py-1"><span class="text-gray-700">{{ $item['value'] }}</span></td>
                       </tr>
-                      <tr>
-                        <td class="pr-4 w-2/5 align-top py-1"><span class="font-bold text-gray-900">Operating System</span></td>
-                        <td class="align-top py-1"><span class="text-gray-700">iOS 16</span></td>
-                      </tr>
-                      <tr>
-                        @if($product->variants->count() > 0)
-                        <td class="pr-4 w-2/5 align-top py-1"><span class="font-bold text-gray-900">Memory Storage Capacity</span></td>
-                        <td class="align-top py-1"><span class="text-gray-700">{{ $product->variants->first()->size ?? 'N/A' }}</span></td>
-                        @endif
-                      </tr>
-                      <tr>
-                        <td class="pr-4 w-2/5 align-top py-1"><span class="font-bold text-gray-900">Model Name</span></td>
-                        <td class="align-top py-1"><span class="text-gray-700">iPhone 17</span></td>
-                      </tr>
-                      <tr>
-                        <td class="pr-4 w-2/5 align-top py-1"><span class="font-bold text-gray-900">Wireless Carrier</span></td>
-                        <td class="align-top py-1"><span class="text-gray-700">Tracfone</span></td>
-                      </tr>
-                      <tr>
-                        <td class="pr-4 w-2/5 align-top py-1"><span class="font-bold text-gray-900">Cellular Technology</span></td>
-                        <td class="align-top py-1"><span class="text-gray-700">5G</span></td>
-                      </tr>
+                      @endforeach
                     </tbody>
                   </table>
+                  @if(count($extraSpecs) > 0)
                   {{-- Collapsible extra rows --}}
                   <div id="specs-desktop-extra" class="hidden">
                     <table class="w-full specs-table">
                       <tbody>
+                        @foreach($extraSpecs as $item)
                         <tr>
-                          <td class="pr-4 w-2/5 align-top py-1.5"><span class="font-bold text-gray-900">Color</span></td>
-                          @if($colorVariations->count() > 0 || $product->color)
-                          <td class="align-top py-1.5"><span class="text-gray-700">{{ $product->color ?? ($colorVariations->first()->color ?? '') }}</span></td>
-                          @endif
+                          <td class="pr-4 w-2/5 align-top py-1"><span class="font-bold text-gray-900">{{ $item['label'] }}</span></td>
+                          <td class="align-top py-1"><span class="text-gray-700">{{ $item['value'] }}</span></td>
                         </tr>
-                        <tr>
-                          <td class="pr-4 w-2/5 align-top py-1.5"><span class="font-bold text-gray-900">Wireless network technology</span></td>
-                          <td class="align-top py-1.5"><span class="text-gray-700">Wi-Fi</span></td>
-                        </tr>
-                        <tr>
-                          <td class="pr-4 w-2/5 align-top py-1.5"><span class="font-bold text-gray-900">SIM card slot count</span></td>
-                          <td class="align-top py-1.5"><span class="text-gray-700">Dual SIM</span></td>
-                        </tr>
-                        <tr>
-                          <td class="pr-4 w-2/5 align-top py-1.5"><span class="font-bold text-gray-900">Connector Type</span></td>
-                          <td class="align-top py-1.5"><span class="text-gray-700">Lightning</span></td>
-                        </tr>
+                        @endforeach
                       </tbody>
                     </table>
                   </div>
@@ -461,21 +552,23 @@
                     </svg>
                     <span class="toggle-text">See more</span>
                   </button>
+                  @endif
                 </div>
                 {{-- About this item --}}
+                @php $aboutItems = array_filter(array_map('trim', explode("\n", $product->description ?? ''))); @endphp
                 <div class="py-3">
                   <h3 class="font-bold text-gray-900 mb-2">About this item</h3>
+                  @if(count($aboutItems) > 0)
                   <ul class="list-disc ml-4 text-sm text-gray-700 space-y-1.5">
-                    <li>This device is locked to TracFone only and not compatible with any other carrier.</li>
-                    <li>Please check with your carrier to verify compatibility.</li>
-                    <li>When you receive the phone, insert a SIM card from a compatible carrier. Then, turn it on, connect to Wi-Fi, and follow the on screen prompts to activate service.</li>
-                    <li>The device does not come with headphones or a SIM card. It does include a generic (Mfi certified) charger and charging cable.</li>
-                    <li>Tested for battery health and guaranteed to have a minimum battery capacity of 80%.</li>
+                    @foreach($aboutItems as $item)
+                    <li>{{ $item }}</li>
+                    @endforeach
                   </ul>
+                  @else
+                  <p class="text-sm text-gray-500">No description available.</p>
+                  @endif
                   <div class="mt-3 space-y-1">
-                    <a href="https://www.amazon.com/Apple-iPhone-13-128GB-Blue/dp/B0DK81H7QX/ref=sr_1_1?crid=37XA8CF7N12JI&dib=eyJ2IjoiMSJ9.b8TgvfBA0_M8weoe9Ko-sqy3GaGWotxgPetwwIdgCOUsQHqrLAduhNTpILr_7AnVLcvzoPmWR6BA3bxFwrKkBNOVvR871cAwQcWg2G76EaCIhWj3TlA2msAepS3ibrBpOrpUMgzsuYl-f_Ci0jD3lGodSYCrFKuBiOQMf8Yd1qI3MDv2I1NQ7VOQOUchKBOCMJ8V-eYazWhKJ3z2Yi8bK8kCl3xeyXKnZNAwZyU_8JU.cuoWSfSMcjq_AxEeKiBkIM_5NO0tY6C7kpITVI9tX9Q&dib_tag=se&keywords=iphone&qid=1780744606&sprefix=iphone%2Caps%2C382&sr=8-1&th=1#productDetails" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-600 hover:text-blue-800 hover:underline">› See more product details</a>
-                    <br>
-                    <a href="https://www.amazon.com/Apple-iPhone-13-128GB-Blue/dp/B0DK81H7QX/ref=sr_1_1?crid=37XA8CF7N12JI&dib=eyJ2IjoiMSJ9.b8TgvfBA0_M8weoe9Ko-sqy3GaGWotxgPetwwIdgCOUsQHqrLAduhNTpILr_7AnVLcvzoPmWR6BA3bxFwrKkBNOVvR871cAwQcWg2G76EaCIhWj3TlA2msAepS3ibrBpOrpUMgzsuYl-f_Ci0jD3lGodSYCrFKuBiOQMf8Yd1qI3MDv2I1NQ7VOQOUchKBOCMJ8V-eYazWhKJ3z2Yi8bK8kCl3xeyXKnZNAwZyU_8JU.cuoWSfSMcjq_AxEeKiBkIM_5NO0tY6C7kpITVI9tX9Q&dib_tag=se&keywords=iphone&qid=1780744606&sprefix=iphone%2Caps%2C382&sr=8-1&th=1#" target="_blank" rel="noopener noreferrer" class="text-xs text-gray-500 hover:text-gray-700 hover:underline">Report an issue with this product or seller</a>
+                    <a href="#product-details" class="text-sm text-blue-600 hover:text-blue-800 hover:underline">› See more product details</a>
                   </div>
                 </div>
               </div>
@@ -494,7 +587,7 @@
             @endif
             <div class="flex items-baseline gap-2">
               <span class="text-xs text-gray-500">{{ $product->sale_price ? 'Sale Price:' : 'Price:' }}</span>
-              <span id="product-price" class="text-2xl font-bold text-gray-900">${{ number_format($product->sale_price ?? $product->price, 2) }}</span>
+              <span id="product-price-desktop" class="text-2xl font-bold text-gray-900">${{ number_format($product->sale_price ?? $product->price, 2) }}</span>
             </div>
             <div class="flex items-center gap-1 mt-1">
               <span class="text-sm text-gray-600">FREE delivery</span>
@@ -520,7 +613,7 @@
             <label class="block text-sm font-medium text-gray-700 mb-1">Quantity:</label>
             <div class="inline-flex items-center border border-gray-300 rounded-md overflow-hidden">
               <button type="button" onclick="decrementQty()" class="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition border-r border-gray-300 text-lg font-medium select-none">−</button>
-              <input type="number" id="quantity" value="1" min="1" max="{{ $product->variants->first()->stock ?? $product->stock }}" 
+              <input type="number" id="quantity" value="1" min="1" max="{{ $product->variants->first()->stock ?? $product->stock }}"
                 class="w-14 h-9 text-center text-sm font-medium text-gray-900 border-0 focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
               <button type="button" onclick="incrementQty()" class="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition border-l border-gray-300 text-lg font-medium select-none">+</button>
             </div>
@@ -531,6 +624,7 @@
               <form id="addToCartForm">
                 @csrf
                 <input type="hidden" id="product_id" value="{{ $product->id }}">
+                <input type="hidden" id="variant_id" value="{{ $product->variants->first()->id ?? '' }}">
                 <button id="addToCartBtn" data-cart-add type="button" class="w-full rounded-full bg-yellow-400 hover:bg-yellow-500 px-6 py-3 font-bold text-sm text-gray-900 transition shadow-sm">Add to Cart</button>
                 <button id="btn-buy-now" type="button" class="w-full rounded-full bg-orange-500 hover:bg-orange-600 px-6 py-3 font-bold text-sm text-white transition shadow-sm">Buy Now</button>
               </form>
@@ -577,106 +671,80 @@
       </div>
 
       {{-- Product Information (Amazon-style collapsible dropdowns - compact) --}}
+      @php $specs = $product->specifications; @endphp
+      @if($specs && count($specs) > 0)
       <div id="product-details" class="border-b border-gray-200 pb-8">
-        <h2 class="text-lg font-bold text-gray-900 mb-4">Product information</h2>
-        
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Product information</h2>
+
         <div class="product-info-grid">
+            @php
+                $mid = ceil(count($specs) / 2);
+                $leftSpecs = array_slice($specs, 0, $mid);
+                $rightSpecs = array_slice($specs, $mid);
+            @endphp
             <!-- LEFT COLUMN -->
-            <div class="rounded-lg border border-gray-200 overflow-hidden divide-y divide-gray-200">
-                <!-- Display & Hardware section -->
+            <div class="overflow-hidden divide-y divide-gray-200">
+                @foreach($leftSpecs as $section)
                 <div>
-                    <button type="button" class="product-info-toggle w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleProductInfo(this)">
-                        <span class="text-sm font-bold text-gray-900">Display & Hardware</span>
-                        <svg class="w-3 h-3 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    <button type="button" class="product-info-toggle w-full flex items-center justify-between px-4 py-3 bg-[#eff5f5] hover:bg-[#eff5f5] transition-colors text-left border-t border-b border-gray-200" onclick="toggleProductInfo(this)">
+                        <span class="text-xl font-bold text-gray-900">{{ $section['section'] }}</span>
+                        <svg class="w-6 h-6 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </button>
-                    <div class="product-info-content">
-                        <div class="divide-y divide-gray-100">
-                            <div class="flex px-4 py-2.5"><span class="w-2/5 text-sm font-bold text-gray-900">Screen Size</span><span class="w-3/5 text-sm text-gray-700">6.3 inches</span></div>
-                            <div class="flex px-4 py-2.5 bg-gray-50"><span class="w-2/5 text-sm font-bold text-gray-900">Resolution</span><span class="w-3/5 text-sm text-gray-700">1206 x 2622</span></div>
-                            <div class="flex px-4 py-2.5"><span class="w-2/5 text-sm font-bold text-gray-900">Refresh Rate</span><span class="w-3/5 text-sm text-gray-700">120 Hz</span></div>
-                            <div class="flex px-4 py-2.5 bg-gray-50"><span class="w-2/5 text-sm font-bold text-gray-900">Display Type</span><span class="w-3/5 text-sm text-gray-700">OLED</span></div>
-                            <div class="flex px-4 py-2.5"><span class="w-2/5 text-sm font-bold text-gray-900">Pixel Density</span><span class="w-3/5 text-sm text-gray-700">460 PPI</span></div>
-                            <div class="flex px-4 py-2.5 bg-gray-50"><span class="w-2/5 text-sm font-bold text-gray-900">Operating System</span><span class="w-3/5 text-sm text-gray-700">iOS 17</span></div>
-                            <div class="flex px-4 py-2.5"><span class="w-2/5 text-sm font-bold text-gray-900">Processor</span><span class="w-3/5 text-sm text-gray-700">Apple A18 Pro</span></div>
-                            <div class="flex px-4 py-2.5 bg-gray-50"><span class="w-2/5 text-sm font-bold text-gray-900">Processor Speed</span><span class="w-3/5 text-sm text-gray-700">6 GHz</span></div>
-                            <div class="flex px-4 py-2.5"><span class="w-2/5 text-sm font-bold text-gray-900">RAM</span><span class="w-3/5 text-sm text-gray-700">256 GB</span></div>
-                            <div class="flex px-4 py-2.5 bg-gray-50"><span class="w-2/5 text-sm font-bold text-gray-900">Storage</span><span class="w-3/5 text-sm text-gray-700">256 GB</span></div>
-                            <div class="flex px-4 py-2.5"><span class="w-2/5 text-sm font-bold text-gray-900">Color</span><span class="w-3/5 text-sm text-gray-700">Desert Titanium</span></div>
-                            <div class="flex px-4 py-2.5 bg-gray-50"><span class="w-2/5 text-sm font-bold text-gray-900">Connector</span><span class="w-3/5 text-sm text-gray-700">USB Type C</span></div>
-                            <div class="flex px-4 py-2.5"><span class="w-2/5 text-sm font-bold text-gray-900">Form Factor</span><span class="w-3/5 text-sm text-gray-700">Bar</span></div>
-                            <div class="flex px-4 py-2.5 bg-gray-50"><span class="w-2/5 text-sm font-bold text-gray-900">SIM</span><span class="w-3/5 text-sm text-gray-700">eSIM</span></div>
-                            <div class="flex px-4 py-2.5"><span class="w-2/5 text-sm font-bold text-gray-900">Water Resistance</span><span class="w-3/5 text-sm text-gray-700">Not Water Resistant</span></div>
+                    <div class="product-info-content border-b border-gray-200" style="display: none;">
+                        <div class="divide-y divide-gray-300">
+                            @foreach($section['items'] as $index => $item)
+                            <div class="flex py-1.5 {{ $index % 2 === 0 ? '' : 'bg-transparent' }}">
+                                <span class="w-4/5 text-sm font-bold text-[#565959]">{{ $item['label'] }}</span>
+                                <span class="w-3/5 text-sm text-gray-700">{{ $item['value'] }}</span>
+                            </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
-                
-                <!-- Battery & Dimensions -->
-                <div>
-                    <button type="button" class="product-info-toggle w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleProductInfo(this)">
-                        <span class="text-sm font-bold text-gray-900">Battery & Dimensions</span>
-                        <svg class="w-3 h-3 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div class="product-info-content">
-                        <div class="divide-y divide-gray-100">
-                            <div class="flex px-4 py-2.5"><span class="w-2/5 text-sm font-bold text-gray-900">Battery</span><span class="w-3/5 text-sm text-gray-700">3582 mAh</span></div>
-                            <div class="flex px-4 py-2.5 bg-gray-50"><span class="w-2/5 text-sm font-bold text-gray-900">Dimensions</span><span class="w-3/5 text-sm text-gray-700">5.89 x 2.81 x 0.32 inches</span></div>
-                        </div>
-                    </div>
-                </div>
+                @endforeach
             </div>
-            
+
             <!-- RIGHT COLUMN -->
-            <div class="rounded-lg border border-gray-200 overflow-hidden divide-y divide-gray-200">
-                <!-- Connectivity -->
+            <div class="overflow-hidden divide-y divide-gray-200">
+                @foreach($rightSpecs as $section)
                 <div>
-                    <button type="button" class="product-info-toggle w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleProductInfo(this)">
-                        <span class="text-sm font-bold text-gray-900">Connectivity</span>
-                        <svg class="w-3 h-3 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    <button type="button" class="product-info-toggle w-full flex items-center justify-between px-4 py-3 bg-[#eff5f5] hover:bg-[#eff5f5] transition-colors text-left border-t border-b border-gray-200" onclick="toggleProductInfo(this)">
+                        <span class="text-xl font-bold text-gray-900">{{ $section['section'] }}</span>
+                        <svg class="w-6 h-6 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </button>
-                    <div class="product-info-content">
-                        <div class="divide-y divide-gray-100">
-                            <div class="flex px-4 py-2.5"><span class="w-2/5 text-sm font-bold text-gray-900">Wireless Provider</span><span class="w-3/5 text-sm text-gray-700">Unlocked for All Carriers</span></div>
-                            <div class="flex px-4 py-2.5 bg-gray-50"><span class="w-2/5 text-sm font-bold text-gray-900">Cellular Technology</span><span class="w-3/5 text-sm text-gray-700">5G</span></div>
+                    <div class="product-info-content border-b border-gray-200" style="display: none;">
+                        <div class="divide-y divide-gray-200">
+                            @foreach($section['items'] as $index => $item)
+                            <div class="flex py-1.5 {{ $index % 2 === 0 ? '' : 'bg-transparent' }}">
+                                <span class="w-4/5 text-sm font-bold text-[#565959]">{{ $item['label'] }}</span>
+                                <span class="w-3/5 text-sm text-gray-700">{{ $item['value'] }}</span>
+                            </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
-                
-                <!-- Item Details -->
-                <div>
-                    <button type="button" class="product-info-toggle w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleProductInfo(this)">
-                        <span class="text-sm font-bold text-gray-900">Item Details</span>
-                        <svg class="w-3 h-3 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div class="product-info-content">
-                        <div class="divide-y divide-gray-100">
-                            <div class="flex px-4 py-2.5"><span class="w-2/5 text-sm font-bold text-gray-900">Brand</span><span class="w-3/5 text-sm text-gray-700">Apple</span></div>
-                            <div class="flex px-4 py-2.5 bg-gray-50"><span class="w-2/5 text-sm font-bold text-gray-900">Model Year</span><span class="w-3/5 text-sm text-gray-700">2024</span></div>
-                            <div class="flex px-4 py-2.5"><span class="w-2/5 text-sm font-bold text-gray-900">Built-In Media</span><span class="w-3/5 text-sm text-gray-700">Apple iPhone 16 Pro, USB Cable</span></div>
-                            <div class="flex px-4 py-2.5 bg-gray-50"><span class="w-2/5 text-sm font-bold text-gray-900">Warranty</span><span class="w-3/5 text-sm text-gray-700">1 Year Amazon Renewed Guarantee</span></div>
-                            <div class="flex px-4 py-2.5"><span class="w-2/5 text-sm font-bold text-gray-900">Manufacturer</span><span class="w-3/5 text-sm text-gray-700">Apple</span></div>
-                            <div class="flex px-4 py-2.5 bg-gray-50"><span class="w-2/5 text-sm font-bold text-gray-900">UPC</span><span class="w-3/5 text-sm text-gray-700">724129131017</span></div>
-                            <div class="flex px-4 py-2.5"><span class="w-2/5 text-sm font-bold text-gray-900">ASIN</span><span class="w-3/5 text-sm text-gray-700">B0DNTC3HXX</span></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Customer Feedback -->
-                <div>
-                    <button type="button" class="product-info-toggle w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleProductInfo(this)">
-                        <span class="text-sm font-bold text-gray-900">Customer Feedback</span>
-                        <svg class="w-3 h-3 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div class="product-info-content">
-                        <div class="divide-y divide-gray-100">
-                            <div class="flex px-4 py-2.5"><span class="w-2/5 text-sm font-bold text-gray-900">Customer Reviews</span><span class="w-3/5 text-sm text-gray-700">4.3 out of 5 stars (811 reviews)</span></div>
-                            <div class="flex px-4 py-2.5 bg-gray-50"><span class="w-2/5 text-sm font-bold text-gray-900">Lower Price Feedback</span><span class="w-3/5 text-sm text-gray-700">Yes ✔</span></div>
-                            <div class="flex px-4 py-2.5"><span class="w-2/5 text-sm font-bold text-gray-900">Best Sellers Rank</span><span class="w-3/5 text-sm text-gray-700">#680 in Cell Phones & Accessories, #9 in Renewed Smartphones, #13 in Cell Phones</span></div>
-                        </div>
-                    </div>
-                </div>
+                @endforeach
             </div>
         </div>
       </div>
+      @endif
+
+      {{-- Whats in the box section (Amazon-style) --}}
+      @if($product->box_contents)
+      <div id="product-box-contents" class="border-b border-gray-200 pb-8">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">What's in the box</h2>
+        <div class="text-sm text-gray-700 space-y-1">
+          @foreach(explode("\n", $product->box_contents) as $item)
+          @if(trim($item))
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-green-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span>{{ trim($item) }}</span>
+          </div>
+          @endif
+          @endforeach
+        </div>
+      </div>
+      @endif
 
       {{-- Customer Reviews (current Amazon style 2025+) --}}
       <div id="product-reviews" class="pb-8">
@@ -774,7 +842,7 @@
             @php $imageUrl = $relatedProduct->image ? Storage::url($relatedProduct->image) : 'https://placehold.co/400x400/e5e7eb/9ca3af?text=No+Image'; @endphp
             <a href="{{ url('product/'.$relatedProduct->slug) }}" class="flex-shrink-0 w-[160px] sm:w-[180px] snap-start group">
               <div class="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden mb-2">
-                <img src="{{ $imageUrl }}" 
+                <img src="{{ $imageUrl }}"
                   alt="{{ $relatedProduct->name }}"
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy">
@@ -813,7 +881,7 @@
   function changeMainImage(imageUrl) {
       document.querySelector('.product-swatch').style.backgroundImage = "url('" + imageUrl + "')";
   }
-  
+
   // Variant price update
   document.addEventListener('DOMContentLoaded', function() {
       const variantSelect = document.getElementById('variant-size');
@@ -822,16 +890,16 @@
               const selectedOption = this.options[this.selectedIndex];
               const price = selectedOption.getAttribute('data-price');
               const stock = selectedOption.getAttribute('data-stock');
-              
+
               // Update price using the specific ID
               const priceElement = document.getElementById('product-price');
               if (priceElement && price) {
                   priceElement.innerHTML = '$' + parseFloat(price).toLocaleString(undefined, {
-                      minimumFractionDigits: 2, 
+                      minimumFractionDigits: 2,
                       maximumFractionDigits: 2
                   });
               }
-              
+
               // Update quantity max
               const quantityInput = document.getElementById('quantity');
               if (quantityInput && stock) {
@@ -843,21 +911,21 @@
           });
       }
   });
-  
+
   document.addEventListener('DOMContentLoaded', function() {
       const mainImage = document.getElementById('main-image');
       const zoomLens = document.getElementById('zoom-lens');
       const zoomResult = document.getElementById('zoom-result');
       const zoomedImage = document.getElementById('zoomed-image');
       const imageWrapper = document.getElementById('image-wrapper');
-  
+
       // Only enable desktop hover zoom
       if (!mainImage || !zoomLens || !zoomResult || !zoomedImage || !imageWrapper || window.innerWidth < 768) {
           if (zoomLens) zoomLens.style.display = 'none';
           if (zoomResult) { zoomResult.style.display = 'none'; zoomResult.classList.add('hidden'); }
           return;
       }
-  
+
       // Preload high-res zoom image (data-zoom-src if provided)
       const initialZoomSrc = mainImage.getAttribute('data-zoom-src') || mainImage.src;
       const preloadedImg = new Image();
@@ -881,7 +949,7 @@
               }
               return { x: tokenToFraction(xToken), y: tokenToFraction(yToken) };
           }
-  
+
           function displayToNatural(displayX, displayY, rect, Wn, Hn) {
               const cs = getComputedStyle(mainImage);
               const objectFit = (cs.objectFit || cs.getPropertyValue('object-fit') || '').toLowerCase();
@@ -892,7 +960,7 @@
               if (!Wn || !Hn || Wn <= 0 || Hn <= 0) {
                   return { x: (displayX / Math.max(rect.width, 1)) * fallbackW, y: (displayY / Math.max(rect.height, 1)) * fallbackH };
               }
-  
+
               let scale;
               if (objectFit === 'contain') {
                   scale = Math.min(rect.width / Wn, rect.height / Hn);
@@ -912,7 +980,7 @@
                   // default to 'cover' behavior (also handles '' / unknown)
                   scale = Math.max(rect.width / Wn, rect.height / Hn);
               }
-  
+
               const renderedW = Wn * scale;
               const renderedH = Hn * scale;
               const parsed = parseObjectPosition(objectPosition);
@@ -920,17 +988,17 @@
               const overflowY = Math.max(0, renderedH - rect.height);
               const offsetX = overflowX * parsed.x;
               const offsetY = overflowY * parsed.y;
-  
+
               const naturalX = (displayX + offsetX) / scale;
               const naturalY = (displayY + offsetY) / scale;
               return { x: naturalX, y: naturalY };
           }
-  
+
           function updateZoomTop() {
               if (!mainImage || !zoomResult) return;
               // Compute header height (fixed/sticky header) to offset sticky top
               let headerHeight = 0;
-              const headerEl = document.querySelector('header, .site-header, .navbar, .topbar, .main-header'); 
+              const headerEl = document.querySelector('header, .site-header, .navbar, .topbar, .main-header');
               if (headerEl && (getComputedStyle(headerEl).position === 'fixed' || getComputedStyle(headerEl).position === 'sticky')) {
                   headerHeight = Math.round(headerEl.getBoundingClientRect().height);
               } else {
@@ -944,17 +1012,17 @@
                       }
                   } catch (e) {}
               }
-  
+
               const topOffset = Math.max(12, headerHeight + 8);
               zoomResult.style.setProperty('--zoom-top', topOffset + 'px');
-  
+
               // Adjust zoom size responsively (desktop sizes)
               const winW = window.innerWidth || document.documentElement.clientWidth;
               let zoomW = 560;
               if (winW < 1100) zoomW = Math.round(Math.min(560, winW * 0.32));
               zoomResult.style.setProperty('--zoom-size', zoomW + 'px');
           }
-  
+
           // Show zoom column on desktop, but keep the zoom box hidden until hover
           function showZoomResultIfDesktop() {
               const col = document.getElementById('zoom-column');
@@ -967,7 +1035,7 @@
                   zoomResult.style.display = 'none';
               }
           }
-  
+
           // Hover show/hide with short delay so user can move pointer between image and zoom box
           let _hideTimeout = null;
           function showZoom() {
@@ -979,7 +1047,7 @@
               updateZoomTop();
               setInitialZoom();
           }
-  
+
           function hideZoom(delay = 150) {
               if (_hideTimeout) clearTimeout(_hideTimeout);
               _hideTimeout = setTimeout(() => {
@@ -993,7 +1061,7 @@
                   _hideTimeout = null;
               }, delay);
           }
-  
+
           function setInitialZoom() {
               if (!mainImage || !zoomResult || !zoomedImage) return;
               const rect = mainImage.getBoundingClientRect();
@@ -1004,13 +1072,13 @@
               const lensY = Math.max(0, Math.round((rect.height - lensSize) / 2));
               zoomLens.style.left = lensX + 'px';
               zoomLens.style.top = lensY + 'px';
-  
+
               const Zw = zoomResult.offsetWidth || parseInt(getComputedStyle(zoomResult).width) || 620;
               const Zh = zoomResult.offsetHeight || Zw;
-  
+
               const Wn = (zoomedImage.naturalWidth && zoomedImage.naturalWidth > 0) ? zoomedImage.naturalWidth : (preloadedImg.naturalWidth || mainImage.naturalWidth || rect.width);
               const Hn = (zoomedImage.naturalHeight && zoomedImage.naturalHeight > 0) ? zoomedImage.naturalHeight : (preloadedImg.naturalHeight || mainImage.naturalHeight || rect.height);
-  
+
               // Prefer the lens-based zoom (Zw/lens) but ensure the zoomed image covers the
               // zoom box. If the natural image is too small, increase factor but cap it to avoid excessive zoom.
               const safeWn = Math.max(1, Wn);
@@ -1023,49 +1091,49 @@
               }
               const MAX_ZOOM = 1;
               zoomFactor = Math.min(zoomFactor, MAX_ZOOM);
-  
+
               zoomedImage.style.width = Math.round(safeWn * zoomFactor) + 'px';
               zoomedImage.style.height = Math.round(safeHn * zoomFactor) + 'px';
-  
+
               // Center the lens area in the zoom box and clamp to avoid empty space.
               const centerX = lensX + lensSize / 2;
               const centerY = lensY + lensSize / 2;
               const centerNatural = displayToNatural(centerX, centerY, rect, Wn, Hn);
               const centerX_n = Math.max(0, Math.min(centerNatural.x, safeWn));
               const centerY_n = Math.max(0, Math.min(centerNatural.y, safeHn));
-  
+
               const zoomedImageWidth = Math.round(safeWn * zoomFactor);
               const zoomedImageHeight = Math.round(safeHn * zoomFactor);
-  
+
               let left = Math.round((Zw / 2) - (centerX_n * zoomFactor));
               let top = Math.round((Zh / 2) - (centerY_n * zoomFactor));
-  
+
               const leftMin = Math.min(0, Zw - zoomedImageWidth);
               const topMin = Math.min(0, Zh - zoomedImageHeight);
               left = Math.max(leftMin, Math.min(0, left));
               top = Math.max(topMin, Math.min(0, top));
-  
+
               zoomedImage.style.left = left + 'px';
               zoomedImage.style.top = top + 'px';
           }
-  
+
           window.addEventListener('resize', function() {
               showZoomResultIfDesktop();
               updateZoomTop();
               setInitialZoom();
           }, { passive: true });
-  
+
           window.addEventListener('scroll', function() {
               updateZoomTop();
           }, { passive: true });
-  
+
           // Expose for external calls (e.g., selectSize)
           window.updateZoomTop = updateZoomTop;
           window.setInitialZoom = setInitialZoom;
           showZoomResultIfDesktop();
           updateZoomTop();
           setInitialZoom();
-  
+
       mainImage.addEventListener('mouseenter', function() {
           // compute sizes and show zoom
           const rect = mainImage.getBoundingClientRect();
@@ -1074,12 +1142,12 @@
           zoomLens.style.height = lensSize + 'px';
           showZoom();
       });
-  
+
       mainImage.addEventListener('mouseleave', function() {
           // start hide timer (allows moving to zoom box)
           hideZoom(180);
       });
-  
+
       // Keep zoom visible while hovering zoom box; hide after leaving both
       if (zoomResult) {
           zoomResult.addEventListener('mouseenter', function() {
@@ -1089,28 +1157,28 @@
               hideZoom(120);
           });
       }
-  
+
       mainImage.addEventListener('mousemove', function(e) {
           const rect = this.getBoundingClientRect();
           const lensWidth = parseInt(getComputedStyle(zoomLens).width) || 120;
           const lensHeight = parseInt(getComputedStyle(zoomLens).height) || lensWidth;
-  
+
           let lensX = e.clientX - rect.left - lensWidth / 2;
           let lensY = e.clientY - rect.top - lensHeight / 2;
-  
+
           lensX = Math.max(0, Math.min(lensX, rect.width - lensWidth));
           lensY = Math.max(0, Math.min(lensY, rect.height - lensHeight));
-  
+
           zoomLens.style.left = lensX + 'px';
           zoomLens.style.top = lensY + 'px';
-  
+
           const Zw = zoomResult.offsetWidth || 800;
           const Zh = zoomResult.offsetHeight || 800;
-  
+
           // Prefer the zoom image natural size so the zoom isn't stretched.
           const Wn = (zoomedImage.naturalWidth && zoomedImage.naturalWidth > 0) ? zoomedImage.naturalWidth : (preloadedImg.naturalWidth || mainImage.naturalWidth || rect.width);
           const Hn = (zoomedImage.naturalHeight && zoomedImage.naturalHeight > 0) ? zoomedImage.naturalHeight : (preloadedImg.naturalHeight || mainImage.naturalHeight || rect.height);
-  
+
           const safeWn = Math.max(1, Wn);
           const safeHn = Math.max(1, Hn);
           const cx = Zw / Math.max(1, lensWidth);
@@ -1121,35 +1189,35 @@
           }
           const MAX_ZOOM = 1;
           zoomFactor = Math.min(zoomFactor, MAX_ZOOM);
-  
+
           // Size the zoomed image based on its natural size and the uniform zoom factor
           const zoomedImageWidth = Math.round(safeWn * zoomFactor);
           const zoomedImageHeight = Math.round(safeHn * zoomFactor);
           zoomedImage.style.width = zoomedImageWidth + 'px';
           zoomedImage.style.height = zoomedImageHeight + 'px';
-  
+
           // Map the lens center (display coords) to natural coords and center it in the zoom box.
           const centerX = lensX + (lensWidth / 2);
           const centerY = lensY + (lensHeight / 2);
           const centerNatural = displayToNatural(centerX, centerY, rect, Wn, Hn);
           const centerX_n = Math.max(0, Math.min(centerNatural.x, safeWn));
           const centerY_n = Math.max(0, Math.min(centerNatural.y, safeHn));
-  
+
           let left = Math.round((Zw / 2) - (centerX_n * zoomFactor));
           let top = Math.round((Zh / 2) - (centerY_n * zoomFactor));
-  
+
           const leftMin = Math.min(0, Zw - zoomedImageWidth);
           const topMin = Math.min(0, Zh - zoomedImageHeight);
           left = Math.max(leftMin, Math.min(0, left));
           top = Math.max(topMin, Math.min(0, top));
-  
+
           zoomedImage.style.left = left + 'px';
           zoomedImage.style.top = top + 'px';
       });
-  
-      
+
+
   });
-  
+
   // Quantity +/- functions
   function decrementQty() {
       const qty = document.getElementById('quantity');
@@ -1158,7 +1226,7 @@
           qty.value = val - 1;
       }
   }
-  
+
   function incrementQty() {
       const qty = document.getElementById('quantity');
       const val = parseInt(qty.value);
@@ -1167,7 +1235,7 @@
           qty.value = val + 1;
       }
   }
-  
+
   // Mobile image gallery: change main image from horizontal thumbnail strip (no zoom)
   function changeGalleryImageMobile(el, imgUrl) {
       var mainImage = document.getElementById('main-image');
@@ -1180,7 +1248,7 @@
       el.classList.remove('border-gray-200');
       el.classList.add('border-primary');
   }
-  
+
   // Desktop image gallery: change main image from thumbnail strip
   function changeGalleryImage(el, imgUrl, zoomUrl) {
       var mainImage = document.getElementById('main-image');
@@ -1200,13 +1268,15 @@
       el.classList.remove('border-gray-200');
       el.classList.add('border-primary');
   }
-  
+
   // Size selection via pill buttons (Amazon-style) - only updates price/size/stock, NOT the image
   function selectSizePill(element, imageUrl, price, size) {
-      // Update price
+      // Update price (both mobile and desktop elements)
       var priceElement = document.getElementById('product-price');
       if (priceElement) priceElement.innerHTML = '$' + parseFloat(price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-      
+      var priceElementDesktop = document.getElementById('product-price-desktop');
+      if (priceElementDesktop) priceElementDesktop.innerHTML = '$' + parseFloat(price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
       // Update selected size labels
       var sizeLabel = document.getElementById('h3-selected-size-label');
       if (sizeLabel) sizeLabel.textContent = size;
@@ -1216,7 +1286,9 @@
       if (h3ZoomSelected) h3ZoomSelected.textContent = size;
       var h3Mobile = document.getElementById('h3-mobile-selected-size');
       if (h3Mobile) h3Mobile.textContent = size;
-      
+      var variantInput = document.getElementById('variant_id');
+      if (variantInput) variantInput.value = element.getAttribute('data-variant-id') || '';
+
       // Update stock
       var stock = element.getAttribute('data-stock');
       var stockSpan = document.getElementById('selected-stock');
@@ -1224,7 +1296,7 @@
       if (stockSpan) stockSpan.innerHTML = stock;
       if (quantityInput) quantityInput.max = stock;
       if (typeof updateActionButtons === 'function') updateActionButtons(stock);
-      
+
       // Update active pill styling
       document.querySelectorAll('.size-pill').forEach(function(p) {
           p.classList.remove('border-primary', 'bg-blue-50', 'text-blue-700');
@@ -1233,13 +1305,13 @@
       element.classList.remove('border-gray-300', 'bg-white', 'text-gray-700');
       element.classList.add('border-primary', 'bg-blue-50', 'text-blue-700');
   }
-  
+
   // Size selection function (legacy)
   function selectSize(element, imageUrl, price, size) {
       // Update main image
       const mainImage = document.getElementById('main-image');
       const zoomedImage = document.getElementById('zoomed-image');
-      
+
       if (mainImage) mainImage.src = imageUrl;
       // Load a higher-res zoom image if provided via data-zoom, otherwise fallback to the same image
       const zoomSrc = element.getAttribute('data-zoom') || imageUrl;
@@ -1254,11 +1326,11 @@
       }
       // Recalculate sticky top in case header/viewport changed
       if (typeof window.updateZoomTop === 'function') window.updateZoomTop();
-      
+
       // Update price
       const priceElement = document.getElementById('product-price');
       if (priceElement) priceElement.innerHTML = '$' + parseFloat(price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-      
+
       // Update selected size display (product info + H3s)
       const selectedSizeSpan = document.getElementById('selected-size');
       if (selectedSizeSpan) selectedSizeSpan.innerHTML = size;
@@ -1266,7 +1338,7 @@
       if (h3ZoomSelected) h3ZoomSelected.textContent = size;
       const h3MobileSelected = document.getElementById('h3-mobile-selected-size');
       if (h3MobileSelected) h3MobileSelected.textContent = size;
-      
+
       // Update stock
       const stock = element.getAttribute('data-stock');
       const stockSpan = document.getElementById('selected-stock');
@@ -1275,7 +1347,7 @@
       if (quantityInput) quantityInput.max = stock;
       // Update action buttons based on stock
       if (typeof updateActionButtons === 'function') updateActionButtons(stock);
-      
+
       // Update active thumbnail border
       document.querySelectorAll('.size-thumbnail').forEach(thumb => {
           thumb.classList.remove('border-primary');
@@ -1286,14 +1358,14 @@
   }
   // Toggle Add/Buy buttons and unavailable state based on stock
   function updateActionButtons(stock) {
-      const addBtn = document.getElementById('btn-add-to-cart');
+      const addBtn = document.getElementById('addToCartBtn') || document.getElementById('btn-add-to-cart');
       const buyBtn = document.getElementById('btn-buy-now');
       const unBtn = document.getElementById('btn-unavailable');
       const qty = document.getElementById('quantity');
       const stockMsg = document.getElementById('stock-message');
       let s = parseInt(stock, 10);
       if (isNaN(s)) s = 0;
-  
+
       if (s <= 0) {
           if (addBtn) { addBtn.style.display = 'none'; addBtn.disabled = true; addBtn.setAttribute('aria-disabled', 'true'); }
           if (buyBtn) { buyBtn.style.display = 'none'; buyBtn.disabled = true; buyBtn.setAttribute('aria-disabled', 'true'); }
@@ -1308,7 +1380,7 @@
           if (qty) { qty.disabled = false; if (!qty.value || parseInt(qty.value,10) === 0) qty.value = 1; qty.max = s; if (parseInt(qty.value,10) > s) qty.value = s; }
       }
   }
-  
+
   // Initialize action buttons from initial data attribute
   (function() {
       const wrapper = document.getElementById('action-buttons-wrapper');
@@ -1324,17 +1396,17 @@
           // get color label
           const lbl = el.querySelector('.p-1') || el.lastElementChild;
           const color = lbl ? lbl.textContent.trim() : (el.getAttribute('data-color') || '').trim();
-  
+
           // update H3 displays
           const h3ZoomColors = document.getElementById('h3-zoom-available-colors');
           const h3MobileColors = document.getElementById('h3-mobile-available-colors');
           if (h3ZoomColors) h3ZoomColors.textContent = color;
           if (h3MobileColors) h3MobileColors.textContent = color;
-  
+
           // toggle active class without moving DOM nodes
           document.querySelectorAll('.color-variant').forEach(n => n.classList.remove('border-primary'));
           el.classList.add('border-primary');
-  
+
           // Update main + zoom images from the clicked tile
           const img = el.querySelector('img');
           const mainImage = document.getElementById('main-image');
@@ -1349,7 +1421,7 @@
               zoomedImage.src = zoomSrc;
           }
       }
-  
+
       const nodes = Array.from(document.querySelectorAll('.color-variant'));
       nodes.forEach(n => {
           n.addEventListener('click', function(e) {
@@ -1386,14 +1458,14 @@
       if (h3Zoom && sel && sel.textContent) h3Zoom.textContent = sel.textContent.trim();
       const h3Mobile = document.getElementById('h3-mobile-selected-size');
       if (h3Mobile && sel && sel.textContent) h3Mobile.textContent = sel.textContent.trim();
-  
+
       // Populate available colors preferring thumbnails in the zoom column (avoids duplicates)
       let colorNodes = Array.from(document.querySelectorAll('#zoom-color-variants .color-variant'));
       if (!colorNodes || colorNodes.length === 0) {
           // fallback to visible color-variant elements (mobile)
           colorNodes = Array.from(document.querySelectorAll('.color-variant')).filter(n => n.offsetParent !== null);
       }
-  
+
       // Prefer the currently active color tile (server marks it with border-primary). If present, show only that color.
       const activeColorNode = document.querySelector('#zoom-color-variants .color-variant.border-primary') || document.querySelector('.color-variant.border-primary');
       let colorOutput = '';
@@ -1407,7 +1479,7 @@
           }).filter(Boolean)));
           colorOutput = colors.join(', ');
       }
-  
+
       const h3ZoomColors = document.getElementById('h3-zoom-available-colors');
       if (h3ZoomColors) h3ZoomColors.textContent = colorOutput;
       const h3MobileColors = document.getElementById('h3-mobile-available-colors');
@@ -1419,11 +1491,11 @@
       const scrollLeft = document.getElementById('related-scroll-left');
       const scrollRight = document.getElementById('related-scroll-right');
       if (!container) return;
-  
+
       function doScroll(amount) {
           container.scrollBy({ left: amount, behavior: 'smooth' });
       }
-  
+
       if (scrollLeft) {
           scrollLeft.addEventListener('click', function() {
               doScroll(-Math.round(container.clientWidth * 0.7));
@@ -1434,7 +1506,7 @@
               doScroll(Math.round(container.clientWidth * 0.7));
           });
       }
-  
+
       // Show/hide arrows based on scroll position on desktop
       function updateArrowVisibility() {
           if (!scrollLeft || !scrollRight) return;
@@ -1446,12 +1518,12 @@
           scrollLeft.classList.remove('hidden');
           scrollRight.classList.remove('hidden');
       }
-  
+
       container.addEventListener('scroll', updateArrowVisibility, { passive: true });
       window.addEventListener('resize', updateArrowVisibility, { passive: true });
       updateArrowVisibility();
   });
-  
+
   // Toggle product description expand/collapse
   function toggleDescription() {
       var descText = document.getElementById('desc-text');
@@ -1465,7 +1537,7 @@
           chevron.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
       }
   }
-  
+
   // Product Information section toggle: expand/collapse
   function toggleProductInfo(btn) {
       var content = btn.nextElementSibling;
@@ -1478,7 +1550,7 @@
           svg.style.transition = 'transform 0.2s ease';
       }
   }
-  
+
   // Specs toggle: expand/collapse mobile/desktop spec sections
   document.addEventListener('DOMContentLoaded', function() {
       document.querySelectorAll('.specs-toggle').forEach(function(btn) {
@@ -1487,16 +1559,16 @@
               var targetId = this.getAttribute('data-target');
               var target = document.getElementById(targetId);
               if (!target) return;
-              
+
               var isHidden = (getComputedStyle(target).display === 'none' || target.style.display === 'none');
               target.style.display = isHidden ? 'block' : 'none';
-              
+
               // Find the text span inside the button
               var textSpan = this.querySelector('.toggle-text');
               if (textSpan) {
                   textSpan.textContent = isHidden ? 'See less' : 'See more';
               }
-              
+
               // Rotate the SVG chevron
               var svg = this.querySelector('svg');
               if (svg) {
@@ -1506,7 +1578,7 @@
           });
       });
   });
-  
+
 </script>
 <style>
   /* Ensure square aspect ratio for thumbnails */

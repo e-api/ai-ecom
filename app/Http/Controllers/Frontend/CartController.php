@@ -32,7 +32,8 @@ class CartController extends Controller
             );
             return response()->json([
                 'status' => true,
-                'message' => 'Product added to cart successfully.'
+                'message' => 'Product added to cart successfully.',
+                'cartCount' => $this->cartService->getCartCount(),
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -42,17 +43,31 @@ class CartController extends Controller
         }
     }
 
+    public function index()
+    {
+        $cartItems = $this->cartService
+            ->getCartItems();
+
+        $cartTotal = $this->cartService
+            ->getCartTotal();
+
+        $cartCount = $this->cartService
+            ->getCartCount();
+
+        return view(
+            'frontend.cart.index',
+            compact(
+                'cartItems',
+                'cartTotal',
+                'cartCount'
+            )
+        );
+    }
+
     public function count()
     {
-        if (auth()->check()) {
-            $count = \App\Models\CartItem::where('user_id', auth()->id())->sum('quantity');
-        } else {
-            $cart = session()->get('cart', []);
-            $count = 0;
-            foreach ($cart as $item) {
-                $count += $item['quantity'] ?? 0;
-            }
-        }
-        return response()->json(['count' => $count]);
+        return response()->json([
+            'count' => $this->cartService->getCartCount(),
+        ]);
     }
 }

@@ -17,8 +17,8 @@ class UserSeeder extends Seeder
         //
         User::insert([
             'name' => 'Admin User',
-            'email' => 'admin@gmail.com',
-            'password' => Hash::make('12345678'),
+            'email' => 'admin@example.com',
+            'password' => Hash::make('123123`'),
             'phone' => '9999999999',
             'status' => 1,
         ]);
@@ -26,8 +26,8 @@ class UserSeeder extends Seeder
         // Insert Test User
         User::insert([
             'name' => 'Test User',
-            'email' => 'user@gmail.com',
-            'password' => Hash::make('12345678'),
+            'email' => 'user@example.com',
+            'password' => Hash::make('123123`'),
             'phone' => '8888888888',
             'status' => 1,
         ]);

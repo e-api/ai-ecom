@@ -42,6 +42,16 @@ class ProductForm
                                 ->label('Product Color')
                                 ->helperText('eg: Red, Blue, Green')
                                 ->required(),
+
+                            TextInput::make('service_provider')
+                                ->label('Service Provider')
+                                ->helperText('e.g. AT&T, T-Mobile, Verizon, Tracfone, Unlocked')
+                                ->required(),
+
+                            TextInput::make('product_grade')
+                                ->label('Product Grade')
+                                ->helperText('e.g. Renewed, Renewed Premium, New')
+                                ->required(),
                             
                             Select::make('category_id')
                                 ->label('Category')
@@ -173,6 +183,54 @@ class ProductForm
                                 ->default(true),
                         ])
                         ->columns(2),
+                ]),
+
+            // WHAT'S IN THE BOX
+            Section::make("What's in the Box")
+                ->collapsed()
+                ->schema([
+                    Textarea::make('box_contents')
+                        ->label('Box Contents')
+                        ->helperText('Enter each item on a new line. e.g. iPhone, USB Cable, Charger')
+                        ->rows(4),
+                ]),
+
+            // PRODUCT SPECIFICATIONS
+            Section::make('Product Specifications')
+                ->collapsed()
+                ->schema([
+                    Repeater::make('specifications')
+                        ->label('Specification Sections')
+                        ->schema([
+                            Grid::make(1)
+                                ->schema([
+                                    TextInput::make('section')
+                                        ->label('Section Name')
+                                        ->helperText('e.g. Display & Hardware, Battery & Dimensions, Connectivity')
+                                        ->required(),
+                                    
+                                    Repeater::make('items')
+                                        ->label('Specification Items')
+                                        ->schema([
+                                            Grid::make(2)
+                                                ->schema([
+                                                    TextInput::make('label')
+                                                        ->label('Label')
+                                                        ->helperText('e.g. Screen Size, RAM, Battery')
+                                                        ->required(),
+                                                    
+                                                    TextInput::make('value')
+                                                        ->label('Value')
+                                                        ->helperText('e.g. 6.3 inches, 256 GB, 3582 mAh')
+                                                        ->required(),
+                                                ]),
+                                        ])
+                                        ->addActionLabel('Add Specification')
+                                        ->columns(1),
+                                ]),
+                        ])
+                        ->addActionLabel('Add Section')
+                        ->columns(1),
                 ]),
         ]);
     }

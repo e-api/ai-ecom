@@ -199,4 +199,32 @@ class ProductService
             ->where('status', 1)
             ->get();
     }
+
+    public function getProviderVariations($product)
+    {
+        if (empty($product->product_family)) {
+            return collect();
+        }
+
+        return Product::with('brand')
+            ->where('product_family', $product->product_family)
+            ->where('service_provider', '!=', $product->service_provider)
+            ->where('id', '!=', $product->id)
+            ->where('status', 1)
+            ->get();
+    }
+
+    public function getGradeVariations($product)
+    {
+        if (empty($product->product_family)) {
+            return collect();
+        }
+
+        return Product::with('brand')
+            ->where('product_family', $product->product_family)
+            ->where('product_grade', '!=', $product->product_grade)
+            ->where('id', '!=', $product->id)
+            ->where('status', 1)
+            ->get();
+    }
 }

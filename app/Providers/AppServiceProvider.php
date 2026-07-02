@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\Services\Frontend\CategoryService;
+use App\Services\Frontend\CartService;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Http\Request;
@@ -27,8 +28,13 @@ class AppServiceProvider extends ServiceProvider
         View::composer('*', function ($view) {
             $categoryService = app(CategoryService::class);
             $categories = $categoryService->getHeaderCategories();
-
-            $view->with('categories', $categories);
+            $cartService = app(CartService::class);
+            $cartCount = $cartService->getCartCount();
+            
+            $view->with([
+                'categories' => $categories,
+                'cartCount' => $cartCount,
+            ]);
         });
         
 	    // Force HTTPS for all URLs in production/staging

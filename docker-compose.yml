@@ -22,7 +22,7 @@ services:
       # Database - Connect to Floci's RDS
       DB_CONNECTION: pgsql
       DB_HOST: ${APP_NAME:-laravel}-floci
-      DB_PORT: 7003
+      DB_PORT: 7001
       DB_DATABASE: ${POSTGRES_DB:-ecom}
       DB_USERNAME: ${POSTGRES_USER:-postgres}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
@@ -40,7 +40,7 @@ services:
       # SQS
       QUEUE_CONNECTION: sqs
       SQS_ENDPOINT: http://${APP_NAME:-laravel}-floci:4566
-      SQS_PREFIX: http://${APP_NAME:-laravel}-floci:4566/000000000000
+      SQS_PREFIX: http://${APP_NAME:-laravel}-floci:4566/laravel
       SQS_QUEUE: ${SQS_QUEUE:-default}
       
       # Laravel specific
@@ -90,7 +90,7 @@ services:
       - FLOCI_RDS_MODE=persistent
       - FLOCI_RDS_DB_INSTANCE_IDENTIFIER=${RDS_INSTANCE_IDENTIFIER:-laravel-db}
       - FLOCI_RDS_ENGINE=${RDS_ENGINE:-postgres}
-      - FLOCI_RDS_ENGINE_VERSION=${RDS_ENGINE_VERSION:-18.4}
+      - FLOCI_RDS_ENGINE_VERSION=${RDS_ENGINE_VERSION:-16.3}
       - FLOCI_RDS_DB_NAME=${POSTGRES_DB:-ecom}
       - FLOCI_RDS_MASTER_USERNAME=${POSTGRES_USER:-postgres}
       - FLOCI_RDS_MASTER_PASSWORD=${POSTGRES_PASSWORD}
@@ -161,6 +161,30 @@ services:
       - baota_net
     depends_on:
       - floci-api
+
+  # --- Floci Dash (AWS Console-style UI) ---
+  # floci-dash:
+  #   image: ghcr.io/ofsazib/floci-dash:latest
+  #   container_name: ${APP_NAME:-laravel}-floci-dash
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: ${FLOCI_DASH_CPUS:-1}
+  #         memory: ${FLOCI_DASH_MEMORY_LIMIT:-512MB}
+  #   restart: always
+  #   environment:
+  #     - FLOCI_URL=http://${APP_NAME:-laravel}-floci:4566
+  #     - AWS_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+  #     - PORT=4000
+  #     - NODE_ENV=production
+  #   ports:
+  #     - "127.0.0.1:4000:4000"
+  #   labels:
+  #     createdBy: "bt_apps"
+  #   networks:
+  #     - baota_net
+  #   depends_on:
+  #     - floci
 
   # --- Optional: Keep PostgreSQL for migration ---
   postgres:

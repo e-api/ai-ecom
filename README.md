@@ -61,7 +61,7 @@ chown -R 33:33 .
 
 # 3. Remove aaPanel open_basedir restriction
 # unlock the .user.ini file:
-sudo chattr -i /www/wwwroot/default/ecom/public/.user.ini
+sudo chattr -i /www/wwwroot/default/your_project/public/.user.ini
 rm -f public/.user.ini
 
 # or add this line to .user.ini: 
@@ -78,7 +78,7 @@ rm -f public/storage
 ln -s /www/wwwroot/default/ai-ecom/storage/app/public public/storage
 chmod -R 775 storage
 
-curl -s -X PUT https://stg.1byte.pp.ua/s3/ecom-bucket
+curl -s -X PUT https://yourdomain.com/s3/ecom-bucket
 
 # 6. Filament & Livewire assets
 docker compose exec php php artisan filament:assets

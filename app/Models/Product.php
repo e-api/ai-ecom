@@ -28,6 +28,14 @@ class Product extends Model
         'meta_title',
         'meta_description',
         'meta_keywords',
+        'specifications',
+        'box_contents',
+        'service_provider',
+        'product_grade',
+    ];
+
+    protected $casts = [
+        'specifications' => 'array',
     ];
     
     public function category()
@@ -68,5 +76,22 @@ class Product extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 1);
+    }
+
+    /**
+     * Get a specification value by label name from the specifications JSON.
+     * Traverses all sections to find the first matching label.
+     */
+    public function getSpecValue(string $label): ?string
+    {
+        $specs = $this->specifications ?? [];
+        foreach ($specs as $section) {
+            foreach ($section['items'] as $item) {
+                if (strcasecmp($item['label'], $label) === 0) {
+                    return $item['value'];
+                }
+            }
+        }
+        return null;
     }
 }

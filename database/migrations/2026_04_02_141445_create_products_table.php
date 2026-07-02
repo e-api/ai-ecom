@@ -25,6 +25,8 @@ return new class extends Migration
 
             $table->string('product_family')->nullable();
             $table->string('color')->nullable();
+            $table->string('service_provider')->nullable();
+            $table->string('product_grade')->nullable();
         
             $table->text('description')->nullable();
             $table->text('short_description')->nullable();
@@ -47,6 +49,12 @@ return new class extends Migration
             // Analytics (future AI usage)
             $table->integer('views')->default(0);
             $table->integer('sales_count')->default(0);
+        
+            // Product Specifications (JSON for flexible product info sections)
+            $table->json('specifications')->nullable();
+            
+            // What's in the box
+            $table->text('box_contents')->nullable();
         
             // SEO fields
             $table->string('meta_title')->nullable();

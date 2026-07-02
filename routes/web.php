@@ -39,14 +39,21 @@ New: Product Detail Route
 */
 Route::get('/product/{slug}', [ProductController::class, 'detail']);
 /*
-NEW: SEO Friendly Category Route
-*/
-Route::get('/{slug}', [CategoryController::class, 'listing'])
-    ->where('slug', '^[A-Za-z0-9-_]+$');
-/*
 NEW: Add to cart Route
 */
 Route::post('/cart/add', [CartController::class, 'add'])
     ->name('cart.add');
+/*
+NEW: Count Cart Items
+*/
 Route::get('/cart/count', [CartController::class, 'count'])
     ->name('cart.count');
+/*
+| Shopping Cart |
+*/
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+/*
+NEW: SEO Friendly Category Route
+*/
+Route::get('/{slug}', [CategoryController::class, 'listing'])
+    ->where('slug', '^[A-Za-z0-9-_]+$');

@@ -175,7 +175,7 @@
               @foreach($product->variants as $index => $variant)
               @php $variantImage = $product->images->where('position', $index + 1)->first(); @endphp
               <button type="button"
-                class="size-pill cursor-pointer rounded-md border px-3 py-1.5 text-sm font-medium {{ $loop->first ? 'border-primary bg-blue-50 text-blue-700' : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400' }} transition-all"
+                class="size-pill cursor-pointer rounded-md px-3 py-1.5 text-sm border {{ $loop->first ? 'border-2 border-blue-600 bg-blue-50 hover:border hover:bg-transparent' : 'border border-gray-300 text-gray-700 hover:border-blue-600 hover:bg-transparent' }} transition-all"
                 data-variant-id="{{ $variant->id }}"
                 data-size="{{ $variant->size }}"
                 data-price="{{ $variant->price }}"
@@ -213,7 +213,7 @@
               @foreach($allColors as $cv)
               @php $imgUrl = $cv['image'] ? Storage::url($cv['image']) : 'https://placehold.co/400x400/e5e7eb/9ca3af?text='.urlencode($cv['color']); @endphp
               <a href="{{ url('product/'.$cv['slug']) }}"
-                class="color-variant block rounded-lg overflow-hidden border-2 {{ $cv['slug'] == $product->slug ? 'border-primary' : 'border-gray-200' }} hover:border-primary transition-all text-center"
+                class="block rounded-lg overflow-hidden border-2 {{ $cv['slug'] == $product->slug ? 'border-primary' : 'border-gray-200' }} hover:border-primary transition-all text-center"
                 data-color="{{ $cv['color'] }}" data-image="{{ $imgUrl }}" data-zoom="{{ $imgUrl }}">
                 <img src="{{ $imgUrl }}" alt="{{ $cv['color'] }}" class="w-full aspect-square object-cover">
                 <div class="p-1 text-center text-xs font-medium bg-white">
@@ -240,12 +240,12 @@
                     <div class="flex flex-wrap gap-2">
                       @foreach($serviceProviderOptions as $providerOption)
                         @if($providerOption['label'] == $product->service_provider)
-                          <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-primary bg-blue-50 text-sm text-blue-700 font-medium cursor-pointer transition">
+                          <span class="inline-flex items-center px-1 py-1.5 rounded-md border-2 border-blue-600 bg-blue-50 text-sm hover:border hover:border-blue-600 hover:bg-transparent cursor-pointer transition">
                             {{ $providerOption['label'] }}
                           </span>
                         @else
                           <a href="{{ url('product/'.$providerOption['slug']) }}"
-                            class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:text-blue-600 transition">
+                            class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:border transition">
                             {{ $providerOption['label'] }}
                           </a>
                         @endif
@@ -267,12 +267,12 @@
                     <div class="flex flex-wrap gap-2">
                       @foreach($productGradeOptions as $gradeOption)
                         @if($gradeOption['label'] == $product->product_grade)
-                          <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-primary bg-blue-50 text-sm text-blue-700 font-medium cursor-pointer transition">
+                          <span class="inline-flex items-center px-1 py-1.5 rounded-md border-2 border-blue-600 bg-blue-50 text-sm hover:border hover:border-blue-600 hover:bg-transparent cursor-pointer transition">
                             {{ $gradeOption['label'] }}
                           </span>
                         @else
                           <a href="{{ url('product/'.$gradeOption['slug']) }}"
-                            class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:text-blue-600 transition">
+                            class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:border transition">
                             {{ $gradeOption['label'] }}
                           </a>
                         @endif
@@ -398,7 +398,7 @@
                 @foreach($product->variants as $index => $variant)
                 @php $variantImage = $product->images->where('position', $index + 1)->first(); @endphp
                 <button type="button"
-                  class="size-pill cursor-pointer rounded-md border px-3 py-1.5 text-sm font-medium {{ $loop->first ? 'border-primary bg-blue-50 text-blue-700' : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400' }} transition-all"
+                  class="size-pill cursor-pointer rounded-md px-3 py-1.5 text-sm border {{ $loop->first ? 'border-2 border-blue-600 bg-blue-50 hover:border hover:bg-transparent' : 'border border-gray-300 text-gray-700 hover:border-blue-600 hover:bg-transparent' }} transition-all"
                   data-variant-id="{{ $variant->id }}"
                   data-size="{{ $variant->size }}"
                   data-price="{{ $variant->price }}"
@@ -434,7 +434,7 @@
                   @foreach($allColors as $cv)
                   @php $imgUrl = $cv['image'] ? Storage::url($cv['image']) : 'https://placehold.co/400x400/e5e7eb/9ca3af?text='.urlencode($cv['color']); @endphp
                   <a href="{{ url('product/'.$cv['slug']) }}"
-                    class="color-variant block rounded-md overflow-hidden border {{ $cv['slug'] == $product->slug ? 'border-primary' : 'border-gray-200' }} hover:border-primary transition-all text-center"
+                    class="block rounded-md overflow-hidden border {{ $cv['slug'] == $product->slug ? 'border-2 border-blue-600' : 'border-gray-200' }} hover:border hover:border-blue-600 transition-all text-center"
                     data-color="{{ $cv['color'] }}" data-image="{{ $imgUrl }}" data-zoom="{{ $imgUrl }}">
                     <img src="{{ $imgUrl }}" alt="{{ $cv['color'] }}" class="w-full aspect-square object-cover">
                     <div class="py-0.5 text-center text-[9px] font-medium bg-white truncate">
@@ -461,12 +461,12 @@
                     <div class="flex flex-wrap gap-2">
                       @foreach($serviceProviderOptions as $providerOption)
                         @if($providerOption['label'] == $product->service_provider)
-                          <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-primary bg-blue-50 text-sm text-blue-700 font-medium cursor-pointer transition">
+                          <span class="inline-flex items-center px-1 py-1.5 rounded-md border-2 border-blue-600 bg-blue-50 text-sm hover:border hover:border-blue-600 hover:bg-transparent cursor-pointer transition">
                             {{ $providerOption['label'] }}
                           </span>
                         @else
                           <a href="{{ url('product/'.$providerOption['slug']) }}"
-                            class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:text-blue-600 transition">
+                            class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:border transition">
                             {{ $providerOption['label'] }}
                           </a>
                         @endif
@@ -488,12 +488,12 @@
                     <div class="flex flex-wrap gap-2">
                       @foreach($productGradeOptions as $gradeOption)
                         @if($gradeOption['label'] == $product->product_grade)
-                          <span class="inline-flex items-center px-1 py-1.5 rounded-md border border-primary bg-blue-50 text-sm text-blue-700 font-medium cursor-pointer transition">
+                          <span class="inline-flex items-center px-1 py-1.5 rounded-md border-2 border-blue-600 bg-blue-50 text-sm hover:border hover:border-blue-600 hover:bg-transparent cursor-pointer transition">
                             {{ $gradeOption['label'] }}
                           </span>
                         @else
                           <a href="{{ url('product/'.$gradeOption['slug']) }}"
-                            class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:text-blue-600 transition">
+                            class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:border transition">
                             {{ $gradeOption['label'] }}
                           </a>
                         @endif
@@ -1299,11 +1299,11 @@
 
       // Update active pill styling
       document.querySelectorAll('.size-pill').forEach(function(p) {
-          p.classList.remove('border-primary', 'bg-blue-50', 'text-blue-700');
-          p.classList.add('border-gray-300', 'bg-white', 'text-gray-700');
+          p.classList.remove('border-2', 'border-blue-600', 'bg-blue-50', 'hover:border', 'hover:bg-transparent');
+          p.classList.add('border', 'border-gray-300', 'text-gray-700');
       });
-      element.classList.remove('border-gray-300', 'bg-white', 'text-gray-700');
-      element.classList.add('border-primary', 'bg-blue-50', 'text-blue-700');
+      element.classList.remove('border', 'border-gray-300', 'text-gray-700');
+      element.classList.add('border-2', 'border-blue-600', 'bg-blue-50', 'hover:border', 'hover:bg-transparent');
   }
 
   // Size selection function (legacy)

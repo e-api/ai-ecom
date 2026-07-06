@@ -163,28 +163,28 @@ services:
       - floci-api
 
   # --- Floci Dash (AWS Console-style UI) ---
-  # floci-dash:
-  #   image: ghcr.io/ofsazib/floci-dash:latest
-  #   container_name: ${APP_NAME:-laravel}-floci-dash
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: ${FLOCI_DASH_CPUS:-1}
-  #         memory: ${FLOCI_DASH_MEMORY_LIMIT:-512MB}
-  #   restart: always
-  #   environment:
-  #     - FLOCI_URL=http://${APP_NAME:-laravel}-floci:4566
-  #     - AWS_REGION=${AWS_DEFAULT_REGION:-us-east-1}
-  #     - PORT=4000
-  #     - NODE_ENV=production
-  #   ports:
-  #     - "127.0.0.1:4000:4000"
-  #   labels:
-  #     createdBy: "bt_apps"
-  #   networks:
-  #     - baota_net
-  #   depends_on:
-  #     - floci
+  floci-dash:
+    image: ghcr.io/ofsazib/floci-dash:latest
+    container_name: ${APP_NAME:-laravel}-floci-dash
+    deploy:
+      resources:
+        limits:
+          cpus: ${FLOCI_DASH_CPUS:-1}
+          memory: ${FLOCI_DASH_MEMORY_LIMIT:-512MB}
+    restart: always
+    environment:
+      - FLOCI_URL=http://${APP_NAME:-laravel}-floci:4566
+      - AWS_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - PORT=4000
+      - NODE_ENV=production
+    ports:
+      - "127.0.0.1:4000:4000"
+    labels:
+      createdBy: "bt_apps"
+    networks:
+      - baota_net
+    depends_on:
+      - floci
 
   # --- Optional: Keep PostgreSQL for migration ---
   postgres:

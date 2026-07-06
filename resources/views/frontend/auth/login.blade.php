@@ -20,7 +20,7 @@
           {{-- Email --}}
           <div>
             <label for="email" class="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
-            <input id="email" type="email" name="email" value="{{ old('email') }}" autofocus
+            <input id="email" type="email" name="email" value="{{ old('email') }}" autofocus autocomplete="off"
               class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition"
               placeholder="john@example.com">
             @error('email')

@@ -840,7 +840,61 @@ $(document).ready(function() {
     }
 
     /*
-    | Add To Cart
+    | Add To Cart from home page (latest products)
+    */
+    $(document).on('click', '.add-to-cart-btn', function() {
+        let button = $(this);
+        let product_id = button.data('product-id');
+        let config = window.siteConfig || {};
+        let originalText = button.html();
+
+        if (!product_id) {
+            alert('Product is missing. Please refresh the page and try again.');
+            return false;
+        }
+
+        $.ajax({
+            url: config.routes ? config.routes.cartAdd : '/cart/add',
+            type: "POST",
+            data: {
+                _token: config.csrfToken || '',
+                product_id: product_id,
+                variant_id: null,
+                quantity: 1
+            },
+            beforeSend: function() {
+                button
+                    .prop('disabled', true)
+                    .text('Adding...');
+            },
+            success: function(response) {
+                if (response.status) {
+                    $('[data-cart-count]').text(response.cartCount ?? 0);
+
+                    if (window.toastr) {
+                        toastr.success(response.message || 'Product added to cart successfully.');
+                    } else {
+                        alert(response.message || 'Product added to cart successfully.');
+                    }
+                } else {
+                    alert(response.message || 'Something went wrong.');
+                    updateCartCount();
+                }
+            },
+            error: function(xhr) {
+                let message = xhr.responseJSON?.message || 'Something went wrong. Please try again.';
+                alert(message);
+            },
+            complete: function() {
+                button
+                    .prop('disabled', false)
+                    .html(originalText || 'Add');
+            }
+        });
+    });
+
+    /*
+    | Add To Cart (detail page)
     */
     $(document).on('click', '#addToCartBtn', function() {
         let button = $(this);

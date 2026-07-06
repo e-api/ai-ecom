@@ -70,4 +70,18 @@ class CartController extends Controller
             'count' => $this->cartService->getCartCount(),
         ]);
     }
+
+    public function update(Request $request)
+    {
+        return response()->json(
+            $this->cartService->updateCartItem($request->all())
+        );
+    }
+
+    public function delete(Request $request)
+    {
+        return response()->json(
+            $this->cartService->deleteCartItem($request->all())
+        );
+    }
 }

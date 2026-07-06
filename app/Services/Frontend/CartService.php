@@ -174,6 +174,112 @@ class CartService
         return $count;
     }
 
+    public function updateCartItem(array $data)
+    {
+        $quantity = max(1, (int) ($data['quantity'] ?? 1));
+
+        if (Auth::check()) {
+            $itemId = $data['id'] ?? null;
+            if (!$itemId) {
+                return ['status' => false, 'message' => 'Cart item ID is required.'];
+            }
+
+            $cartItem = CartItem::where('user_id', Auth::id())
+                ->where('id', $itemId)
+                ->first();
+
+            if (!$cartItem) {
+                return ['status' => false, 'message' => 'Cart item not found.'];
+            }
+
+            $cartItem->quantity = $quantity;
+            $cartItem->save();
+
+            $formatted = $this->formatCartItem(
+                $cartItem->product,
+                $cartItem->variant,
+                (int) $cartItem->quantity,
+                $cartItem->id
+            );
+
+            return [
+                'status' => true,
+                'message' => 'Cart updated successfully.',
+                'subtotal' => number_format($formatted['line_total'], 2),
+                'cartTotal' => number_format($this->getCartTotal(), 2),
+                'cartCount' => $this->getCartCount(),
+            ];
+        }
+
+        $cart = session()->get('cart', []);
+        $key = $data['id'] ?? $data['key'] ?? null;
+
+        if (!$key || !isset($cart[$key])) {
+            return ['status' => false, 'message' => 'Cart item not found.'];
+        }
+
+        $cart[$key]['quantity'] = $quantity;
+        session()->put('cart', $cart);
+
+        $product = Product::find($cart[$key]['product_id'] ?? null);
+        $variantId = $cart[$key]['product_variant_id'] ?? null;
+        $variant = $variantId ? ProductVariant::find($variantId) : null;
+
+        $formatted = $this->formatCartItem($product, $variant, $quantity, $key, $cart[$key]);
+
+        return [
+            'status' => true,
+            'message' => 'Cart updated successfully.',
+            'subtotal' => number_format($formatted['line_total'], 2),
+            'cartTotal' => number_format($this->getCartTotal(), 2),
+            'cartCount' => $this->getCartCount(),
+        ];
+    }
+
+    public function deleteCartItem(array $data)
+    {
+        if (Auth::check()) {
+            $itemId = $data['id'] ?? null;
+            if (!$itemId) {
+                return ['status' => false, 'message' => 'Cart item ID is required.'];
+            }
+
+            $cartItem = CartItem::where('user_id', Auth::id())
+                ->where('id', $itemId)
+                ->first();
+
+            if (!$cartItem) {
+                return ['status' => false, 'message' => 'Cart item not found.'];
+            }
+
+            $cartItem->delete();
+
+            return [
+                'status' => true,
+                'message' => 'Item removed from cart.',
+                'cartTotal' => number_format($this->getCartTotal(), 2),
+                'cartCount' => $this->getCartCount(),
+            ];
+        }
+
+        $cart = session()->get('cart', []);
+        $key = $data['id'] ?? $data['key'] ?? null;
+
+        if (!$key || !isset($cart[$key])) {
+            return ['status' => false, 'message' => 'Cart item not found.'];
+        }
+
+        unset($cart[$key]);
+        session()->put('cart', $cart);
+
+        return [
+            'status' => true,
+            'message' => 'Item removed from cart.',
+            'cartTotal' => number_format($this->getCartTotal(), 2),
+            'cartCount' => $this->getCartCount(),
+        ];
+    }
+
     private function formatCartItem(?Product $product, ?ProductVariant $variant, int $quantity, string|int $key, array $fallback = []): array
     {
         $quantity = max(1, $quantity);

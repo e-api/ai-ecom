@@ -374,11 +374,13 @@
                   </a>
                   
                   {{-- Add to Cart Button (Right) --}}
-                  <a class="btn-go flex items-center justify-center transition-transform hover:scale-105 bg-gray-100 text-gray-700 hover:bg-primary hover:text-white rounded-md px-1.5 py-1 sm:px-1 sm:py-1 text-xs sm:text-xs" 
-                    href="{{ url('#') }}">
+                  <button type="button" 
+                    class="add-to-cart-btn btn-go flex items-center justify-center transition-transform hover:scale-105 bg-gray-100 text-gray-700 hover:bg-primary hover:text-white rounded-md px-1.5 py-1 sm:px-1 sm:py-1 text-xs sm:text-xs" 
+                    data-product-id="{{ $product->id }}"
+                    data-product-name="{{ $product->name }}">
                     <i class="fa-solid fa-cart-arrow-down sm:mr-1"></i>
                     <span class="hidden sm:inline">Add</span>
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>

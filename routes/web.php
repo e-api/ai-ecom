@@ -53,6 +53,14 @@ Route::get('/cart/count', [CartController::class, 'count'])
 */
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 /*
+| Shopping Cart Update |
+*/
+Route::get('/cart/update', [CartController::class, 'update'])->name('cart.update');
+/*
+| Shopping Cart Delete |
+*/
+Route::post('/cart/delete', [CartController::class, 'delete'])->name('cart.delete');
+/*
 NEW: SEO Friendly Category Route
 */
 Route::get('/{slug}', [CategoryController::class, 'listing'])

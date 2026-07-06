@@ -20,7 +20,7 @@
           {{-- Name --}}
           <div>
             <label for="name" class="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
-            <input id="name" type="text" name="name" value="{{ old('name') }}" autofocus
+            <input id="name" type="text" name="name" value="{{ old('name') }}" autofocus autocomplete="off"
               class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition"
               placeholder="John Doe">
             @error('name')
@@ -31,7 +31,7 @@
           {{-- Email --}}
           <div>
             <label for="email" class="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
-            <input id="email" type="email" name="email" value="{{ old('email') }}"
+            <input id="email" type="email" name="email" value="{{ old('email') }}" autocomplete="off"
               class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition"
               placeholder="john@example.com">
             @error('email')
@@ -42,7 +42,7 @@
           {{-- Phone --}}
           <div>
             <label for="phone" class="block text-sm font-semibold text-gray-700 mb-1">Phone Number</label>
-            <input id="phone" type="tel" name="phone" value="{{ old('phone') }}"
+            <input id="phone" type="tel" name="phone" value="{{ old('phone') }}" autocomplete="off"
               class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition"
               placeholder="0123456789">
             @error('phone')

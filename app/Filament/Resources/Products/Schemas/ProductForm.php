@@ -12,6 +12,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
 use Filament\Actions\Action;
@@ -141,7 +142,7 @@ class ProductForm
                 ->headerActions([
                     Action::make('generateDescription')
                         ->label(
-                            'Generate Using AI'
+                            'Generate AI Content'
                         )
                         ->icon(
                             'heroicon-o-sparkles'
@@ -180,19 +181,60 @@ class ProductForm
                                         $category?->name;
                                 }
 
-                                $description = 
+                                $content = 
                                     app(
                                         AIService::class
                                     )
-                                    ->generateProductDescription(
+                                    ->generateProductContent(
                                         $productName,
                                         $categoryName
                                     );
 
-                                $set(
-                                    'description',
-                                    $description
-                                );
+                                if (! isset($content['error'])) {
+                                    $set(
+                                        'description',
+                                        $content['description'] ?? ""
+                                    );
+
+                                    $set(
+                                        'short_description',
+                                        $content['short_description'] ?? ""
+                                    );
+
+                                    $set(
+                                        'meta_title',
+                                        $content['meta_title'] ?? ""
+                                    );
+
+                                    $set(
+                                        'meta_description',
+                                        $content['meta_description'] ?? ""
+                                    );
+
+                                    $set(
+                                        'meta_keywords',
+                                        $content['meta_keywords'] ?? ""
+                                    );
+
+                                    // 👇 Optional: Show success notification
+                                    Notification::make()
+                                        ->title('AI content generated successfully!')
+                                        ->success()
+                                        ->send();
+                                } else {
+                                    // 👇 Optional: Show error notification
+                                    Notification::make()
+                                        ->title('Unexpected error, content failed to show')
+                                        ->body($content['error'])
+                                        ->danger()
+                                        ->send();
+                                    // 👇 NEW: Populate the description field with the error so it's visible
+                                    $set('description', 'AI Error: ' . $content['error']);
+                                    $set('short_description', 'AI Error: ' . $content['error']);
+                                    $set('meta_title', 'AI Error: ' . $content['error']);
+                                    $set('meta_description', 'AI Error: ' . $content['error']);
+                                    $set('meta_keywords', 'AI Error: ' . $content['error']);
+                                }
                             }
                         ),
                 ])

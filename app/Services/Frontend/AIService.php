@@ -3,6 +3,7 @@
 namespace App\Services\Frontend;
 
 use Illuminate\Support\Facades\Http;
+use App\Models\AISetting;
 
 class AIService
 {
@@ -11,119 +12,61 @@ class AIService
     | Generate Product Description
     |--------------------------------------------------------------------------
     */
-    public function generateProductDescription(
-        string $productName,
-        string $categoryName = ""
-    ): string {
-        try {
-            $response = Http::withoutVerifying()
-            ->withToken(
-                config('services.openai.key')
-            )->post(
-                'https://api.openai.com/v1/chat/completions',
-                [
-                    'model' => env(
-                        'OPENAI_MODEL',
-                        'gpt-4.1-mini'
-                    ),
-                    'messages' => [
-                        [
-                            'role' => 'system',
-                            'content' =>
-                                "You are an expert e-commerce content writer."
-                        ],
-                        [
-                            'role' => 'user',
-                            'content' =>
-                                "Generate a professional and engaging product description for product '{$productName}' in category '{$categoryName}'. Limit response to 120 words."
-                        ],
-                    ],
-                    'temperature' => 0.7,
-                    'max_tokens' => 250,
-                ]
-            );
-
-            /*
-            |--------------------------------------------------------------------------
-            | API Error Handling
-            |--------------------------------------------------------------------------
-            */
-            if ($response->failed()) {
-                \Log::error(
-                    'OpenAI API Error',
-                    $response->json()
-                );
-
-                return 'Unable to generate description. Please check API key, billing, or OpenAI quota.';
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Return AI Description
-            |--------------------------------------------------------------------------
-            */
-            return
-                $response->json(
-                    'choices.0.message.content'
-                ) ??
-                'AI could not generate description.';
-
-        } catch (\Exception $e) {
-            \Log::error(
-                'OpenAI Exception: ' .
-                $e->getMessage()
-            );
-
-            return
-                'Error: ' .
-                $e->getMessage();
-        }
-    }
 
     public function generateProductContent(
         string $productName,
         string $categoryName = ""
     ): array {
+        $settings = AISetting::first();
+
+        $model = $settings?->openai_model ?? 'gpt-4.1-mini';
+        $temperature = $settings?->temperature ?? 0.7;
+        $maxTokens = $settings?->max_tokens ?? 600;
+        $descriptionLength = $settings?->description_length ?? 120;
+        $shortDescriptionLength = $settings?->short_description_length ?? 40;
+        $keywordCount = $settings?->keyword_count ?? 10;
+        $writingTone = $settings?->writing_tone ?? 'Professional';
+
+        $systemPrompt = $settings?->system_prompt
+            ?? 'You are an expert e-commerce SEO content writer. Return only valid JSON without markdown.';
+
         try {
             $response = Http::withToken(
                 config('services.openai.key')
             )->post(
                 'https://api.openai.com/v1/chat/completions',
                 [
-                    'model' => env(
-                        'OPENAI_MODEL',
-                        'gpt-4.1-mini'
-                    ),
+                    'model' => $model,
                     'messages' => [
                         [
                             'role' => 'system',
-                            'content' =>
-                                "You are an expert e-commerce SEO content writer. Return only valid JSON without markdown."
+                            'content' => $systemPrompt,
                         ],
                         [
                             'role' => 'user',
                             'content' =>
                                 "Generate the following for product '{$productName}' in category '{$categoryName}'.
 
-                                  1. Product Description (Maximum 120 words)
-                                  2. Short Product Description (Maximum 40 words)
-                                  3. SEO Meta Title (Maximum 60 characters)
-                                  4. SEO Meta Description (Maximum 160 characters)
-                                  5. SEO Meta Keywords (Comma separated)
+                                    1. Product Description (Maximum {$descriptionLength} words)
+                                    2. Short Product Description (Maximum {$shortDescriptionLength} words)
+                                    3. SEO Meta Title (Maximum 60 characters)
+                                    4. SEO Meta Description (Maximum 160 characters)
+                                    5. Generate exactly {$keywordCount} comma-separated SEO keywords.
 
-                                  Return ONLY valid JSON in the following format:
+                                    Write the complete content in {$writingTone} tone.
 
-                                  {
-                                      \"description\": \"\",
-                                      \"short_description\": \"\",
-                                      \"meta_title\": \"\",
-                                      \"meta_description\": \"\",
-                                      \"meta_keywords\": \"\"
-                                  }"
+                                    Return ONLY valid JSON in the following format:
+                                    {
+                                        \"description\": \"\",
+                                        \"short_description\": \"\",
+                                        \"meta_title\": \"\",
+                                        \"meta_description\": \"\",
+                                        \"meta_keywords\": \"\"
+                                    }"
                         ],
                     ],
-                    'temperature' => 0.7,
-                    'max_tokens' => 600,
+                    'temperature' => $temperature,
+                    'max_tokens' => $maxTokens,
                 ]
             );
 
@@ -140,7 +83,7 @@ class AIService
 
                 return [
                     'error' =>
-                        'Unable to generate description. Please check API key, billing, or OpenAI quota.'
+                        'Unable to generate AI content.'
                 ];
             }
 

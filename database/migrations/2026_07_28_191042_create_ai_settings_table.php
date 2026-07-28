@@ -19,6 +19,16 @@ return new class extends Migration
                 ->default(0.7);
             $table->integer('max_tokens')
                 ->default(600);
+            $table->string('writing_tone')
+                ->default('Professional');
+            $table->integer('description_length')
+                ->default(120);
+            $table->integer('short_description_length')
+                ->default(40);
+            $table->integer('keyword_count')
+                ->default(10);
+            $table->text('system_prompt')
+                ->nullable();
             $table->timestamps();
         });
     }

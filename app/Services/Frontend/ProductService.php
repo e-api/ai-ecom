@@ -227,4 +227,32 @@ class ProductService
             ->where('status', 1)
             ->get();
     }
+
+    public function getStyleVariations($product)
+    {
+        if (empty($product->product_family)) {
+            return collect();
+        }
+
+        return Product::with('brand')
+            ->where('product_family', $product->product_family)
+            ->where('style', '!=', $product->style)
+            ->where('id', '!=', $product->id)
+            ->where('status', 1)
+            ->get();
+    }
+
+    public function getPatternNameVariations($product)
+    {
+        if (empty($product->product_family)) {
+            return collect();
+        }
+
+        return Product::with('brand')
+            ->where('product_family', $product->product_family)
+            ->where('pattern_name', '!=', $product->pattern_name)
+            ->where('id', '!=', $product->id)
+            ->where('status', 1)
+            ->get();
+    }
 }

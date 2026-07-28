@@ -13,6 +13,14 @@
     || $product->service_provider === ''
     || $variation->service_provider === $product->service_provider
   );
+  $styleProducts = $familyVariationProducts->filter(fn ($variation) =>
+    empty($product->pattern_name)
+    || $variation->pattern_name === $product->pattern_name
+  );
+  $patternNameProducts = $familyVariationProducts->filter(fn ($variation) =>
+    empty($product->style)
+    || $variation->style === $product->style
+  );
 
   $matchingVariation = function ($variations, array $matches) {
     return $variations->first(function ($variation) use ($matches) {
@@ -33,6 +41,36 @@
       return $hasComparableValue;
     });
   };
+
+  // Filter color variations to only show colors compatible with the
+  // currently selected service_provider, product_grade, style, AND pattern_name
+  $compatibleProductFamilyIds = $familyVariationProducts->filter(function ($variation) use ($product) {
+    // Product must match the current product's service_provider (if set)
+    if (!empty($product->service_provider) && !empty($variation->service_provider)) {
+      if ($variation->service_provider !== $product->service_provider) {
+        return false;
+      }
+    }
+    // Product must match the current product's product_grade (if set)
+    if (!empty($product->product_grade) && !empty($variation->product_grade)) {
+      if ($variation->product_grade !== $product->product_grade) {
+        return false;
+      }
+    }
+    // Product must match the current product's style (if set)
+    if (!empty($product->style) && !empty($variation->style)) {
+      if ($variation->style !== $product->style) {
+        return false;
+      }
+    }
+    // Product must match the current product's pattern_name (if set)
+    if (!empty($product->pattern_name) && !empty($variation->pattern_name)) {
+      if ($variation->pattern_name !== $product->pattern_name) {
+        return false;
+      }
+    }
+    return true;
+  })->pluck('id');
 
   $serviceProviderOptions = $serviceProviderProducts
     ->filter(fn ($variation) => !empty($variation->service_provider))
@@ -68,6 +106,46 @@
 
       return [
         'label' => $variation->product_grade,
+        'slug' => $variation->slug,
+      ];
+    })
+    ->sortBy(fn ($option) => strtolower($option['label']))
+    ->values();
+
+  $styleOptions = $styleProducts
+    ->filter(fn ($variation) => !empty($variation->style))
+    ->groupBy(fn ($variation) => strtolower($variation->style))
+    ->map(function ($variations) use ($product, $matchingVariation) {
+      $variation = $matchingVariation($variations, [
+        'pattern_name' => $product->pattern_name,
+        'color' => $product->color,
+      ])
+        ?? $matchingVariation($variations, ['pattern_name' => $product->pattern_name])
+        ?? $matchingVariation($variations, ['color' => $product->color])
+        ?? $variations->sortBy(fn ($item) => strtolower($item->pattern_name ?? ''))->first();
+
+      return [
+        'label' => $variation->style,
+        'slug' => $variation->slug,
+      ];
+    })
+    ->sortBy(fn ($option) => strtolower($option['label']))
+    ->values();
+
+  $patternNameOptions = $patternNameProducts
+    ->filter(fn ($variation) => !empty($variation->pattern_name))
+    ->groupBy(fn ($variation) => strtolower($variation->pattern_name))
+    ->map(function ($variations) use ($product, $matchingVariation) {
+      $variation = $matchingVariation($variations, [
+        'style' => $product->style,
+        'color' => $product->color,
+      ])
+        ?? $matchingVariation($variations, ['style' => $product->style])
+        ?? $matchingVariation($variations, ['color' => $product->color])
+        ?? $variations->sortBy(fn ($item) => strtolower($item->style ?? ''))->first();
+
+      return [
+        'label' => $variation->pattern_name,
         'slug' => $variation->slug,
       ];
     })
@@ -200,20 +278,22 @@
               if ($product->color) {
               $currentImageModel = $product->images->where('position', 1)->first();
               $currentImagePath = $currentImageModel ? $currentImageModel->image : $product->image;
-              $allColors->push(['color' => $product->color, 'slug' => $product->slug, 'image' => $currentImagePath]);
+              $allColors->push(['id' => $product->id, 'color' => $product->color, 'slug' => $product->slug, 'image' => $currentImagePath]);
               }
               foreach ($colorVariations as $cv) {
               $imgModel = $cv->images->where('position', 1)->first();
               $imgPath = $imgModel ? $imgModel->image : $cv->image;
-              $allColors->push(['color' => $cv->color, 'slug' => $cv->slug, 'image' => $imgPath]);
+              $allColors->push(['id' => $cv->id, 'color' => $cv->color, 'slug' => $cv->slug, 'image' => $imgPath]);
               }
+              // Only show colors compatible with the current service_provider AND product_grade
+              $allColors = $allColors->filter(fn ($c) => $compatibleProductFamilyIds->contains($c['id']));
               // dedupe by color and sort to provide stable ordering across pages
               $allColors = $allColors->unique('color')->sortBy(function($c) { return strtolower($c['color'] ?? ''); })->values();
               @endphp
               @foreach($allColors as $cv)
               @php $imgUrl = $cv['image'] ? Storage::url($cv['image']) : 'https://placehold.co/400x400/e5e7eb/9ca3af?text='.urlencode($cv['color']); @endphp
               <a href="{{ url('product/'.$cv['slug']) }}"
-                class="block rounded-lg overflow-hidden border-2 {{ $cv['slug'] == $product->slug ? 'border-primary' : 'border-gray-200' }} hover:border-primary transition-all text-center"
+                class="color-variant block rounded-lg overflow-hidden border-2 {{ $cv['slug'] == $product->slug ? 'border-primary' : 'border-gray-200' }} hover:border-primary transition-all text-center"
                 data-color="{{ $cv['color'] }}" data-image="{{ $imgUrl }}" data-zoom="{{ $imgUrl }}">
                 <img src="{{ $imgUrl }}" alt="{{ $cv['color'] }}" class="w-full aspect-square object-cover">
                 <div class="p-1 text-center text-xs font-medium bg-white">
@@ -227,7 +307,7 @@
           {{-- Product Specs (mobile) --}}
           <div class="mt-4 md:hidden">
             <div class="rounded-lg bg-white text-sm">
-                {{-- Service Provider Row (Amazon-style inline twister) --}}
+                {{-- Service Provider Row — pills only when 2+ options --}}
                 @if($product->service_provider)
                 <div class="py-1">
                   <div class="flex items-center justify-between">
@@ -236,6 +316,7 @@
                       <span class="font-bold text-gray-900">{{ $product->service_provider }}</span>
                     </div>
                   </div>
+                  @if($serviceProviderOptions->count() > 1)
                   <div class="mt-2">
                     <div class="flex flex-wrap gap-2">
                       @foreach($serviceProviderOptions as $providerOption)
@@ -252,9 +333,10 @@
                       @endforeach
                     </div>
                   </div>
+                  @endif
                 </div>
                 @endif
-                {{-- Product Grade Row (Amazon-style inline twister) --}}
+                {{-- Product Grade Row — pills only when 2+ options --}}
                 @if($product->product_grade)
                 <div class="py-1">
                   <div class="flex items-center justify-between">
@@ -263,6 +345,7 @@
                       <span class="font-bold text-gray-900">{{ $product->product_grade }}</span>
                     </div>
                   </div>
+                  @if($productGradeOptions->count() > 1)
                   <div class="mt-2">
                     <div class="flex flex-wrap gap-2">
                       @foreach($productGradeOptions as $gradeOption)
@@ -279,6 +362,65 @@
                       @endforeach
                     </div>
                   </div>
+                  @endif
+                </div>
+                @endif
+                {{-- Style Row — pills only when 2+ options --}}
+                @if($product->style)
+                <div class="py-1">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-baseline gap-1">
+                      <span class="text-gray-600">Style:</span>
+                      <span class="font-bold text-gray-900">{{ $product->style }}</span>
+                    </div>
+                  </div>
+                  @if($styleOptions->count() > 1)
+                  <div class="mt-2">
+                    <div class="flex flex-wrap gap-2">
+                      @foreach($styleOptions as $styleOption)
+                        @if($styleOption['label'] == $product->style)
+                          <span class="inline-flex items-center px-1 py-1.5 rounded-md border-2 border-blue-600 bg-blue-50 text-sm hover:border hover:border-blue-600 hover:bg-transparent cursor-pointer transition">
+                            {{ $styleOption['label'] }}
+                          </span>
+                        @else
+                          <a href="{{ url('product/'.$styleOption['slug']) }}"
+                            class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:border transition">
+                            {{ $styleOption['label'] }}
+                          </a>
+                        @endif
+                      @endforeach
+                    </div>
+                  </div>
+                  @endif
+                </div>
+                @endif
+                {{-- Pattern Name Row — pills only when 2+ options --}}
+                @if($product->pattern_name)
+                <div class="py-1">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-baseline gap-1">
+                      <span class="text-gray-600">Pattern Name:</span>
+                      <span class="font-bold text-gray-900">{{ $product->pattern_name }}</span>
+                    </div>
+                  </div>
+                  @if($patternNameOptions->count() > 1)
+                  <div class="mt-2">
+                    <div class="flex flex-wrap gap-2">
+                      @foreach($patternNameOptions as $patternOption)
+                        @if($patternOption['label'] == $product->pattern_name)
+                          <span class="inline-flex items-center px-1 py-1.5 rounded-md border-2 border-blue-600 bg-blue-50 text-sm hover:border hover:border-blue-600 hover:bg-transparent cursor-pointer transition">
+                            {{ $patternOption['label'] }}
+                          </span>
+                        @else
+                          <a href="{{ url('product/'.$patternOption['slug']) }}"
+                            class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:border transition">
+                            {{ $patternOption['label'] }}
+                          </a>
+                        @endif
+                      @endforeach
+                    </div>
+                  </div>
+                  @endif
                 </div>
                 @endif
                 {{-- Specifications Table (Amazon-style) with specific rows and collapsible toggle --}}
@@ -389,7 +531,7 @@
                 <p class="text-sm text-gray-600 mt-1">Or fastest delivery <span class="font-medium text-gray-900">{{ \Carbon\Carbon::now()->addDays(rand(1, 2))->format('l, F d') }}</span></p>
               </div>
               {{-- Description snippet --}}
-              <p class="mt-3 text-sm leading-6 text-gray-700">{{ $product->short_description ?? $product->description }}</p>
+              <!-- <p class="mt-3 text-sm leading-6 text-gray-700">{{-- $product->short_description ?? $product->description --}}</p> -->
             </div>
             @if($product->variants->count() > 0)
             <div id="zoom-size-thumbnails" class="mt-2 hidden md:block">
@@ -422,19 +564,21 @@
                   if ($product->color) {
                       $currentImageModel = $product->images->where('position', 1)->first();
                       $currentImagePath = $currentImageModel ? $currentImageModel->image : $product->image;
-                      $allColors->push(['color' => $product->color, 'slug' => $product->slug, 'image' => $currentImagePath]);
+                      $allColors->push(['id' => $product->id, 'color' => $product->color, 'slug' => $product->slug, 'image' => $currentImagePath]);
                   }
                   foreach ($colorVariations as $cv) {
                       $imgModel = $cv->images->where('position', 1)->first();
                       $imgPath = $imgModel ? $imgModel->image : $cv->image;
-                      $allColors->push(['color' => $cv->color, 'slug' => $cv->slug, 'image' => $imgPath]);
+                      $allColors->push(['id' => $cv->id, 'color' => $cv->color, 'slug' => $cv->slug, 'image' => $imgPath]);
                   }
+                  // Only show colors compatible with the current service_provider AND product_grade
+                  $allColors = $allColors->filter(fn ($c) => $compatibleProductFamilyIds->contains($c['id']));
                   $allColors = $allColors->unique('color')->sortBy(function($c) { return strtolower($c['color'] ?? ''); })->values();
                   @endphp
                   @foreach($allColors as $cv)
                   @php $imgUrl = $cv['image'] ? Storage::url($cv['image']) : 'https://placehold.co/400x400/e5e7eb/9ca3af?text='.urlencode($cv['color']); @endphp
                   <a href="{{ url('product/'.$cv['slug']) }}"
-                    class="block rounded-md overflow-hidden border {{ $cv['slug'] == $product->slug ? 'border-2 border-blue-600' : 'border-gray-200' }} hover:border hover:border-blue-600 transition-all text-center"
+                    class="color-variant block rounded-md overflow-hidden border {{ $cv['slug'] == $product->slug ? 'border-2 border-blue-600' : 'border-gray-200' }} hover:border hover:border-blue-600 transition-all text-center"
                     data-color="{{ $cv['color'] }}" data-image="{{ $imgUrl }}" data-zoom="{{ $imgUrl }}">
                     <img src="{{ $imgUrl }}" alt="{{ $cv['color'] }}" class="w-full aspect-square object-cover">
                     <div class="py-0.5 text-center text-[9px] font-medium bg-white truncate">
@@ -448,7 +592,7 @@
             {{-- Product Specs (desktop, under variation selection) --}}
             <div id="product-specs" class="mt-4 hidden md:block">
               <div class="rounded-lg bg-white text-sm">
-                {{-- Service Provider Row (Amazon-style inline twister) --}}
+                {{-- Service Provider Row — pills only when 2+ options --}}
                 @if($product->service_provider)
                 <div class="py-1">
                   <div class="flex items-center justify-between">
@@ -457,7 +601,8 @@
                       <span class="font-bold text-gray-900">{{ $product->service_provider }}</span>
                     </div>
                   </div>
-                    <div class="mt-2">
+                  @if($serviceProviderOptions->count() > 1)
+                  <div class="mt-2">
                     <div class="flex flex-wrap gap-2">
                       @foreach($serviceProviderOptions as $providerOption)
                         @if($providerOption['label'] == $product->service_provider)
@@ -473,9 +618,10 @@
                       @endforeach
                     </div>
                   </div>
+                  @endif
                 </div>
                 @endif
-                {{-- Product Grade Row (Amazon-style inline twister) --}}
+                {{-- Product Grade Row — pills only when 2+ options --}}
                 @if($product->product_grade)
                 <div class="py-1">
                   <div class="flex items-center justify-between">
@@ -484,7 +630,8 @@
                       <span class="font-bold text-gray-900">{{ $product->product_grade }}</span>
                     </div>
                   </div>
-                    <div class="mt-2">
+                  @if($productGradeOptions->count() > 1)
+                  <div class="mt-2">
                     <div class="flex flex-wrap gap-2">
                       @foreach($productGradeOptions as $gradeOption)
                         @if($gradeOption['label'] == $product->product_grade)
@@ -500,6 +647,65 @@
                       @endforeach
                     </div>
                   </div>
+                  @endif
+                </div>
+                @endif
+                {{-- Style Row — pills only when 2+ options --}}
+                @if($product->style)
+                <div class="py-1">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-baseline gap-1">
+                      <span class="text-gray-600">Style:</span>
+                      <span class="font-bold text-gray-900">{{ $product->style }}</span>
+                    </div>
+                  </div>
+                  @if($styleOptions->count() > 1)
+                  <div class="mt-2">
+                    <div class="flex flex-wrap gap-2">
+                      @foreach($styleOptions as $styleOption)
+                        @if($styleOption['label'] == $product->style)
+                          <span class="inline-flex items-center px-1 py-1.5 rounded-md border-2 border-blue-600 bg-blue-50 text-sm hover:border hover:border-blue-600 hover:bg-transparent cursor-pointer transition">
+                            {{ $styleOption['label'] }}
+                          </span>
+                        @else
+                          <a href="{{ url('product/'.$styleOption['slug']) }}"
+                            class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:border transition">
+                            {{ $styleOption['label'] }}
+                          </a>
+                        @endif
+                      @endforeach
+                    </div>
+                  </div>
+                  @endif
+                </div>
+                @endif
+                {{-- Pattern Name Row — pills only when 2+ options --}}
+                @if($product->pattern_name)
+                <div class="py-1">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-baseline gap-1">
+                      <span class="text-gray-600">Pattern Name:</span>
+                      <span class="font-bold text-gray-900">{{ $product->pattern_name }}</span>
+                    </div>
+                  </div>
+                  @if($patternNameOptions->count() > 1)
+                  <div class="mt-2">
+                    <div class="flex flex-wrap gap-2">
+                      @foreach($patternNameOptions as $patternOption)
+                        @if($patternOption['label'] == $product->pattern_name)
+                          <span class="inline-flex items-center px-1 py-1.5 rounded-md border-2 border-blue-600 bg-blue-50 text-sm hover:border hover:border-blue-600 hover:bg-transparent cursor-pointer transition">
+                            {{ $patternOption['label'] }}
+                          </span>
+                        @else
+                          <a href="{{ url('product/'.$patternOption['slug']) }}"
+                            class="inline-flex items-center px-1 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 bg-white hover:border-blue-500 hover:border transition">
+                            {{ $patternOption['label'] }}
+                          </a>
+                        @endif
+                      @endforeach
+                    </div>
+                  </div>
+                  @endif
                 </div>
                 @endif
                 {{-- Specifications Table (Amazon-style) with specific rows and collapsible toggle --}}
@@ -596,7 +802,7 @@
             <p class="text-sm text-gray-600 mt-1">Or fastest delivery <span class="font-medium text-gray-900">{{ \Carbon\Carbon::now()->addDays(rand(1, 2))->format('l, F d') }}</span></p>
           </div>
           {{-- Description snippet --}}
-          <p class="mt-3 text-sm leading-6 text-gray-700">{{ $product->short_description ?? $product->description }}</p>
+          <!-- <p class="mt-3 text-sm leading-6 text-gray-700">{{-- $product->short_description ?? $product->description --}}</p> -->
           {{-- Size & Stock info --}}
           <div class="mt-3 flex items-center gap-4 text-sm">
             <div>

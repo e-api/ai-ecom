@@ -27,6 +27,8 @@ return new class extends Migration
             $table->string('color')->nullable();
             $table->string('service_provider')->nullable();
             $table->string('product_grade')->nullable();
+            $table->string('style')->nullable();
+            $table->string('pattern_name')->nullable();
         
             $table->text('description')->nullable();
             $table->text('short_description')->nullable();

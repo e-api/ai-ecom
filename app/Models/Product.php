@@ -32,6 +32,8 @@ class Product extends Model
         'box_contents',
         'service_provider',
         'product_grade',
+        'style',
+        'pattern_name',
     ];
 
     protected $casts = [

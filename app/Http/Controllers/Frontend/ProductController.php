@@ -47,12 +47,26 @@ class ProductController extends Controller
         $gradeVariations = $this->productService
             ->getGradeVariations($product);
 
+        /*
+        | Style Variations
+        */
+        $styleVariations = $this->productService
+            ->getStyleVariations($product);
+
+        /*
+        | Pattern Name Variations
+        */
+        $patternNameVariations = $this->productService
+            ->getPatternNameVariations($product);
+
         return view('frontend.product.detail', compact(
             'product',
             'relatedProducts',
             'colorVariations',
             'providerVariations',
-            'gradeVariations'
+            'gradeVariations',
+            'styleVariations',
+            'patternNameVariations'
         ));
     }
 }

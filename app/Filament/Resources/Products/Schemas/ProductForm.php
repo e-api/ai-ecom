@@ -10,8 +10,12 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
+use Filament\Actions\Action;
+use App\Services\Frontend\AIService;
 use App\Filament\Resources\Categories\Schemas\CategoryForm;
 
 class ProductForm
@@ -46,13 +50,23 @@ class ProductForm
                             TextInput::make('service_provider')
                                 ->label('Service Provider')
                                 ->helperText('e.g. AT&T, T-Mobile, Verizon, Tracfone, Unlocked')
-                                ->required(),
+                                ->nullable(),
 
                             TextInput::make('product_grade')
                                 ->label('Product Grade')
                                 ->helperText('e.g. Renewed, Renewed Premium, New')
-                                ->required(),
-                            
+                                ->nullable(),
+
+                            TextInput::make('style')
+                                ->label('Style')
+                                ->helperText('e.g. Modern, Classic, Minimalist')
+                                ->nullable(),
+
+                            TextInput::make('pattern_name')
+                                ->label('Pattern Name')
+                                ->helperText('e.g. Floral, Geometric, Striped')
+                                ->nullable(),
+
                             Select::make('category_id')
                                 ->label('Category')
                                 ->options(CategoryForm::getCategoryOptions())
@@ -95,8 +109,24 @@ class ProductForm
                             FileUpload::make('image')
                                 ->image()
                                 ->directory('products')
+                                ->maxSize(5120)
+                                ->helperText('Recommended size: 1080x1080px. Maximum file size: 5MB.')
+                                ->acceptedFileTypes([
+                                    'image/jpeg',
+                                    'image/png',
+                                    'image/webp',
+                                ])
+                                ->getUploadedFileNameForStorageUsing(function ($file) {
+                                    $part1 = Str::random(10);
+                                    $part2 = Str::random(8);
+
+                                    return "{$part1}._{$part2}_." . $file->getClientOriginalExtension();
+                                })
                                 ->disk(env('FILESYSTEM_DISK', config('filesystems.default')))
                                 ->visibility('public')
+                                ->imageResizeMode('cover')
+                                ->imageResizeTargetWidth('1080')
+                                ->imageResizeTargetHeight('1080')
                                 ->required(),
                             
                             Toggle::make('status')
@@ -108,9 +138,67 @@ class ProductForm
 
             // DESCRIPTION
             Section::make('Description')
+                ->headerActions([
+                    Action::make('generateDescription')
+                        ->label(
+                            'Generate Using AI'
+                        )
+                        ->icon(
+                            'heroicon-o-sparkles'
+                        )
+                        ->action(
+                            function (
+                                $get,
+                                $set
+                            ) {
+                                $productName = 
+                                    $get('name');
+
+                                if (
+                                    empty(
+                                        $productName
+                                    )
+                                ) {
+                                    return;
+                                }
+
+                                $categoryName = "";
+
+                                if (
+                                    $get(
+                                        'category_id'
+                                    )
+                                ) {
+                                    $category = 
+                                        \App\Models\Category::find(
+                                            $get(
+                                                'category_id'
+                                            )
+                                        );
+
+                                    $categoryName = 
+                                        $category?->name;
+                                }
+
+                                $description = 
+                                    app(
+                                        AIService::class
+                                    )
+                                    ->generateProductDescription(
+                                        $productName,
+                                        $categoryName
+                                    );
+
+                                $set(
+                                    'description',
+                                    $description
+                                );
+                            }
+                        ),
+                ])
                 ->schema([
                     Textarea::make('description')
-                        ->rows(4),
+                        ->rows(6),
                     
                     Textarea::make('short_description')
                         ->rows(4),
@@ -135,14 +223,30 @@ class ProductForm
                             FileUpload::make('image')
                                 ->image()
                                 ->directory('products')
+                                ->maxSize(5120)
+                                ->helperText('Recommended size: 1080x1080px. Maximum file size: 5MB.')
+                                ->acceptedFileTypes([
+                                    'image/jpeg',
+                                    'image/png',
+                                    'image/webp',
+                                ])
+                                ->getUploadedFileNameForStorageUsing(function ($file) {
+                                    $part1 = Str::random(10);
+                                    $part2 = Str::random(8);
+
+                                    return "{$part1}._{$part2}_." . $file->getClientOriginalExtension();
+                                })
                                 ->disk(env('FILESYSTEM_DISK', config('filesystems.default')))
                                 ->visibility('public')
+                                ->imageResizeMode('cover')
+                                ->imageResizeTargetWidth('1080')
+                                ->imageResizeTargetHeight('1080')
                                 ->required(),
                             
                             TextInput::make('position')
                                 ->numeric()
                                 ->required()
-                                ->default(1)
+                                ->default(fn (Get $get) => count($get('../../images') ?? []) + 1)
                                 ->dehydrateStateUsing(fn ($state) => $state ?? 1),
                             
                             TextInput::make('alt_text'),
@@ -163,7 +267,8 @@ class ProductForm
                                 ->required(),
                             
                             TextInput::make('sku')
-                                ->required(),
+                                ->required()
+                                ->default(fn (Get $get) => $get('../../sku')),
                             
                             TextInput::make('price')
                                 ->numeric()
@@ -175,8 +280,8 @@ class ProductForm
                             
                             TextInput::make('position')
                                 ->numeric()
-                                ->default(1)
                                 ->required()
+                                ->default(fn (Get $get) => count($get('../../variants') ?? []) + 1)
                                 ->dehydrateStateUsing(fn ($state) => $state ?? 1),
                             
                             Toggle::make('status')

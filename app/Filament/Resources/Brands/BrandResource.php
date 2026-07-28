@@ -19,7 +19,7 @@ class BrandResource extends Resource
 {
     protected static ?string $model = Brand::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Shop';
+    protected static string|UnitEnum|null $navigationGroup = 'Products';
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSwatch;
     protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::Swatch; // Remove 'Solid' prefix

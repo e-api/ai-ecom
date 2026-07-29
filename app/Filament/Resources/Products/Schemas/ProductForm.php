@@ -160,6 +160,11 @@ class ProductForm
                                         $productName
                                     )
                                 ) {
+                                    Notification::make()
+                                        ->title('Product Name Required')
+                                        ->body('Please enter a Product Name before generating content.')
+                                        ->warning()
+                                        ->send();
                                     return;
                                 }
 

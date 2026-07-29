@@ -7,9 +7,12 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
+use Filament\Actions\Action;
 use Illuminate\Support\Str;
 use App\Models\Category;
+use App\Services\Frontend\AIService;
 
 class CategoryForm
 {
@@ -34,7 +37,108 @@ class CategoryForm
                 ->nullable(),
 
             Textarea::make('description')
-                ->rows(3),
+                ->rows(3)
+                ->hintActions([
+                    Action::make(
+                        'generateDescription'
+                    )
+                    ->label(
+                        'Generate Using AI'
+                    )
+                    ->icon(
+                        'heroicon-o-sparkles'
+                    )
+                    ->action(
+                        function (
+                            $get,
+                            $set
+                        ) {
+                            $categoryName =
+                                $get('name');
+
+                            if (
+                                empty(
+                                    $categoryName
+                                )
+                            ) {
+                                Notification::make()
+                                    ->title('Category Name Required')
+                                    ->body('Please enter a Category Name before generating content.')
+                                    ->warning()
+                                    ->send();
+                                return;
+                            }
+
+                            $parentCategory = "";
+
+                            if (
+                                $get(
+                                    'parent_id'
+                                )
+                            ) {
+                                $parentCategory =
+                                    Category::find(
+                                        $get(
+                                            'parent_id'
+                                        )
+                                    )?->name;
+                            }
+
+                            $content =
+                                app(
+                                    AIService::class
+                                )
+                                ->generateCategoryContent(
+                                    $categoryName,
+                                    $parentCategory
+                                );
+
+                            if (
+                                ! isset(
+                                    $content['error']
+                                )
+                            ) {
+                                $set(
+                                    'description',
+                                    $content['description'] ?? ""
+                                );
+
+                                $set(
+                                    'meta_title',
+                                    $content['meta_title'] ?? ""
+                                );
+
+                                $set(
+                                    'meta_description',
+                                    $content['meta_description'] ?? ""
+                                );
+
+                                $set(
+                                    'meta_keywords',
+                                    $content['meta_keywords'] ?? ""
+                                );
+
+                                // 👇 Optional: Show success notification
+                                Notification::make()
+                                    ->title('AI content generated successfully!')
+                                    ->success()
+                                    ->send();
+                            } else {
+                                // 👇 Optional: Show error notification
+                                Notification::make()
+                                    ->title('Unexpected error, content failed to show')
+                                    ->body($content['error'])
+                                    ->danger()
+                                    ->send();
+                                // 👇 NEW: Populate the description field with the error so it's visible
+                                $set('description', 'AI Error: ' . $content['error']);
+                                $set('meta_title', 'AI Error: ' . $content['error']);
+                                $set('meta_description', 'AI Error: ' . $content['error']);
+                                $set('meta_keywords', 'AI Error: ' . $content['error']);
+                            }
+                        }
+                    ),
+                ]),
 
             FileUpload::make('image')
                 ->image()

@@ -7,6 +7,7 @@ use App\Http\Controllers\Frontend\ProductController;
 use App\Http\Controllers\Frontend\CartController;
 use App\Http\Controllers\Frontend\RegisterController;
 use App\Http\Controllers\Frontend\LoginController;
+use App\Http\Controllers\Frontend\SearchController;
 
 // Route::get('/', function () {
 //     // return view('welcome');
@@ -60,6 +61,12 @@ Route::get('/cart/update', [CartController::class, 'update'])->name('cart.update
 | Shopping Cart Delete |
 */
 Route::post('/cart/delete', [CartController::class, 'delete'])->name('cart.delete');
+/*
+| Product Search |
+*/
+Route::get(
+    '/search',
+    [SearchController::class, 'index'])->name('search');
 /*
 NEW: SEO Friendly Category Route
 */

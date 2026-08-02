@@ -255,4 +255,26 @@ class ProductService
             ->where('status', 1)
             ->get();
     }
+
+    /*
+    | Search Products|
+    */
+
+    public function searchProducts(
+        string $keyword,
+        int $limit = 20
+    )
+    {
+        return Product::active()
+            ->where(function ($query) use ($keyword) {
+                $query
+                    ->where('name', 'LIKE', "%{$keyword}%")
+                    ->orWhere('description', 'LIKE', "%{$keyword}%")
+                    ->orWhere('short_description', 'LIKE', "%{$keyword}%");
+            })
+            ->orderBy('name')
+            ->latest()
+            ->take($limit)
+            ->get();
+    }
 }

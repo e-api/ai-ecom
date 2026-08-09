@@ -112,7 +112,7 @@ class AIService
         }
     }
 
-        /*
+    /*
     |--------------------------------------------------------------------------
     | Generate Category Description
     |--------------------------------------------------------------------------
@@ -210,6 +210,228 @@ class AIService
                 'error' =>
                     $e->getMessage()
             ];
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Detect AI Search Query
+    |--------------------------------------------------------------------------
+    */
+    public function isNaturalLanguageSearch(
+        string $query
+    ): bool
+    {
+        $query = strtolower(trim($query));
+
+        $patterns = [
+            'show me',
+            'find',
+            'looking for',
+            'under',
+            'above',
+            'between',
+            'recommend',
+            'need',
+            'want',
+            'with',
+            'I',
+            'without'
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (str_contains($query, $pattern)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Extract Search Filters
+    |--------------------------------------------------------------------------
+    */
+    public function extractSearchFilters(
+        string $query
+    ): array
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | AI Settings
+        |--------------------------------------------------------------------------
+        */
+        $settings = AISetting::first();
+
+        $model = $settings->model ?? 'gpt-4.1-mini';
+        $temperature = $settings->temperature ?? 0.2;
+        $maxTokens = 300;
+
+        /*
+        |--------------------------------------------------------------------------
+        | System Prompt
+        |--------------------------------------------------------------------------
+        */
+        $systemPrompt = <<<PROMPT
+    You are an AI shopping assistant.
+
+    Your task is to understand the customer's search query and convert it into structured JSON.
+
+    Rules:
+    - Detect the product category.
+    - Detect the brand if available.
+    - Detect minimum and maximum price.
+    - If the user writes "mobile", treat it as "Phones".
+    - If the user writes "iphone mobile", detect:
+    Brand = iPhone
+    Category = Phones
+    - If the user writes "Samsung mobile", detect:
+    Brand = Samsung
+    Category = Phones
+    - If the user writes only "mobile", detect:
+    Category = Phones
+    - If no brand is mentioned, keep brand empty.
+    - If no price is mentioned, return null.
+    - Never explain anything.
+    - Never use Markdown.
+    - Return ONLY valid JSON.
+
+    Examples
+
+    Query:
+    Show me Samsung phones under 80000
+
+    Output:
+    {
+    "category":"Phones",
+    "brand":"Samsung",
+    "min_price":null,
+    "max_price":80000,
+    "keywords":[]
+    }
+
+    Query:
+    Samsung mobile under 80000
+
+    Output:
+    {
+        "category":"Phones",
+        "brand":"Samsung",
+        "min_price":null,
+        "max_price":80000,
+        "keywords":[]
+    }
+
+    Query:
+    mobile under 80000
+
+    Output:
+    {
+        "category":"Phones",
+        "brand":"",
+        "min_price":null,
+        "max_price":80000,
+        "keywords":[]
+    }
+
+    Query:
+    iphone mobile
+
+    Output:
+    {
+        "category":"Phones",
+        "brand":"iPhone",
+        "min_price":null,
+        "max_price":null,
+        "keywords":[]
+    }
+
+    Return exactly this JSON structure:
+    {
+        "category":"",
+        "brand":"",
+        "min_price":null,
+        "max_price":null,
+        "keywords":[]
+    }
+    PROMPT;
+
+        try {
+            $response = Http::withToken(
+                config('services.openai.key')
+            )->post(
+                'https://api.openai.com/v1/chat/completions',
+                [
+                    'model' => $model,
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => $systemPrompt,
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $query,
+                        ],
+                    ],
+                    'temperature' => $temperature,
+                    'max_tokens' => $maxTokens,
+                ]
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | API Error Handling
+            |--------------------------------------------------------------------------
+            */
+            if ($response->failed()) {
+                \Log::error(
+                    'OpenAI API Error',
+                    $response->json()
+                );
+
+                return [];
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Decode JSON Response |
+            |--------------------------------------------------------------------------
+            */
+            $content = $response->json(
+                'choices.0.message.content'
+            );
+
+            $filters = json_decode(
+                $content,
+                true
+            );
+
+            if (
+                json_last_error()
+                !== JSON_ERROR_NONE
+            ) {
+                \Log::error(
+                    'Invalid AI JSON',
+                    [
+                        'response' => $content,
+                    ]
+                );
+
+                return [];
+            }
+
+            return $filters;
+
+        } catch (\Exception $e) {
+            \Log::error(
+                'OpenAI Exception',
+                [
+                    'message' => $e->getMessage(),
+                ]
+            );
+
+            return [];
         }
     }
 }

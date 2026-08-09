@@ -64,14 +64,17 @@ class ProductService
                     $q->orWhere(function ($subQuery) use ($min, $max) {
 
                         /*
+                        |--------------------------------------------------------------------------
                         | Sale Price
-                        |
+                        |--------------------------------------------------------------------------
                         */
                         $subQuery->whereNotNull('sale_price')
                             ->whereBetween('sale_price', [$min, $max]);
 
                         /*
+                        |--------------------------------------------------------------------------
                         | Regular Price
+                        |--------------------------------------------------------------------------
                         */
                         $subQuery->orWhere(function ($regularPriceQuery) use ($min, $max) {
                             $regularPriceQuery
@@ -84,7 +87,9 @@ class ProductService
         }
 
         /*
-        NEW: Category Filters
+        |--------------------------------------------------------------------------
+        | NEW: Category Filters
+        |--------------------------------------------------------------------------
         */
 
         if (!empty($filters['categories'])) {
@@ -96,12 +101,16 @@ class ProductService
                 
                 if ($filterCategory) {
                     /*
+                    |--------------------------------------------------------------------------
                     | Current Category
+                    |--------------------------------------------------------------------------
                     */
                     $selectedCategoryIds[] = $filterCategory->id;
                     
                     /*
+                    |--------------------------------------------------------------------------
                     | Child Categories
+                    |--------------------------------------------------------------------------
                     */
                     $selectedCategoryIds = array_merge(
                         $selectedCategoryIds,
@@ -114,7 +123,9 @@ class ProductService
         }
 
         /*
+        |--------------------------------------------------------------------------
         | NEW: Brand Filters
+        |--------------------------------------------------------------------------
         */
         if (!empty($filters['brands'])) {
             $brands = explode(',', $filters['brands']);
@@ -122,7 +133,9 @@ class ProductService
         }
 
         /*
+        |--------------------------------------------------------------------------
         | NEW: Size Filters
+        |--------------------------------------------------------------------------
         */
         if (!empty($filters['sizes'])) {
             $sizes = explode(',', $filters['sizes']);
@@ -132,7 +145,9 @@ class ProductService
         }
         
         /*
+        |--------------------------------------------------------------------------
         | NEW: Dynamic Attribute Filters
+        |--------------------------------------------------------------------------
         */
         if (!empty($filters['attribute_values'])) {
         
@@ -155,7 +170,9 @@ class ProductService
     }
 
     /*
+    |--------------------------------------------------------------------------
     | Product Detail
+    |--------------------------------------------------------------------------
     */
     public function getProductBySlug($slug)
     {
@@ -172,7 +189,9 @@ class ProductService
     }
 
     /*
-    Related Products
+    |--------------------------------------------------------------------------
+    | Related Products
+    |--------------------------------------------------------------------------
     */
     public function getRelatedProducts($product, $limit = 4)
     {
@@ -185,7 +204,9 @@ class ProductService
     }
 
     /*
-    Product Color Variation
+    |--------------------------------------------------------------------------
+    | Product Color Variation
+    |--------------------------------------------------------------------------
     */
     public function getProductColorVariations($product)
     {
@@ -257,7 +278,9 @@ class ProductService
     }
 
     /*
-    | Search Products|
+    |--------------------------------------------------------------------------
+    | Search Products
+    |--------------------------------------------------------------------------
     */
 
     public function searchProducts(
@@ -273,6 +296,126 @@ class ProductService
                     ->orWhere('short_description', 'LIKE', "%{$keyword}%");
             })
             ->orderBy('name')
+            ->latest()
+            ->take($limit)
+            ->get();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | AI Product Search
+    |--------------------------------------------------------------------------
+    */
+
+    public function searchProductsUsingFilters(
+        array $filters,
+        int $limit = 20
+    ) {
+        $query = Product::query();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Brand
+        |--------------------------------------------------------------------------
+        */
+        if (!empty($filters['brand'])) {
+            $brand = Brand::where(
+                'name',
+                'LIKE',
+                '%' . $filters['brand'] . '%'
+            )->first();
+
+            if ($brand) {
+                $query->where(
+                    'brand_id',
+                    $brand->id
+                );
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Category
+        |--------------------------------------------------------------------------
+        */
+        if (!empty($filters['category'])) {
+            $categoryIds = Category::where(
+                'name', 
+                'LIKE',
+                '%' . $filters['category'] . '%'
+            )->pluck('id');
+
+            if ($categoryIds->isNotEmpty()) {
+                $childCategoryIds = Category::whereIn(
+                    'parent_id',
+                    $categoryIds
+                )->pluck('id');
+
+                $categoryIds = $categoryIds
+                    ->merge($childCategoryIds)
+                    ->unique();
+
+                $query->whereIn(
+                    'category_id',
+                    $categoryIds
+                );
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Minimum Price
+        |--------------------------------------------------------------------------
+        */
+        if (!is_null($filters['min_price'])) {
+            $query->where(
+                'price',
+                '>=',
+                $filters['min_price']
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Maximum Price
+        |--------------------------------------------------------------------------
+        */
+        if (!is_null($filters['max_price'])) {
+            $query->where(
+                'price',
+                '<=',
+                $filters['max_price']
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Keywords
+        |--------------------------------------------------------------------------
+        */
+        if (!empty($filters['keywords'])) {
+            foreach ($filters['keywords'] as $keyword) {
+                $query->where(function ($q) use ($keyword) {
+                    $q->where(
+                        'name',
+                        'LIKE',
+                        "%{$keyword}%"
+                    )
+                    ->orWhere(
+                        'description',
+                        'LIKE',
+                        "%{$keyword}%"
+                    )
+                    ->orWhere(
+                        'short_description',
+                        'LIKE',
+                        "%{$keyword}%"
+                    );
+                });
+            }
+        }
+
+        return $query
             ->latest()
             ->take($limit)
             ->get();

@@ -434,4 +434,254 @@ class AIService
             return [];
         }
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Generate Product Highlights
+    |--------------------------------------------------------------------------
+    */
+    public function generateProductHighlights(
+        string $productDescription
+    ): array {
+        $settings = AISetting::first();
+        $model = $settings?->openai_model ?? 'gpt-4.1-mini';
+        $temperature = $settings?->temperature ?? 0.3;
+        $maxTokens = 300;
+        $systemPrompt = <<<PROMPT
+    You are an expert e-commerce product content assistant.
+    Your task is to extract the most important product features
+    from the given product description.
+    Rules:
+    - Extract only information that is present in the product description.
+    - Do not invent or assume any information.
+    - Return 5 to 8 important product features.
+    - Keep every feature short and clear.
+    - Do not write paragraphs.
+    - Do not add numbering.
+    - Do not use Markdown.
+    - Return ONLY valid JSON.
+    Return exactly this JSON structure:
+    {
+        "key_features": [
+            "Feature 1",
+            "Feature 2",
+            "Feature 3"
+        ]
+    }
+    PROMPT;
+
+        try {
+            $response = Http::withToken(
+                config('services.openai.key')
+            )->post(
+                'https://api.openai.com/v1/chat/completions',
+                [
+                    'model' => $model,
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => $systemPrompt,
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' =>
+                                "Extract the key features from this product description:\n\n"
+                                . $productDescription,
+                        ],
+                    ],
+                    'temperature' => $temperature,
+                    'max_tokens' => $maxTokens,
+                ]
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | API Error Handling
+            |--------------------------------------------------------------------------
+            */
+            if ($response->failed()) {
+                \Log::error(
+                    'OpenAI API Error',
+                    $response->json()
+                );
+                return [
+                    'key_features' => [],
+                ];
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Decode JSON Response
+            |--------------------------------------------------------------------------
+            */
+            $content = $response->json(
+                'choices.0.message.content'
+            );
+
+            $result = json_decode(
+                $content,
+                true
+            );
+
+            if (
+                json_last_error()
+                !== JSON_ERROR_NONE
+            ) {
+                \Log::error(
+                    'Invalid AI JSON',
+                    [
+                        'response' => $content,
+                    ]
+                );
+                return [
+                    'key_features' => [],
+                ];
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            \Log::error(
+                'OpenAI Exception',
+                [
+                    'message' => $e->getMessage(),
+                ]
+            );
+
+            return [
+                'key_features' => [],
+            ];
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Generate Product FAQs
+    |--------------------------------------------------------------------------
+    */
+
+    public function generateProductFAQs(
+        string $productDescription
+    ): array {
+        $settings = AISetting::first();
+
+        $model = $settings->openai_model ?? 'gpt-4.1-mini';
+        $temperature = $settings->temperature ?? 0.3;
+        $maxTokens = 500;
+
+        $systemPrompt = <<<PROMPT
+    You are an expert e-commerce product content assistant.
+
+    Your task is to generate useful Frequently Asked Questions from the given product description.
+
+    Rules:
+    - Use only information that is present in the product description.
+    - Do not invent or assume any information.
+    - Generate 5 to 8 useful questions and answers.
+    - Keep questions simple and customer-friendly.
+    - Keep answers short, clear, and informative.
+    - Do not write information that is not available in the product description.
+    - Do not use Markdown.
+    - Return ONLY valid JSON.
+
+    Return exactly this JSON structure:
+
+    {
+        "faqs": [
+            {
+                "question": "Question 1",
+                "answer": "Answer 1"
+            },
+            {
+                "question": "Question 2",
+                "answer": "Answer 2"
+            }
+        ]
+    }
+    PROMPT;
+
+        try {
+            $response = Http::withToken(
+                config('services.openai.key')
+            )
+            ->withOptions([
+                'verify' => false,
+            ])
+            ->post(
+                'https://api.openai.com/v1/chat/completions',
+                [
+                    'model' => $model,
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => $systemPrompt,
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => "Generate FAQs from this product description:\n\n"
+                                . $productDescription,
+                        ],
+                    ],
+                    'temperature' => $temperature,
+                    'max_tokens' => $maxTokens,
+                ]
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | API Error Handling
+            |--------------------------------------------------------------------------
+            */
+            if ($response->failed()) {
+                \Log::error(
+                    'OpenAI API Error',
+                    $response->json()
+                );
+                return [
+                    'faqs' => [],
+                ];
+            }
+
+            /* 
+            |--------------------------------------------------------------------------
+            | Decode JSON Response 
+            |--------------------------------------------------------------------------
+            */
+            $content = $response->json(
+                'choices.0.message.content'
+            );
+
+            $result = json_decode(
+                $content,
+                true
+            );
+
+            if (
+                json_last_error() !== JSON_ERROR_NONE
+            ) {
+                \Log::error(
+                    'Invalid AI JSON',
+                    [
+                        'response' => $content,
+                    ]
+                );
+
+                return [
+                    'faqs' => [],
+                ];
+            }
+
+            return $result;
+
+        } catch (\Exception $e) {
+            \Log::error(
+                'OpenAI Exception',
+                [
+                    'message' => $e->getMessage(),
+                ]
+            );
+            return [
+                'faqs' => [],
+            ];
+        }
+    }
 }

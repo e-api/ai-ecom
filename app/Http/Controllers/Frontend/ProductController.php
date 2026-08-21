@@ -4,15 +4,19 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Services\Frontend\ProductService;
+use App\Services\Frontend\AIService;
 
 class ProductController extends Controller
 {
     protected $productService;
+    protected $aiService;
 
     public function __construct(
-        ProductService $productService
+        ProductService $productService,
+        AIService $aiService
     ) {
         $this->productService = $productService;
+        $this->aiService = $aiService;
     }
 
     public function detail($slug)
@@ -22,6 +26,40 @@ class ProductController extends Controller
         */
         $product = $this->productService
             ->getProductBySlug($slug);
+
+        // Send Product Description and Get Key Features from AI
+
+        $keyFeatures = [];
+
+        if (!empty($product->description)) {
+
+            $aiResult = $this->aiService
+                ->generateProductHighlights(
+                    $product->description
+                );
+
+            $keyFeatures = $aiResult['key_features'] ?? [];
+        }
+
+        // echo "<pre>"; print_r($keyFeatures); die;
+
+        /*
+        |--------------------------------------------------------------------------
+        | AI Product FAQs
+        |--------------------------------------------------------------------------
+        */
+
+        $faqs = [];
+
+        if (!empty($product->description)) {
+
+            $aiFaqResult = $this->aiService
+                ->generateProductFAQs(
+                    $product->description
+                );
+
+            $faqs = $aiFaqResult['faqs'] ?? [];
+        }
 
         /*
         | Related Products
@@ -66,7 +104,8 @@ class ProductController extends Controller
             'providerVariations',
             'gradeVariations',
             'styleVariations',
-            'patternNameVariations'
+            'patternNameVariations',
+            'faqs'
         ));
     }
 }

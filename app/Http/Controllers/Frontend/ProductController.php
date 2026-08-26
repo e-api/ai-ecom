@@ -62,6 +62,27 @@ class ProductController extends Controller
         }
 
         /*
+        |--------------------------------------------------------------------------
+        | AI Product Specifications
+        |--------------------------------------------------------------------------
+        */
+
+        $specifications = [];
+
+        if (
+            !empty($product->name) &&
+            !empty($product->brand)
+        ) {
+            $specificationResult = $this->aiService
+                ->generateProductSpecifications(
+                    $product->name,
+                    $product->brand->name
+                );
+            
+            $specifications = $specificationResult['specifications'] ?? [];
+        }
+
+        /*
         | Related Products
         */
         $relatedProducts = $this->productService
@@ -105,7 +126,8 @@ class ProductController extends Controller
             'gradeVariations',
             'styleVariations',
             'patternNameVariations',
-            'faqs'
+            'faqs',
+            'specifications'
         ));
     }
 }

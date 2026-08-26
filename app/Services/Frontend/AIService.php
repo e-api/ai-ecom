@@ -684,4 +684,279 @@ class AIService
             ];
         }
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Generate Product Specifications
+    |--------------------------------------------------------------------------
+    */
+
+    public function generateProductSpecifications(
+        string $productName,
+        string $brand
+    ): array {
+        /*
+        |--------------------------------------------------------------------------
+        | Supported Brands
+        |--------------------------------------------------------------------------
+        */
+        $brand = strtolower(trim($brand));
+
+        $officialWebsite = match ($brand) {
+            'samsung' => 'samsung.com',
+            'apple' => 'apple.com',
+            default => null,
+        };
+
+        /*
+        |--------------------------------------------------------------------------
+        | Unsupported Brand
+        |--------------------------------------------------------------------------
+        */
+        if (!$officialWebsite) {
+            return [
+                'specifications' => [],
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | AI Settings
+        |--------------------------------------------------------------------------
+        */
+        $settings = AISetting::first();
+
+        $model = $settings->openai_model ?? 'gpt-4.1-mini';
+        $maxTokens = 1000;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prompt Engineering
+        |--------------------------------------------------------------------------
+        */
+        $systemPrompt = <<<PROMPT
+    You are an expert e-commerce product specification assistant.
+
+    Your task is to find accurate specifications for the given product from the official manufacturer's website.
+
+    Official Manufacturer Website:  
+    {$officialWebsite}
+
+    Rules:
+
+    - You MUST use web search.  
+    - Search the official manufacturer's website first.  
+    - Use information from {$officialWebsite} only.  
+    - Do not use third-party websites.  
+    - Do not invent or assume any specifications.  
+    - Only include specifications that are clearly available.  
+    - Return useful and relevant product specifications.  
+    - Keep specification names short and clear.  
+    - Keep specification values accurate and concise.  
+    - If reliable specifications cannot be found on the official website, return an empty specifications array.  
+    - Return ONLY valid JSON.  
+    - Do not use Markdown.  
+    - Do not include any explanation outside the JSON.
+
+    Return exactly this JSON structure:
+
+    {
+        "specifications": [
+            {
+                "name": "Display",
+                "value": "6.2-inch Dynamic AMOLED 2X"
+            },
+            {
+                "name": "Processor",
+                "value": "Snapdragon 8 Gen 3"
+            }
+        ]
+    }
+    PROMPT;
+
+        try {
+            /*
+            |--------------------------------------------------------------------------
+            | OpenAI Responses API
+            |--------------------------------------------------------------------------
+            */
+            $response = Http::withToken(
+                config('services.openai.key')
+            )
+            ->withOptions([
+                /*
+                |--------------------------------------------------------------------------
+                | Local WAMP SSL Certificate Fix
+                |--------------------------------------------------------------------------
+                */
+                'verify' => false,
+            ])->timeout(60)->post(
+                'https://api.openai.com/v1/responses',
+                [
+                    'model' => $model,
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Web Search
+                    |--------------------------------------------------------------------------
+                    */
+                    'tools' => [
+                        [
+                            'type' => 'web_search',
+                            'search_context_size' => 'high',
+                        ],
+                    ],
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Force Tool Usage
+                    |--------------------------------------------------------------------------
+                    */
+                    'tool_choice' => 'required',
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Input
+                    |--------------------------------------------------------------------------
+                    */
+                    'input' => $systemPrompt
+                        . "\n\n"
+                        . "Product Name: "
+                        . $productName
+                        . "\n\n"
+                        . "Manufacturer: "
+                        . $brand
+                        . "\n\n"
+                        . "Official Website: "
+                        . $officialWebsite,
+                    'max_output_tokens' => $maxTokens,
+                ]
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | API Error Handling
+            |--------------------------------------------------------------------------
+            */
+            if ($response->failed()) {
+                \Log::error(
+                    'OpenAI Product Specification API Error',
+                    [
+                        'status' => $response->status(),
+                        'response' => $response->json(),
+                    ]
+                );
+
+                return [
+                    'specifications' => [],
+                ];
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Get Output
+            |--------------------------------------------------------------------------
+            */
+            $output = $response->json('output');
+            $content = "";
+
+            if (is_array($output)) {
+                foreach ($output as $item) {
+                    if (
+                        ($item['type'] ?? '') === 'message'
+                        &&
+                        isset($item['content'])
+                        &&
+                        is_array($item['content'])
+                    ) {
+                        foreach ($item['content'] as $contentItem) {
+                            if (
+                                ($contentItem['type'] ?? '') === 'output_text'
+                                && 
+                                isset($contentItem['text'])
+                            ) {
+                                $content .= $contentItem['text'];
+                            }
+                        }
+                    }
+                }
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Empty Response
+            |--------------------------------------------------------------------------
+            */
+            if (empty($content)) {
+                \Log::error(
+                    'OpenAI Product Specification Empty Response',
+                    [
+                        'response' => $response->json(),
+                    ]
+                );
+
+                return [
+                    'specifications' => [],
+                ];
+            }
+
+            /* 
+            |--------------------------------------------------------------------------
+            | Decode JSON
+            |--------------------------------------------------------------------------
+            */
+            $result = json_decode(
+                $content,
+                true
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Validate JSON
+            |--------------------------------------------------------------------------
+            */
+            if (
+                json_last_error() !== JSON_ERROR_NONE
+            ) {
+                \Log::error(
+                    'Invalid Product Specification JSON',
+                    [
+                        'response' => $content,
+                        'json_error' => json_last_error_msg(),
+                    ]
+                );
+
+                return [
+                    'specifications' => [],
+                ];
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Validate Specifications
+            |--------------------------------------------------------------------------
+            */
+            if (
+                !isset($result['specifications'])
+                || !is_array($result['specifications'])
+            ) {
+                return [
+                    'specifications' => [],
+                ];
+            }
+
+            return [
+                'specifications' => $result['specifications'],
+            ];
+
+        } catch (\Exception $e) {
+            \Log::error(
+                'OpenAI Product Specification Exception',
+                [
+                    'message' => $e->getMessage(),
+                ]
+            );
+
+            return [
+                'specifications' => [],
+            ];
+        }
+    }
 }

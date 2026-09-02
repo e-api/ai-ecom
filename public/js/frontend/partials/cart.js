@@ -359,6 +359,22 @@ $(document).ready(function() {
     }
 
     // ============================================================
+    // CHECKOUT BUTTON - Auth check for guests
+    // ============================================================
+    $(document).on('click', '#checkoutBtn', function(e) {
+        if ($('meta[name="is-authenticated"]').attr('content') !== '1') {
+            e.preventDefault();
+            if (typeof Toast !== 'undefined') {
+                Toast.error('Please login to proceed to checkout.');
+            }
+            setTimeout(function() {
+                window.location.href = '/login';
+            }, 1500);
+            return false;
+        }
+    });
+
+    // ============================================================
     // APPLY COUPON
     // ============================================================
     $(document).on('click', '#applyCouponBtn', function() {

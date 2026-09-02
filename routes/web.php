@@ -9,6 +9,7 @@ use App\Http\Controllers\Frontend\RegisterController;
 use App\Http\Controllers\Frontend\LoginController;
 use App\Http\Controllers\Frontend\SearchController;
 use App\Http\Controllers\Frontend\CouponController;
+use App\Http\Controllers\Frontend\CheckoutController;
 
 // Route::get('/', function () {
 //     // return view('welcome');
@@ -67,9 +68,7 @@ Route::get(
     '/search',
     [SearchController::class, 'index'])->name('search');
 /*
-|
-| Coupon Routes |
-|
+| Coupon Routes
 */
 Route::post(
     '/cart/apply-coupon',
@@ -80,6 +79,13 @@ Route::post(
     '/cart/remove-coupon',
     [CouponController::class, 'removeCoupon']
 )->name('cart.removeCoupon');
+/*
+| Checkout
+*/
+Route::middleware('auth')->group(function () {
+    Route::get('/checkout', [CheckoutController::class, 'index'])
+        ->name('checkout.index');
+});
 /*
 NEW: SEO Friendly Category Route
 */

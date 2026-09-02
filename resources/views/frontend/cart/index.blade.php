@@ -126,10 +126,15 @@
                 <div class="flex justify-between gap-4"><span>Total Discount:</span><strong id="discountValue" class="{{ $couponDiscount > 0 ? 'text-green-600' : '' }}">-${{ number_format($couponDiscount, 2) }}</strong></div>
                 <div class="flex justify-between gap-4"><span>Total Tax:</span><strong>$0.00</strong></div>
               </div>
-              <button class="btn-danger mt-5 flex w-full items-center justify-between rounded-md px-5 py-4 text-left text-lg font-black" type="button">
-                <span>TOTAL</span>
-                <span class="grandTotalValue">${{ number_format($grandTotal, 2) }}</span>
-              </button>
+              <div class="mt-5 space-y-2">
+                <div class="flex items-center justify-between rounded-md bg-gray-900 px-5 py-4 text-lg font-black text-white">
+                  <span>TOTAL</span>
+                  <span class="grandTotalValue">${{ number_format($grandTotal, 2) }}</span>
+                </div>
+                <a href="{{ route('checkout.index') }}" id="checkoutBtn" class="block w-full rounded-md bg-green-600 px-5 py-4 text-center text-lg font-black text-white hover:bg-green-700 transition">
+                  Proceed to Checkout
+                </a>
+              </div>
             </section>
           </div>
         @endif

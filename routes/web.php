@@ -8,6 +8,7 @@ use App\Http\Controllers\Frontend\CartController;
 use App\Http\Controllers\Frontend\RegisterController;
 use App\Http\Controllers\Frontend\LoginController;
 use App\Http\Controllers\Frontend\SearchController;
+use App\Http\Controllers\Frontend\CouponController;
 
 // Route::get('/', function () {
 //     // return view('welcome');
@@ -42,13 +43,11 @@ Route::get('/product/{slug}', [ProductController::class, 'detail']);
 /*
 NEW: Add to cart Route
 */
-Route::post('/cart/add', [CartController::class, 'add'])
-    ->name('cart.add');
+Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
 /*
 NEW: Count Cart Items
 */
-Route::get('/cart/count', [CartController::class, 'count'])
-    ->name('cart.count');
+Route::get('/cart/count', [CartController::class, 'count'])->name('cart.count');
 /*
 | Shopping Cart |
 */
@@ -67,6 +66,20 @@ Route::post('/cart/delete', [CartController::class, 'delete'])->name('cart.delet
 Route::get(
     '/search',
     [SearchController::class, 'index'])->name('search');
+/*
+|
+| Coupon Routes |
+|
+*/
+Route::post(
+    '/cart/apply-coupon',
+    [CouponController::class, 'applyCoupon']
+)->name('cart.applyCoupon');
+
+Route::post(
+    '/cart/remove-coupon',
+    [CouponController::class, 'removeCoupon']
+)->name('cart.removeCoupon');
 /*
 NEW: SEO Friendly Category Route
 */

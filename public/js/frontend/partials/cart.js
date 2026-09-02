@@ -163,10 +163,12 @@ $(document).ready(function() {
     }
 
     /**
-     * Update grand total displays
+     * Update grand total displays (accounting for coupon discount)
      */
     function updateTotals(cartTotal) {
-        $('.grandTotalValue').text('$' + cartTotal);
+        var discount = parseFloat($('[data-coupon-discount]').data('coupon-discount')) || 0;
+        var grandTotal = Math.max(parseFloat(cartTotal) - discount, 0);
+        $('.grandTotalValue').text('$' + grandTotal.toFixed(2));
     }
 
     /**
@@ -355,4 +357,110 @@ $(document).ready(function() {
             }
         });
     }
+
+    // ============================================================
+    // APPLY COUPON
+    // ============================================================
+    $(document).on('click', '#applyCouponBtn', function() {
+        var $btn = $(this);
+        var $input = $('#couponCode');
+        var code = $.trim($input.val());
+
+        if (!code) {
+            if (typeof Toast !== 'undefined') {
+                Toast.error('Please enter a coupon code.');
+            }
+            return;
+        }
+
+        if ($('meta[name="is-authenticated"]').attr('content') !== '1') {
+            if (typeof Toast !== 'undefined') {
+                Toast.error('Please login to apply coupon.');
+            }
+            setTimeout(function() {
+                window.location.href = '/login';
+            }, 1500);
+            return;
+        }
+
+        $.ajax({
+            url: '/cart/apply-coupon',
+            type: 'POST',
+            data: {
+                _token: getCsrfToken(),
+                code: code
+            },
+            dataType: 'json',
+            beforeSend: function() {
+                $btn.prop('disabled', true).text('Applying...');
+            },
+            success: function(response) {
+                if (response.status) {
+                    if (typeof Toast !== 'undefined') {
+                        Toast.success(response.message || 'Coupon applied successfully.');
+                    }
+                    location.reload();
+                }
+            },
+            error: function(xhr) {
+                var msg = 'Failed to apply coupon.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    msg = xhr.responseJSON.message;
+                }
+                if (typeof Toast !== 'undefined') {
+                    Toast.error(msg);
+                }
+            },
+            complete: function() {
+                $btn.prop('disabled', false).text('ADD');
+            }
+        });
+    });
+
+    // ============================================================
+    // REMOVE COUPON
+    // ============================================================
+    $(document).on('click', '.removeCouponBtn', function() {
+        var $btn = $(this);
+
+        if ($('meta[name="is-authenticated"]').attr('content') !== '1') {
+            if (typeof Toast !== 'undefined') {
+                Toast.error('Please login to remove coupon.');
+            }
+            setTimeout(function() {
+                window.location.href = '/login';
+            }, 1500);
+            return;
+        }
+
+        $.ajax({
+            url: '/cart/remove-coupon',
+            type: 'POST',
+            data: {
+                _token: getCsrfToken()
+            },
+            dataType: 'json',
+            beforeSend: function() {
+                $btn.prop('disabled', true).text('Removing...');
+            },
+            success: function(response) {
+                if (response.status) {
+                    if (typeof Toast !== 'undefined') {
+                        Toast.success(response.message || 'Coupon removed.');
+                    }
+                    location.reload();
+                }
+            },
+            error: function(xhr) {
+                var msg = 'Failed to remove coupon.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    msg = xhr.responseJSON.message;
+                }
+                if (typeof Toast !== 'undefined') {
+                    Toast.error(msg);
+                }
+                $btn.prop('disabled', false).text('Remove');
+            }
+        });
+    });
 });

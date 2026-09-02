@@ -23,7 +23,7 @@
             <a href="{{ url('/') }}" class="mt-5 inline-flex rounded-md bg-primary px-5 py-3 text-sm font-bold hover:bg-primary-hover">Continue Shopping</a>
           </div>
         @else
-          <div class="overflow-x-auto cart-responsive">
+          <div data-coupon-discount="{{ $couponDiscount }}" class="overflow-x-auto cart-responsive">
             <table class="w-full min-w-[900px] border-collapse text-left">
               <thead>
                 <tr class="border-y bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
@@ -101,18 +101,35 @@
           <div class="mt-6 grid gap-5 lg:grid-cols-[1fr_360px]">
             <section class="rounded-lg border border-gray-200 bg-gray-50 p-5">
               <h2 class="mb-3 text-lg font-black uppercase tracking-wide">Vouchers Code</h2>
-              <div class="flex flex-col gap-3 sm:flex-row">
-                <input class="form-control" type="text" placeholder="Enter voucher code">
-                <button class="btn-danger rounded-md px-6 py-3 font-black" type="button">ADD</button>
-              </div>
+              @if($coupon)
+                <div class="flex items-center gap-3">
+                  <span class="inline-flex items-center gap-2 rounded-md bg-green-50 border border-green-200 px-4 py-2 text-sm font-bold text-green-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    {{ $coupon['code'] }}
+                    <span class="text-green-600">(-${{ number_format($coupon['discount'], 2) }})</span>
+                  </span>
+                  <button class="removeCouponBtn inline-flex items-center gap-1 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm font-bold text-red-600 hover:bg-red-100 transition" type="button">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    Remove
+                  </button>
+                </div>
+              @else
+                <div class="flex flex-col gap-3 sm:flex-row">
+                  <input id="couponCode" class="form-control" type="text" placeholder="Enter voucher code">
+                  <button id="applyCouponBtn" class="btn-danger rounded-md px-6 py-3 font-black" type="button">ADD</button>
+                </div>
+              @endif
             </section>
             <section class="rounded-lg border border-gray-200 bg-white p-5">
               <div class="space-y-3 text-sm">
                 <div class="flex justify-between gap-4"><span>Grand Total:</span><strong class="grandTotalValue">${{ number_format($cartTotal, 2) }}</strong></div>
-                <div class="flex justify-between gap-4"><span>Total Discount:</span><strong>$0.00</strong></div>
+                <div class="flex justify-between gap-4"><span>Total Discount:</span><strong id="discountValue" class="{{ $couponDiscount > 0 ? 'text-green-600' : '' }}">-${{ number_format($couponDiscount, 2) }}</strong></div>
                 <div class="flex justify-between gap-4"><span>Total Tax:</span><strong>$0.00</strong></div>
               </div>
-              <button class="btn-danger mt-5 flex w-full items-center justify-between rounded-md px-5 py-4 text-left text-lg font-black" type="button"><span>TOTAL</span><span class="grandTotalValue">${{ number_format($cartTotal, 2) }}</span></button>
+              <button class="btn-danger mt-5 flex w-full items-center justify-between rounded-md px-5 py-4 text-left text-lg font-black" type="button">
+                <span>TOTAL</span>
+                <span class="grandTotalValue">${{ number_format($grandTotal, 2) }}</span>
+              </button>
             </section>
           </div>
         @endif

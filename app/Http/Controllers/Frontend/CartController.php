@@ -6,16 +6,20 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\AddToCartRequest;
 use App\Services\Frontend\CartService;
+use App\Services\Frontend\CouponService;
 
 class CartController extends Controller
 {
     //
     protected $cartService;
+    protected $couponService;
 
     public function __construct(
-        CartService $cartService
+        CartService $cartService,
+        CouponService $couponService
     ) {
         $this->cartService = $cartService;
+        $this->couponService = $couponService;
     }
 
     /*
@@ -43,6 +47,9 @@ class CartController extends Controller
         }
     }
 
+    /*
+    | Cart Page
+    */
     public function index()
     {
         $cartItems = $this->cartService
@@ -54,12 +61,28 @@ class CartController extends Controller
         $cartCount = $this->cartService
             ->getCartCount();
 
+        /*
+        | Get Applied Coupon
+        */
+        $coupon = $this->couponService
+            ->getAppliedCoupon();
+
+        $couponDiscount = $coupon['discount'] ?? 0;
+
+        $grandTotal = max(
+            $cartTotal - $couponDiscount,
+            0
+        );
+
         return view(
             'frontend.cart.index',
             compact(
                 'cartItems',
                 'cartTotal',
-                'cartCount'
+                'cartCount',
+                'coupon',
+                'couponDiscount',
+                'grandTotal'
             )
         );
     }

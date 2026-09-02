@@ -288,12 +288,15 @@ class ProductService
         int $limit = 20
     )
     {
+        $term = '%' . $keyword . '%';
+
         return Product::active()
-            ->where(function ($query) use ($keyword) {
+            ->where(function ($query) use ($term) {
                 $query
-                    ->where('name', 'LIKE', "%{$keyword}%")
-                    ->orWhere('description', 'LIKE', "%{$keyword}%")
-                    ->orWhere('short_description', 'LIKE', "%{$keyword}%");
+                    ->where('name', 'LIKE', $term)
+                    ->orWhereHas('brand', function ($q) use ($term) {
+                        $q->where('name', 'LIKE', $term);
+                    });
             })
             ->orderBy('name')
             ->latest()
@@ -311,7 +314,7 @@ class ProductService
         array $filters,
         int $limit = 20
     ) {
-        $query = Product::query();
+        $query = Product::active();
 
         /*
         |--------------------------------------------------------------------------
@@ -367,7 +370,7 @@ class ProductService
         | Minimum Price
         |--------------------------------------------------------------------------
         */
-        if (!is_null($filters['min_price'])) {
+        if (!empty($filters['min_price'])) {
             $query->where(
                 'price',
                 '>=',
@@ -380,7 +383,7 @@ class ProductService
         | Maximum Price
         |--------------------------------------------------------------------------
         */
-        if (!is_null($filters['max_price'])) {
+        if (!empty($filters['max_price'])) {
             $query->where(
                 'price',
                 '<=',

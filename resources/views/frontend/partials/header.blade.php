@@ -27,7 +27,7 @@
       <div class="flex-1 hidden md:flex justify-center px-4">
         <form class="header-search w-full max-w-2xl flex items-center gap-2" role="search" aria-label="Site search" action="{{ route('search') }}" method="GET">
           <label for="site-search" class="sr-only">Search products</label>
-          <input id="site-search" class="form-control text-gray-900" type="search" placeholder="Search shirts, dresses, tops" name="q" value="{{ request('q') }}">
+          <input id="site-search" class="form-control text-gray-900" type="search" placeholder="Search shirts, dresses, tops" name="q" value="{{ request()->routeIs('search') ? request('q') : '' }}" autocomplete="off">
           <button class="btn-go shrink-0 rounded-md px-5 py-2 font-bold" type="submit">Search</button>
         </form>
       </div>
@@ -193,7 +193,7 @@
         {{-- Mobile Search --}}
         <form class="header-search mb-4 flex w-full gap-2" role="search" aria-label="Mobile search" action="{{ route('search') }}" method="GET">
           <label for="mobile-site-search" class="sr-only">Search products</label>
-          <input id="mobile-site-search" class="form-control text-gray-900" type="search" placeholder="Search shirts, dresses, tops" name="q" value="{{ request('q') }}">
+          <input id="mobile-site-search" class="form-control text-gray-900" type="search" placeholder="Search shirts, dresses, tops" name="q" value="{{ request()->routeIs('search') ? request('q') : '' }}" autocomplete="off">
           <button class="btn-go shrink-0 rounded-md px-4 py-2 font-bold" type="submit">Search</button>
         </form>
 

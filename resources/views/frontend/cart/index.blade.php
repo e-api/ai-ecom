@@ -98,42 +98,78 @@
             </table>
           </div>
 
-          <div class="mt-6 grid gap-5 lg:grid-cols-[1fr_360px]">
-            <section class="rounded-lg border border-gray-200 bg-gray-50 p-5">
-              <h2 class="mb-3 text-lg font-black uppercase tracking-wide">Vouchers Code</h2>
-              @if($coupon)
-                <div class="flex items-center gap-3">
-                  <span class="inline-flex items-center gap-2 rounded-md bg-green-50 border border-green-200 px-4 py-2 text-sm font-bold text-green-700">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    {{ $coupon['code'] }}
-                    <span class="text-green-600">(-${{ number_format($coupon['discount'], 2) }})</span>
-                  </span>
-                  <button class="removeCouponBtn inline-flex items-center gap-1 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm font-bold text-red-600 hover:bg-red-100 transition" type="button">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    Remove
-                  </button>
-                </div>
-              @else
-                <div class="flex flex-col gap-3 sm:flex-row">
-                  <input id="couponCode" class="form-control" type="text" placeholder="Enter voucher code">
-                  <button id="applyCouponBtn" class="btn-danger rounded-md px-6 py-3 font-black" type="button">ADD</button>
-                </div>
-              @endif
-            </section>
-            <section class="rounded-lg border border-gray-200 bg-white p-5">
-              <div class="space-y-3 text-sm">
-                <div class="flex justify-between gap-4"><span>Grand Total:</span><strong class="grandTotalValue">${{ number_format($cartTotal, 2) }}</strong></div>
-                <div class="flex justify-between gap-4"><span>Total Discount:</span><strong id="discountValue" class="{{ $couponDiscount > 0 ? 'text-green-600' : '' }}">-${{ number_format($couponDiscount, 2) }}</strong></div>
-                <div class="flex justify-between gap-4"><span>Total Tax:</span><strong>$0.00</strong></div>
+          <div class="mt-6 grid gap-5 lg:grid-cols-[1fr_380px]">
+
+            {{-- Voucher Section --}}
+            <section class="h-fit rounded-lg border border-gray-200 bg-white p-5">
+              <h2 class="flex items-center gap-2 text-lg font-black uppercase tracking-wide">
+                <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                Voucher Code
+              </h2>
+              <p class="mt-1 text-sm text-gray-500">Apply a voucher code to save on your order.</p>
+
+              <div class="mt-4">
+                @if($coupon)
+                  <div class="flex items-center justify-between gap-3 rounded-md border-2 border-dashed border-green-500 bg-green-50 p-4">
+                    <div class="flex items-center gap-3">
+                      <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-500 text-white">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                      </div>
+                      <div>
+                        <p class="font-black uppercase tracking-wider text-green-800">{{ $coupon['code'] }}</p>
+                        <p class="text-xs text-green-600">-${{ number_format($coupon['discount'], 2) }} discount applied</p>
+                      </div>
+                    </div>
+                    <button class="removeCouponBtn inline-flex flex-shrink-0 items-center gap-1 rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-bold text-red-600 hover:bg-red-50 transition" type="button">
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                      Remove
+                    </button>
+                  </div>
+                @else
+                  <div class="flex flex-col gap-2 sm:flex-row">
+                    <div class="relative flex-1">
+                      <svg class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                      <input id="couponCode" class="w-full rounded-md border border-gray-300 py-3 pl-10 pr-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none" type="text" placeholder="Enter voucher code">
+                    </div>
+                    <button id="applyCouponBtn" class="rounded-md bg-gray-900 px-6 py-3 text-sm font-black text-white hover:bg-gray-800 transition" type="button">
+                      Apply
+                    </button>
+                  </div>
+                @endif
               </div>
-              <div class="mt-5 space-y-2">
-                <div class="flex items-center justify-between rounded-md bg-gray-900 px-5 py-4 text-lg font-black text-white">
-                  <span>TOTAL</span>
-                  <span class="grandTotalValue">${{ number_format($grandTotal, 2) }}</span>
+            </section>
+
+            {{-- Order Summary --}}
+            <section class="h-fit rounded-lg border border-gray-200 bg-white p-5">
+              <h2 class="mb-4 text-lg font-black uppercase tracking-wide">Order Summary</h2>
+
+              <div class="space-y-3 text-sm">
+                <div class="flex justify-between gap-4">
+                  <span class="text-gray-600">Subtotal</span>
+                  <strong>${{ number_format($cartTotal, 2) }}</strong>
                 </div>
-                <a href="{{ route('checkout.index') }}" id="checkoutBtn" class="block w-full rounded-md bg-green-600 px-5 py-4 text-center text-lg font-black text-white hover:bg-green-700 transition">
+                <div class="flex justify-between gap-4">
+                  <span class="text-gray-600">Coupon Discount</span>
+                  <strong id="discountValue" class="{{ $couponDiscount > 0 ? 'text-green-600' : 'text-gray-400' }}">-${{ number_format($couponDiscount, 2) }}</strong>
+                </div>
+                <div class="flex justify-between gap-4">
+                  <span class="text-gray-600">Tax</span>
+                  <strong>$0.00</strong>
+                </div>
+              </div>
+
+              <hr class="border-gray-200 my-4">
+
+              <div class="flex items-center justify-between gap-4">
+                <span class="text-base font-black">Grand Total</span>
+                <strong class="grandTotalValue text-lg font-black text-red-600">${{ number_format($grandTotal, 2) }}</strong>
+              </div>
+
+              <div class="mt-5 space-y-3">
+                <a href="{{ route('checkout.index') }}" id="checkoutBtn" class="block w-full rounded-md bg-green-600 px-5 py-4 text-center text-base font-black text-white hover:bg-green-700 transition">
                   Proceed to Checkout
                 </a>
+                <p class="text-center text-xs text-gray-400">You can select a delivery address at checkout.</p>
               </div>
             </section>
           </div>

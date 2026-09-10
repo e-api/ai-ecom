@@ -10,6 +10,7 @@ use App\Http\Controllers\Frontend\LoginController;
 use App\Http\Controllers\Frontend\SearchController;
 use App\Http\Controllers\Frontend\CouponController;
 use App\Http\Controllers\Frontend\CheckoutController;
+use App\Http\Controllers\Frontend\DeliveryAddressController;
 
 // Route::get('/', function () {
 //     // return view('welcome');
@@ -80,11 +81,30 @@ Route::post(
     [CouponController::class, 'removeCoupon']
 )->name('cart.removeCoupon');
 /*
-| Checkout
+| Checkout Midddleware
 */
 Route::middleware('auth')->group(function () {
+    /*
+    |--------------------------------------------------------------------------
+    | Checkout
+    |--------------------------------------------------------------------------
+    */
     Route::get('/checkout', [CheckoutController::class, 'index'])
         ->name('checkout.index');
+    /*
+    |--------------------------------------------------------------------------
+    | Delivery Addresses
+    |--------------------------------------------------------------------------
+    */
+    Route::get(
+        '/delivery-addresses',
+        [DeliveryAddressController::class, 'index']
+    )->name('delivery-addresses.index');
+
+    Route::post(
+        '/delivery-addresses',
+        [DeliveryAddressController::class, 'store']
+    )->name('delivery-addresses.store');
 });
 /*
 NEW: SEO Friendly Category Route

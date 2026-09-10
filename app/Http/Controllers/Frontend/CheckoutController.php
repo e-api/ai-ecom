@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Services\Frontend\CartService;
 use App\Services\Frontend\CouponService;
+use App\Models\DeliveryAddress;
 
 class CheckoutController extends Controller
 {
@@ -25,6 +26,14 @@ class CheckoutController extends Controller
 
         $grandTotal = max($subtotal - $couponDiscount, 0);
 
+        $deliveryAddresses = DeliveryAddress::where(
+            'user_id',
+            auth()->id()
+        )
+        ->orderByDesc('is_default')
+        ->latest()
+        ->get();
+
         return view(
             'frontend.checkout.index',
             compact(
@@ -32,7 +41,8 @@ class CheckoutController extends Controller
                 'subtotal',
                 'coupon',
                 'couponDiscount',
-                'grandTotal'
+                'grandTotal',
+                'deliveryAddresses'
             )
         );
     }

@@ -26,58 +26,7 @@
         {{-- ======================================================== --}}
         {{-- Delivery Addresses --}}
         {{-- ======================================================== --}}
-        <div class="rounded-lg border border-gray-200 bg-gray-50 p-5 mb-6">
-          <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h2 class="text-lg font-black uppercase tracking-wide">1. Delivery Addresses</h2>
-            <button type="button" class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-blue-700 transition">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-              Add New Address
-            </button>
-          </div>
-
-          <div class="grid gap-4 sm:grid-cols-2">
-            {{-- Address 1 --}}
-            <div class="rounded-md border-2 border-green-500 bg-white p-4 transition">
-              <div class="mb-2 flex items-center justify-between">
-                <label class="flex cursor-pointer items-center gap-2">
-                  <input type="radio" name="delivery_address" checked class="h-4 w-4 text-green-600 focus:ring-green-500">
-                  <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Default</span>
-                </label>
-              </div>
-              <p class="font-black text-gray-900">John Doe</p>
-              <p class="mt-1 text-sm text-gray-600">
-                123 Main Street<br>
-                New York, NY 10001<br>
-                United States
-              </p>
-              <p class="mt-1 text-sm text-gray-500">Phone: +1 123 456 7890</p>
-              <div class="mt-3">
-                <button type="button" class="text-xs font-bold text-red-500 hover:text-red-700 transition">Delete</button>
-              </div>
-            </div>
-
-            {{-- Address 2 --}}
-            <div class="rounded-md border border-gray-200 bg-white p-4 transition hover:border-gray-300">
-              <div class="mb-2 flex items-center justify-between">
-                <label class="flex cursor-pointer items-center gap-2">
-                  <input type="radio" name="delivery_address" class="h-4 w-4 text-blue-600 focus:ring-blue-500">
-                  <span class="font-bold text-gray-700">Office</span>
-                </label>
-              </div>
-              <p class="font-black text-gray-900">John Doe</p>
-              <p class="mt-1 text-sm text-gray-600">
-                456 Business Avenue<br>
-                New York, NY 10002<br>
-                United States
-              </p>
-              <p class="mt-1 text-sm text-gray-500">Phone: +1 987 654 3210</p>
-              <div class="mt-3 flex items-center gap-3">
-                <button type="button" class="text-xs font-bold text-blue-600 hover:text-blue-800 transition">Edit</button>
-                <button type="button" class="text-xs font-bold text-red-500 hover:text-red-700 transition">Delete</button>
-              </div>
-            </div>
-          </div>
-        </div>
+        @include('frontend.delivery-addresses.partials.address-section')
 
         {{-- ======================================================== --}}
         {{-- Order Items --}}
@@ -145,7 +94,7 @@
           <div class="rounded-lg border border-gray-200 bg-gray-50 p-5">
             <h2 class="mb-4 text-lg font-black uppercase tracking-wide">3. Payment Method</h2>
 
-            <label class="mb-3 flex cursor-pointer items-start gap-3 rounded-md border-2 border-green-500 bg-white p-4 transition hover:border-green-600">
+            <label data-payment-option class="mb-3 flex cursor-pointer items-start gap-3 rounded-md border-2 border-green-500 bg-white p-4 transition hover:border-green-600">
               <input type="radio" name="payment_method" value="cod" checked class="mt-0.5 h-4 w-4 text-green-600 focus:ring-green-500">
               <div>
                 <p class="font-black text-gray-900">Cash on Delivery (COD)</p>
@@ -153,7 +102,7 @@
               </div>
             </label>
 
-            <label class="flex cursor-pointer items-start gap-3 rounded-md border border-gray-200 bg-white p-4 transition hover:border-gray-300">
+            <label data-payment-option class="flex cursor-pointer items-start gap-3 rounded-md border border-gray-200 bg-white p-4 transition hover:border-gray-300">
               <input type="radio" name="payment_method" value="paypal" class="mt-0.5 h-4 w-4 text-blue-600 focus:ring-blue-500">
               <div>
                 <p class="font-black text-gray-900">PayPal</p>
@@ -161,6 +110,27 @@
               </div>
             </label>
           </div>
+
+          {{-- Payment Method Scripts --}}
+          @push('scripts')
+          <script>
+            $(document).ready(function () {
+              function syncPaymentSelection() {
+                $('input[name="payment_method"]').each(function () {
+                  var $option = $(this).closest('[data-payment-option]');
+                  if ($(this).is(':checked')) {
+                    $option.removeClass('border-gray-200 hover:border-gray-300 border').addClass('border-2 border-green-500');
+                  } else {
+                    $option.removeClass('border-2 border-green-500').addClass('border border-gray-200 hover:border-gray-300');
+                  }
+                });
+              }
+
+              $('input[name="payment_method"]').on('change', syncPaymentSelection);
+              syncPaymentSelection();
+            });
+          </script>
+          @endpush
 
           {{-- Order Summary --}}
           <div class="rounded-lg border border-gray-200 bg-white p-5">

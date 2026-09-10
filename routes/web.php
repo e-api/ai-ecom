@@ -105,6 +105,16 @@ Route::middleware('auth')->group(function () {
         '/delivery-addresses',
         [DeliveryAddressController::class, 'store']
     )->name('delivery-addresses.store');
+
+    Route::put(
+        '/delivery-addresses/{deliveryAddress}',
+        [DeliveryAddressController::class, 'update']
+    )->name('delivery-addresses.update');
+
+    Route::delete(
+        '/delivery-addresses/{deliveryAddress}',
+        [DeliveryAddressController::class, 'destroy']
+    )->name('delivery-addresses.destroy');
 });
 /*
 NEW: SEO Friendly Category Route

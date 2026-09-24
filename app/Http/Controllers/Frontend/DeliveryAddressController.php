@@ -272,5 +272,81 @@ class DeliveryAddressController extends Controller
                 'success',
                 'Delivery address deleted successfully.'
             );
+            
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Make Delivery Address Default
+    |--------------------------------------------------------------------------
+    */
+    public function makeDefault(
+        Request $request,
+        DeliveryAddress $deliveryAddress
+    ) {
+        
+        /*
+        |--------------------------------------------------------------------------
+        | Check Address Ownership
+        |--------------------------------------------------------------------------
+        */
+        
+        if ($deliveryAddress->user_id !== auth()->id()) {
+            
+            abort(403);
+            
+        }
+
+        $request->validate([
+            'redirect_to' => [
+                'nullable',
+                'in:checkout,delivery-addresses'
+            ]
+        ]);
+        
+        /*
+        |--------------------------------------------------------------------------
+        | Remove Existing Default Address
+        |--------------------------------------------------------------------------
+        */
+        
+        DeliveryAddress::where(
+            'user_id',
+            auth()->id()
+        )->update([
+            'is_default' => false
+        ]);
+        
+        /*
+        |--------------------------------------------------------------------------
+        | Make Selected Address Default
+        |--------------------------------------------------------------------------
+        */
+        
+        $deliveryAddress->update([
+            'is_default' => true
+        ]);
+        
+        /*
+        |--------------------------------------------------------------------------
+        | Redirect Back
+        |--------------------------------------------------------------------------
+        */
+        
+        if ($request->redirect_to === 'checkout') {
+            return redirect()
+                ->route('checkout.index')
+                ->with(
+                    'success',
+                    'Default delivery address updated successfully.'
+                );
+        }
+
+        return redirect()
+            ->route('delivery-addresses.index')
+            ->with(
+                'success',
+                'Default delivery address updated successfully.'
+            );
     }
 }

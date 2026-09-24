@@ -23,6 +23,14 @@
 
         <hr class="border-gray-200 mb-6"/>
 
+        {{-- Success Message --}}
+        @if(session('success'))
+          <div class="mb-6 flex items-center gap-3 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-700">
+            <svg class="h-5 w-5 flex-shrink-0 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            {{ session('success') }}
+          </div>
+        @endif
+
         {{-- ======================================================== --}}
         {{-- Delivery Addresses --}}
         {{-- ======================================================== --}}

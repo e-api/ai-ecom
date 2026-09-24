@@ -115,6 +115,11 @@ Route::middleware('auth')->group(function () {
         '/delivery-addresses/{deliveryAddress}',
         [DeliveryAddressController::class, 'destroy']
     )->name('delivery-addresses.destroy');
+
+    Route::post(
+        '/delivery-addresses/{deliveryAddress}/default',
+        [DeliveryAddressController::class, 'makeDefault']
+    )->name('delivery-addresses.make-default');
 });
 /*
 NEW: SEO Friendly Category Route

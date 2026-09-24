@@ -22,11 +22,11 @@
         @if($isCheckout)
           {{-- Checkout: Radio selector (whole card clickable like payment methods) --}}
           <label data-address-card class="block cursor-pointer rounded-md border-2 {{ $address->is_default ? 'border-green-500' : 'border-gray-200 hover:border-gray-300' }} bg-white p-4 transition">
-            <div class="mb-2 flex items-center justify-between">
-              <span class="flex items-center gap-2">
-                <input type="radio" name="delivery_address" value="{{ $address->id }}" {{ $address->is_default ? 'checked' : '' }} class="h-4 w-4 text-green-600 focus:ring-green-500">
-                <span class="{{ $address->is_default ? 'text-xs font-bold uppercase tracking-wider text-gray-500' : 'font-bold text-gray-700' }}">{{ $address->is_default ? 'Default' : 'Address' }}</span>
-              </span>
+            <div class="mb-2 flex min-h-5 items-center justify-end">
+              <input type="radio" name="delivery_address" value="{{ $address->id }}" {{ $address->is_default ? 'checked' : '' }} class="sr-only">
+              @if($address->is_default)
+                <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">Default</span>
+              @endif
             </div>
             <p class="font-black text-gray-900">{{ $address->name }}</p>
             <p class="mt-1 text-sm text-gray-600">
@@ -36,6 +36,24 @@
             </p>
             <p class="mt-1 text-sm text-gray-500">Phone: {{ $address->phone }}</p>
             <div class="mt-3 flex items-center gap-2">
+              @if(!$address->is_default)
+                <form
+                  method="POST"
+                  action="{{ route('delivery-addresses.make-default', $address->id) }}"
+                  class="inline-flex"
+                  onsubmit="return confirm('Are you sure you want to make this your default delivery address?');"
+                >
+                  @csrf
+                  <input type="hidden" name="redirect_to" value="checkout">
+                  <button
+                    type="submit"
+                    class="inline-flex items-center gap-1.5 rounded-md border border-green-200 bg-green-50 px-2.5 py-1.5 text-xs font-bold text-green-600 transition hover:bg-green-100 hover:text-green-700"
+                  >
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    Make Default
+                  </button>
+                </form>
+              @endif
               <button
                 type="button"
                 class="open-edit-modal inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-bold text-blue-600 transition hover:bg-blue-100 hover:text-blue-800"
@@ -65,10 +83,7 @@
         @else
           {{-- Delivery Addresses page: Card view --}}
           <div class="rounded-md border {{ $address->is_default ? 'border-green-500' : 'border-gray-200' }} bg-white p-4 transition hover:border-gray-300">
-            <div class="mb-2 flex items-center justify-between">
-              <span class="{{ $address->is_default ? 'text-xs font-bold uppercase tracking-wider text-gray-500' : 'font-bold text-gray-700' }}">
-                {{ $address->is_default ? 'Default' : 'Address' }}
-              </span>
+            <div class="mb-2 flex min-h-5 items-center justify-end">
               @if($address->is_default)
                 <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">Default</span>
               @endif
@@ -81,6 +96,23 @@
             </p>
             <p class="mt-1 text-sm text-gray-500">Phone: {{ $address->phone }}</p>
             <div class="mt-3 flex items-center gap-2">
+              @if(!$address->is_default)
+                <form
+                  method="POST"
+                  action="{{ route('delivery-addresses.make-default', $address->id) }}"
+                  class="inline-flex"
+                  onsubmit="return confirm('Are you sure you want to make this your default delivery address?');"
+                >
+                  @csrf
+                  <button
+                    type="submit"
+                    class="inline-flex items-center gap-1.5 rounded-md border border-green-200 bg-green-50 px-2.5 py-1.5 text-xs font-bold text-green-600 transition hover:bg-green-100 hover:text-green-700"
+                  >
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    Make Default
+                  </button>
+                </form>
+              @endif
               <button
                 type="button"
                 class="open-edit-modal inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-bold text-blue-600 transition hover:bg-blue-100 hover:text-blue-800"

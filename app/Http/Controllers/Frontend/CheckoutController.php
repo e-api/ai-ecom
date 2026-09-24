@@ -5,10 +5,19 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Services\Frontend\CartService;
 use App\Services\Frontend\CouponService;
+use App\Services\Frontend\ShippingChargeService;
 use App\Models\DeliveryAddress;
 
 class CheckoutController extends Controller
 {
+    protected $shippingChargeService;
+    public function __construct(
+        ShippingChargeService $shippingChargeService
+    ) {
+        $this->shippingChargeService =
+            $shippingChargeService;
+    }
+
     public function index(CartService $cartService, CouponService $couponService)
     {
         $cartItems = $cartService->getCartItems();
@@ -25,6 +34,8 @@ class CheckoutController extends Controller
         $couponDiscount = $coupon['discount'] ?? 0;
 
         $grandTotal = max($subtotal - $couponDiscount, 0);
+        $shippingAmount = $this->shippingChargeService->getShippingCharge($subtotal);
+        $grandTotal = $grandTotal + $shippingAmount;
 
         $deliveryAddresses = DeliveryAddress::where(
             'user_id',
@@ -42,7 +53,8 @@ class CheckoutController extends Controller
                 'coupon',
                 'couponDiscount',
                 'grandTotal',
-                'deliveryAddresses'
+                'deliveryAddresses',
+                'shippingAmount'
             )
         );
     }

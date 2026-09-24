@@ -159,7 +159,11 @@
 
               <div class="flex justify-between gap-4">
                 <span class="text-gray-600">Shipping</span>
-                <span class="text-gray-400">To be calculated</span>
+                @if($shippingAmount > 0)
+                  <strong>${{ number_format($shippingAmount, 2) }}</strong>
+                @else
+                  <strong class="text-green-600">Free</strong>
+                @endif
               </div>
 
               <hr class="border-gray-200">

@@ -11,6 +11,7 @@ use App\Http\Controllers\Frontend\SearchController;
 use App\Http\Controllers\Frontend\CouponController;
 use App\Http\Controllers\Frontend\CheckoutController;
 use App\Http\Controllers\Frontend\DeliveryAddressController;
+use App\Http\Controllers\Frontend\OrderController;
 
 // Route::get('/', function () {
 //     // return view('welcome');
@@ -120,6 +121,21 @@ Route::middleware('auth')->group(function () {
         '/delivery-addresses/{deliveryAddress}/default',
         [DeliveryAddressController::class, 'makeDefault']
     )->name('delivery-addresses.make-default');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Orders
+    |--------------------------------------------------------------------------
+    */
+    Route::post(
+        '/orders',
+        [OrderController::class, 'store']
+    )->name('orders.store');
+
+    Route::get(
+        '/order-success/{order}',
+        [OrderController::class, 'success']
+    )->name('orders.success');
 });
 /*
 NEW: SEO Friendly Category Route

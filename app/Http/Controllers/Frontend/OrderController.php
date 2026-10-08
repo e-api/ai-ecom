@@ -24,6 +24,18 @@ class OrderController extends Controller
             $shippingChargeService;
     }
 
+    public function index()
+    {
+        $orders = auth()->user()
+            ->orders()
+            ->latest()
+            ->get();
+        return view(
+            'frontend.orders.index',
+            compact('orders')
+        );
+    }
+
     public function store(Request $request)
     {
         // Validate the payment methods

@@ -32,73 +32,77 @@
         </form>
       </div>
 
-      <div class="flex items-center gap-3">
-        {{-- Currency Swapper Desktop --}}
-        <div class="hidden sm:flex items-center gap-2">
-          <select class="currency-select bg-white/10 text-white text-sm rounded-md px-2 py-1.5 border border-white/20 cursor-pointer" aria-label="Select currency">
-            <option value="USD" class="text-gray-900 flex items-center gap-2">
-              <svg class="flag-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 14"><rect width="20" height="14" fill="#fff"/><rect y="1" width="20" height="2" fill="#B22234"/><rect y="5" width="20" height="2" fill="#B22234"/><rect y="9" width="20" height="2" fill="#B22234"/><rect width="8" height="7" fill="#3C3B6E"/></svg>
-              USD
-            </option>
-            <option value="EUR" class="text-gray-900 flex items-center gap-2">
-              <svg class="flag-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 14"><rect width="20" height="14" fill="#003399"/><rect y="4.6" width="20" height="4.8" fill="#FFCC00"/></svg>
-              EUR
-            </option>
-            <option value="GBP" class="text-gray-900 flex items-center gap-2">
-              <svg class="flag-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 14"><rect width="20" height="14" fill="#012169"/><path d="M0 0L20 14M20 0L0 14" stroke="#fff" stroke-width="3"/><path d="M0 0L20 14M20 0L0 14" stroke="#C8102E" stroke-width="1.5"/></svg>
-              GBP
-            </option>
-            <option value="JPY" class="text-gray-900 flex items-center gap-2">
-              <svg class="flag-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 14"><rect width="20" height="14" fill="#fff"/><circle cx="10" cy="7" r="4" fill="#BC002D"/></svg>
-              JPY
-            </option>
+      {{-- Desktop: Action toolbar --}}
+      <div class="flex items-center gap-2">
+        {{-- Currency Selector --}}
+        <div class="relative hidden items-center sm:flex">
+          <select
+            id="header-currency"
+            class="currency-select h-10 appearance-none rounded-lg border border-white/20 bg-white/10 pl-3 pr-8 text-sm font-bold text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/40 cursor-pointer"
+            aria-label="Select currency"
+            title="Change currency"
+          >
+            <option value="USD">🇺🇸 USD</option>
+            <option value="EUR">🇪🇺 EUR</option>
+            <option value="GBP">🇬🇧 GBP</option>
+            <option value="JPY">🇯🇵 JPY</option>
           </select>
+          <svg class="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
         </div>
 
-        <a class="cart-button rounded-md bg-white/10 px-3 py-2 text-sm font-bold flex items-center gap-2" href="{{ route('cart.index') }}" aria-label="View cart">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4"></path><circle cx="9" cy="20" r="1"></circle><circle cx="20" cy="20" r="1"></circle></svg>
-          <span class="sr-only">Cart</span>
-          <span data-cart-count>
-            @if($cartCount > 0)
-              {{ $cartCount }}
-            @else
-              0
-            @endif
-          </span>
+        <span class="hidden h-6 w-px bg-white/20 sm:inline-block" aria-hidden="true"></span>
+
+        {{-- Cart --}}
+        <a class="cart-button inline-flex h-10 items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 text-sm font-bold text-white transition hover:bg-white/20" href="{{ route('cart.index') }}" title="View cart" aria-label="View cart">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4"></path><circle cx="9" cy="20" r="1"></circle><circle cx="20" cy="20" r="1"></circle></svg>
+          <span class="hidden lg:inline">Cart</span>
+          <span data-cart-count class="ml-1 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-[#ff6a00] px-1 text-[11px] font-black leading-none text-white{{ $cartCount > 0 ? '' : ' hidden' }}">{{ $cartCount }}</span>
         </a>
+
+        {{-- Orders --}}
+        @auth
+          <a
+            class="inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-bold text-white transition {{ request()->routeIs('orders.*') ? 'border-[#ff6a00] bg-white/20' : 'border-white/20 bg-white/10 hover:bg-white/20' }}"
+            href="{{ route('orders.index') }}"
+            title="My orders"
+            aria-label="My orders"
+            @if(request()->routeIs('orders.*')) aria-current="page" @endif
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            <span class="hidden lg:inline">Orders</span>
+          </a>
+        @endauth
+
+        <span class="hidden h-6 w-px bg-white/20 sm:inline-block" aria-hidden="true"></span>
 
         {{-- Desktop: Buttons (logged out) --}}
         @guest
-            <div class="hidden sm:flex items-center gap-3">
-                {{-- Register Button --}}
-                <a class="btn-register rounded-md px-4 py-2 font-bold inline-flex items-center gap-2" href="{{ route('register') }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                    </svg>
-                    Register
-                </a>
+          <a class="inline-flex h-10 items-center gap-2 rounded-lg bg-[#ff6a00] px-4 text-sm font-bold text-white transition hover:bg-[#e65a00]" href="{{ route('login') }}" title="Login">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
+            Login
+          </a>
 
-                {{-- Login Button --}}
-                <a class="btn-login rounded-md px-4 py-2 font-bold inline-flex items-center gap-2" href="{{ route('login') }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                    </svg>
-                    Login
-                </a>
-            </div>
+          <a class="inline-flex h-10 items-center gap-2 rounded-lg border border-white/40 px-4 text-sm font-bold text-white transition hover:bg-white/10" href="{{ route('register') }}" title="Create an account">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            Register
+          </a>
         @endguest
 
         {{-- Desktop: Logout Button (logged in) --}}
         @auth
-            <form method="POST" action="{{ route('logout') }}" class="hidden sm:inline">
-                @csrf
-                <button type="submit" class="btn-logout rounded-md px-4 py-2 font-bold inline-flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                    </svg>
-                    Logout
-                </button>
-            </form>
+          <form method="POST" action="{{ route('logout') }}" class="hidden sm:inline">
+            @csrf
+            <button type="submit" class="inline-flex h-10 items-center gap-2 rounded-lg border border-red-400/50 px-4 text-sm font-bold text-red-300 transition hover:bg-red-500/15 hover:text-red-200" title="Logout">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              </svg>
+              Logout
+            </button>
+          </form>
         @endauth
       </div>
     </div>
@@ -182,9 +186,6 @@
         <a data-nav class="store-link px-2 rounded-lg font-medium transition-all duration-200 text-white hover:bg-white/10" href="{{ url('about.html') }}">About</a>
         <a data-nav class="store-link px-2 rounded-lg font-medium transition-all duration-200 text-white hover:bg-white/10" href="{{ url('contact.html') }}">Contact</a>
       </div>
-      <div class="hidden lg:flex items-center gap-3">
-        <a class="rounded-md border border-gray-300 bg-white px-4 py-2 font-bold text-gray-800" href="{{ route('register') }}">Create account</a>
-      </div>
     </nav>
 
     {{-- Mobile Navigation --}}
@@ -225,7 +226,7 @@
             </div>
             <div class="mt-3 pt-3 border-t border-white/10 grid grid-cols-2 gap-2">
               <a href="{{ url('account.html') }}" class="text-white text-sm hover:bg-white/10 rounded-md p-2 transition text-center">My Account</a>
-              <a href="{{ url('orders.html') }}" class="text-white text-sm hover:bg-white/10 rounded-md p-2 transition text-center">Orders</a>
+              <a href="{{ route('orders.index') }}" class="text-white text-sm {{ request()->routeIs('orders.*') ? 'bg-white/15 font-bold' : '' }} hover:bg-white/10 rounded-md p-2 transition text-center">Orders</a>
               <a href="{{ url('wishlist.html') }}" class="text-white text-sm hover:bg-white/10 rounded-md p-2 transition text-center">Wishlist</a>
               <form method="POST" action="{{ route('logout') }}" class="col-span-1">
                 @csrf
@@ -349,3 +350,30 @@
 
   </div>
 </header>
+
+@push('scripts')
+<script nonce="$2y$10$y1wzkQBMMTJ6U7of/7UFBek2ZdAMSENu59zb5moaOkdL9ZZ5.Ov7i">
+  (function () {
+    var select = document.getElementById('header-currency');
+    if (!select) return;
+
+    var key = 'store_currency';
+
+    try {
+      var saved = localStorage.getItem(key);
+      if (saved) {
+        for (var i = 0; i < select.options.length; i++) {
+          if (select.options[i].value === saved) {
+            select.value = saved;
+            break;
+          }
+        }
+      }
+    } catch (e) {}
+
+    select.addEventListener('change', function () {
+      try { localStorage.setItem(key, select.value); } catch (e) {}
+    });
+  })();
+</script>
+@endpush

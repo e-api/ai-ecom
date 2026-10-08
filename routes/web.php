@@ -127,6 +127,12 @@ Route::middleware('auth')->group(function () {
     | Orders
     |--------------------------------------------------------------------------
     */
+
+    Route::get(
+        '/orders',
+        [OrderController::class, 'index']
+    )->name('orders.index');
+
     Route::post(
         '/orders',
         [OrderController::class, 'store']

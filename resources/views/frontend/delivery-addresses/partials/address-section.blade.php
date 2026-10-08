@@ -5,12 +5,12 @@
 {{-- ========================================================================= --}}
 {{-- Delivery Addresses Section --}}
 {{-- ========================================================================= --}}
-<div class="rounded-lg border border-gray-200 bg-gray-50 p-5 mb-6">
-  <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-    <h2 class="text-lg font-black uppercase tracking-wide">
+<div class="{{ $isCheckout ? 'mb-10' : 'rounded-lg border border-gray-200 bg-gray-50 p-5 mb-6' }}">
+  <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <h2 class="{{ $isCheckout ? 'text-xs font-medium uppercase tracking-[0.15em] text-gray-400' : 'text-lg font-black uppercase tracking-wide' }}">
       {{ $isCheckout ? '1. Delivery Addresses' : 'Delivery Addresses' }}
     </h2>
-    <button type="button" id="openAddAddressModal" class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-blue-700 transition">
+    <button type="button" id="openAddAddressModal" class="{{ $isCheckout ? 'inline-flex items-center gap-1 text-sm font-medium text-gray-500 transition hover:text-gray-900' : 'inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-blue-700 transition' }}">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
       Add New Address
     </button>

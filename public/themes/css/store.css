@@ -903,10 +903,10 @@ body.sidebar-open .store-header {
   .cart-responsive td:nth-child(1) { grid-column: 1; grid-row: 1; }
   .cart-responsive td:nth-child(2) { grid-column: 2; grid-row: 1; }
   .cart-responsive td:nth-child(3) { grid-column: 2; grid-row: 2; }
-  /* Price (unit) on the left of the summary row, Total aligned to the right */
+  /* Price (unit) on the left of the summary row, Sub-total aligned to the right */
   .cart-responsive td:nth-child(4) { grid-column: 2; grid-row: 3; justify-self: start; }
-  .cart-responsive td:nth-child(7) { grid-column: 2; grid-row: 3; justify-self: end; font-weight: 700; }
-  .cart-responsive td:nth-child(5), .cart-responsive td:nth-child(6) { display: none; }
+  .cart-responsive td:nth-child(5) { grid-column: 2; grid-row: 3; justify-self: end; font-weight: 700; }
+  .cart-responsive td:nth-child(6) { grid-column: 2; grid-row: 4; justify-self: start; }
 
   /* Pagination (small screens stacking handled by flex wrap) */
   .pagination { display: inline-flex; flex-wrap: wrap; gap: 0.5rem; }

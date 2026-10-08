@@ -36,6 +36,20 @@ class OrderController extends Controller
         );
     }
 
+    public function show(Order $order)
+    {
+        $order = auth()->user()
+            ->orders()
+            ->with('orderItems')
+            ->findOrFail(
+                $order->id
+            );
+        return view(
+            'frontend.orders.show',
+            compact('order')
+        );
+    }
+
     public function store(Request $request)
     {
         // Validate the payment methods

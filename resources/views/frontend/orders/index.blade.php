@@ -38,14 +38,15 @@
           </div>
         @else
           <div class="overflow-x-auto">
-            <table class="w-full min-w-[800px] border-collapse text-sm">
+            <table class="w-full min-w-[900px] border-collapse text-sm">
               <thead>
                 <tr class="text-xs uppercase tracking-wider text-gray-400">
                   <th class="py-2 pr-4 text-left font-medium">Order number</th>
                   <th class="px-4 py-2 text-left font-medium">Date</th>
                   <th class="px-4 py-2 text-right font-medium">Amount</th>
-                  <th class="px-4 py-2 text-left font-medium">Payment</th>
-                  <th class="px-4 py-2 text-left font-medium">Status</th>
+                  <th class="px-4 py-2 text-left font-medium">Payment Method</th>
+                  <th class="px-4 py-2 text-left font-medium">Payment Status</th>
+                  <th class="px-4 py-2 text-left font-medium">Order Status</th>
                   <th class="py-2 pl-4 text-right font-medium">Action</th>
                 </tr>
               </thead>
@@ -57,6 +58,11 @@
                     <td class="px-4 py-4 text-right font-medium text-gray-900">${{ number_format($order->grand_total, 2) }}</td>
                     <td class="px-4 py-4 text-gray-700">
                       {{ strtoupper($order->payment_method) === 'COD' ? 'Cash on Delivery' : ucfirst($order->payment_method) }}
+                    </td>
+                    <td class="px-4 py-4">
+                      <span class="inline-flex items-center rounded-full bg-gray-50 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+                        {{ ucfirst($order->payment_status) }}
+                      </span>
                     </td>
                     <td class="px-4 py-4">
                       @php

@@ -21,6 +21,14 @@
           </div>
         </div>
 
+        {{-- Error Message --}}
+        @if(session('error'))
+          <div class="mb-8 flex items-center gap-2 border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            <svg class="h-4 w-4 flex-shrink-0 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-2.99L13.73 4.01c-.77-1.33-2.69-1.33-3.46 0L3.34 16.01c-.77 1.32.19 2.99 1.73 2.99z"/></svg>
+            {{ session('error') }}
+          </div>
+        @endif
+
         {{-- Success Message --}}
         @if(session('success'))
           <div class="mb-8 flex items-center gap-2 border border-green-100 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">

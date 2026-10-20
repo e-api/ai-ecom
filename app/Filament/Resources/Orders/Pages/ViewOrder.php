@@ -6,6 +6,7 @@ use App\Filament\Resources\Orders\OrderResource;
 use Filament\Actions\EditAction;
 use App\Models\OrderStatusHistory;
 use App\Models\OrderShipment;
+use App\Mail\OrderShippedMail;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -14,6 +15,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Mail;
 
 class ViewOrder extends ViewRecord
 {
@@ -93,14 +95,15 @@ class ViewOrder extends ViewRecord
                             'tracking_link',
                         ] as $field) {
                             if (blank($data[$field] ?? null)) {
-                                throw ValidationException::withMessages([
+                                throw \Illuminate\Validation\ValidationException::withMessages([
                                     $field => 'This field is required when an order is shipped.',
                                 ]);
                             }
                         }
                     }
 
-                    DB::transaction(function () use ($order, $data) {
+                    // Save order status, history, and shipment details.
+                    $shipment = DB::transaction(function () use ($order, $data) {
                         $order->update([
                             'order_status' => $data['status'],
                         ]);
@@ -111,22 +114,39 @@ class ViewOrder extends ViewRecord
                         ]);
 
                         if ($data['status'] === 'shipped') {
-                            OrderShipment::create([
+                            return OrderShipment::create([
                                 'order_id' => $order->id,
                                 'courier_name' => $data['courier_name'],
                                 'tracking_number' => $data['tracking_number'],
                                 'tracking_link' => $data['tracking_link'],
                             ]);
                         }
+                        return null;
                     });
+
+                    $this->record->refresh();
+
+                    // Send email only when a shipment is created.
+                    if ($shipment) {
+                        try {
+                            Mail::to($order->user->email)
+                                ->send(new OrderShippedMail($shipment));
+                        } catch (\Throwable $exception) {
+                            report($exception);
+                            Notification::make()
+                                ->warning()
+                                ->title('Order shipped, but email could not be sent')
+                                ->body('Please check your mail configuration and application logs.')
+                                ->send();
+                            return;
+                        }
+                    }
 
                     Notification::make()
                         ->success()
                         ->title('Order status updated successfully')
                         ->send();
-
-                    $this->record->refresh();
-                }),
+                })
         ];
     }
 }

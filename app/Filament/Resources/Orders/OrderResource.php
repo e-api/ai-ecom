@@ -198,6 +198,55 @@ class OrderResource extends Resource
 
                     ])
                     ->columns(2),
+                Section::make('Order Status History')
+                    ->schema([
+                        RepeatableEntry::make('statusHistories')
+                            ->label('')
+                            ->table([
+                                TableColumn::make('Status'),
+                                TableColumn::make('Date & Time'),
+                            ])
+                            ->schema([
+                                TextEntry::make('status')
+                                    ->label('Status')
+                                    ->formatStateUsing(fn ($state) => ucfirst($state))
+                                    ->badge(),
+
+                                TextEntry::make('created_at')
+                                    ->label('Date & Time')
+                                    ->dateTime(),
+                            ])
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make('Shipment History')
+                    ->schema([
+                        RepeatableEntry::make('shipments')
+                            ->label('')
+                            ->table([
+                                TableColumn::make('Courier'),
+                                TableColumn::make('Tracking Number'),
+                                TableColumn::make('Tracking Link'),
+                                TableColumn::make('Shipment Date'),
+                            ])
+                            ->schema([
+                                TextEntry::make('courier_name')
+                                    ->label('Courier'),
+
+                                TextEntry::make('tracking_number')
+                                    ->label('Tracking Number'),
+
+                                TextEntry::make('tracking_link')
+                                    ->label('Tracking Link')
+                                    ->url(fn ($state) => $state)
+                                    ->openUrlInNewTab(),
+
+                                TextEntry::make('created_at')
+                                    ->label('Shipment Date')
+                                    ->dateTime(),
+                            ])
+                            ->columnSpanFull(),
+                    ]),
 
             ]);
     }

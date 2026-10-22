@@ -21,8 +21,8 @@ class ShippingChargeResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Shipping & Taxes';
     //protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGlobeAlt;
-    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::GlobeAlt;  // Remove 'Solid' prefix
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;
+    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::Truck;  // Remove 'Solid' prefix
 
     protected static ?string $recordTitleAttribute = 'min_amount';
 

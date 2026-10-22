@@ -19,6 +19,7 @@ use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\RepeatableEntry\TableColumn;
 use Filament\Schemas\Components\Section;
+use App\Filament\Resources\Orders\Pages\InvoiceOrder;
 
 class OrderResource extends Resource
 {
@@ -26,8 +27,8 @@ class OrderResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Products';
     // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTicket;
-    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::Ticket;  // Remove 'Solid' prefix
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingCart;
+    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::ShoppingCart;  // Remove 'Solid' prefix
 
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -53,6 +54,7 @@ class OrderResource extends Resource
         return [
             'index' => ListOrders::route('/'),
             'view' => ViewOrder::route('/{record}'),
+            'invoice' => InvoiceOrder::route('/{record}/invoice'),
         ];
     }
 

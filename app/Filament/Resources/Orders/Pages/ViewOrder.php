@@ -32,9 +32,18 @@ class ViewOrder extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('printInvoice')
+                ->label('Print Invoice')
+                ->icon('heroicon-o-printer')
+                ->url(fn (): string => OrderResource::getUrl(
+                    'invoice',
+                    ['record' => $this->record]
+                ))
+                ->openUrlInNewTab(),
+
             Action::make('updateOrderStatus')
                 ->label('Update Order Status')
-                ->icon('heroicon-o-truck')
+                ->icon('heroicon-o-pencil-square')
                 ->color('primary')
                 ->modalHeading('Update Order Status')
                 ->modalSubmitActionLabel('Update Status')

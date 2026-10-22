@@ -5,7 +5,7 @@ services:
       context: /www/wwwroot/default/ai-ecom
       dockerfile: Dockerfile
       args:
-        PHP_VERSION: ${PHP_VERSION:-8.5}
+        PHP_VERSION: ${PHP_VERSION:-8.5.12}
     container_name: ${APP_NAME:-laravel}-php
     deploy:
       resources:

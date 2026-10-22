@@ -52,6 +52,11 @@ class AdminPanelProvider extends PanelProvider
                 AccountWidget::class,
                 FilamentInfoWidget::class,
             ])
+            ->navigationGroups([
+                'Products',
+                'Shipping & Taxes',
+                'Settings',
+            ])
             ->sidebarCollapsibleOnDesktop()
             ->maxContentWidth(Width::Full)
             ->unsavedChangesAlerts()

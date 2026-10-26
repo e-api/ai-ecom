@@ -236,4 +236,16 @@ class OrderController extends Controller
             compact('order')
         );
     }
+
+    public function invoice(Order $order)
+    {
+        $order = auth()->user()
+            ->orders()
+            ->with('orderItems')
+            ->findOrFail($order->id);
+        return view(
+            'frontend.orders.invoice',
+            compact('order')
+        );
+    }
 }

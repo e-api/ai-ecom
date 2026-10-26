@@ -147,6 +147,12 @@ Route::middleware('auth')->group(function () {
         '/order-success/{order}',
         [OrderController::class, 'success']
     )->name('orders.success');
+
+    Route::get(
+        '/orders/{order}/invoice',
+        [OrderController::class, 'invoice']
+    )->name('orders.invoice');
+    
 });
 /*
 NEW: SEO Friendly Category Route

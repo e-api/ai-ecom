@@ -7,6 +7,8 @@ services:
       args:
         PHP_VERSION: ${PHP_VERSION:-8.5.12}
     container_name: ${APP_NAME:-laravel}-php
+    # ⬇️ ADD THIS LINE TO MATCH HOST PERMISSIONS ⬇️
+    user: "${UID:-1000}:${GID:-1000}"
     deploy:
       resources:
         limits:

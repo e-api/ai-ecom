@@ -77,6 +77,8 @@ docker compose exec php php artisan migrate --seed
 rm -f public/storage
 ln -s /www/wwwroot/default/ai-ecom/storage/app/public public/storage
 chmod -R 775 storage
+# or
+sudo chmod -R 777 /www/wwwroot/default/ai-ecom/storage /www/wwwroot/default/ai-ecom/bootstrap/cache
 
 curl -s -X PUT https://yourdomain.com/s3/ecom-bucket
 

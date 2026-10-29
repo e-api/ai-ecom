@@ -45,6 +45,24 @@
                                 </tr>
                             </table>
 
+                            <hr style="border: none; border-top: 1px solid #dddddd; margin: 25px 0;">
+                            <h3>Order Invoice</h3>
+                            <p style="margin: 0 0 16px 0; color: #333333; font-size: 14px; line-height: 1.6;">
+                                You can view and print your order invoice using the button below.
+                            </p>
+                            <table cellpadding="0" cellspacing="0" style="margin: 0 auto 24px auto;">
+                                <tr>
+                                    <td style="background-color: #ff9900; border-radius: 24px; text-align: center; padding: 12px 36px;">
+                                        <a
+                                            href="{{ route('orders.invoice', $shipment->order) }}"
+                                            style="color: #000000; text-decoration: none; font-size: 15px; font-weight: 700; display: inline-block;"
+                                        >
+                                            View / Print Invoice
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
                             <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 0 0 16px 0;">
 
                             <p style="margin: 0; color: #888888; font-size: 12px; line-height: 1.5;">

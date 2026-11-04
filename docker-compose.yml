@@ -20,7 +20,8 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - ${PROJECT_PATH:-/www/wwwroot/default/ai-ecom}:/var/www
     working_dir: /var/www
-    # environment:
+    environment:
+      - HOME=/var/www
       # # Database - Connect to Floci's RDS
       # DB_CONNECTION: pgsql
       # DB_HOST: ${APP_NAME:-laravel}-floci

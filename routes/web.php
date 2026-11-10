@@ -152,6 +152,16 @@ Route::middleware('auth')->group(function () {
         '/orders/{order}/invoice',
         [OrderController::class, 'invoice']
     )->name('orders.invoice');
+
+    Route::get(
+        '/checkout/paypal/{order}',
+        [OrderController::class, 'paypalCheckout']
+    )->middleware('auth')->name('paypal.checkout');
+
+    Route::post(
+        '/checkout/paypal/{order}/create',
+        [OrderController::class, 'createPaypalOrder']
+    )->middleware('auth')->name('paypal.order.create');
     
 });
 /*

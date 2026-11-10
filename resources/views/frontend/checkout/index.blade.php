@@ -122,24 +122,26 @@
                 </span>
               </div>
 
-              <div data-payment-card data-payment-method="paypal" aria-disabled="true"
-                class="flex cursor-not-allowed items-start gap-3 rounded-md border border-gray-200 bg-gray-50 p-4 opacity-70">
-                <span class="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white text-gray-400">
-                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3C7.03 3 3 6.58 3 11c0 3.31 2.15 6.16 5.25 7.1-.36-1.2-.08-2.94.31-3.72l1.1-4.64s-.28-.56-.28-1.38c0-1.29.75-2.25 1.68-2.25.79 0 1.18.6 1.18 1.31 0 .8-.51 2-.78 3.11-.22.93.47 1.69 1.4 1.69 1.68 0 2.97-1.77 2.97-4.33 0-2.26-1.63-3.85-3.95-3.85-2.69 0-4.27 2.02-4.27 4.1 0 .82.31 1.69.7 2.17.08.09.09.16.06.25l-.27 1.09c-.04.18-.15.22-.34.13-1.27-.59-2.07-2.44-2.07-3.93 0-3.2 2.33-6.14 6.71-6.14 3.52 0 6.26 2.51 6.26 5.86 0 3.5-2.2 6.31-5.27 6.31-1.03 0-2-.54-2.33-1.18l-.63 2.42c-.23.88-.85 1.98-1.26 2.65.95.29 1.95.45 3 .45 4.97 0 9-4.03 9-9s-4.03-9-9-9z"/>
+              <div data-payment-card data-payment-method="paypal" tabindex="0" role="button" aria-pressed="false" class="flex cursor-pointer items-start gap-3 rounded-md border border-gray-200 bg-white p-4 transition hover:border-gray-300">
+                <span class="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-paypal" viewBox="0 0 16 16">
+                    <path d="M14.06 3.713c.12-1.071-.093-1.832-.702-2.526C12.628.356 11.312 0 9.626 0H4.734a.7.7 0 0 0-.691.59L2.005 13.509a.42.42 0 0 0 .415.486h2.756l-.202 1.28a.628.628 0 0 0 .62.726H8.14c.429 0 .793-.31.862-.731l.025-.13.48-3.043.03-.164.001-.007a.35.35 0 0 1 .348-.297h.38c1.266 0 2.425-.256 3.345-.91q.57-.403.993-1.005a4.94 4.94 0 0 0 .88-2.195c.242-1.246.13-2.356-.57-3.154a2.7 2.7 0 0 0-.76-.59l-.094-.061ZM6.543 8.82a.7.7 0 0 1 .321-.079H8.3c2.82 0 5.027-1.144 5.672-4.456l.003-.016q.326.186.548.438c.546.623.679 1.535.45 2.71-.272 1.397-.866 2.307-1.663 2.874-.802.57-1.842.815-3.043.815h-.38a.87.87 0 0 0-.863.734l-.03.164-.48 3.043-.024.13-.001.004a.35.35 0 0 1-.348.296H5.595a.106.106 0 0 1-.105-.123l.208-1.32z"/>
                   </svg>
                 </span>
                 <div class="min-w-0 flex-1">
                   <div class="flex flex-wrap items-center gap-2">
-                    <p class="font-medium text-gray-500">PayPal</p>
-                    <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">Coming soon</span>
+                    <p class="font-medium text-gray-900">PayPal</p>
                   </div>
-                  <p class="mt-1 text-sm leading-relaxed text-gray-400">You will be redirected to PayPal to complete your payment securely.</p>
+                  <p class="mt-1 text-sm leading-relaxed text-gray-500">You will be redirected to PayPal to complete your payment securely.</p>
                 </div>
+                <span data-payment-check class="hidden inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-green-500 text-white">
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                </span>
               </div>
             </div>
-
-            <input type="hidden" name="payment_method" id="paymentMethodInput" form="placeOrderForm" value="cod">
+            {{-- Radio inputs to actually submit the value --}}
+            <input type="radio" name="payment_method" value="cod" form="placeOrderForm" id="payment_cod" checked class="hidden">
+            <input type="radio" name="payment_method" value="paypal" form="placeOrderForm" id="payment_paypal" class="hidden">
           </section>
 
           {{-- Payment Method Scripts --}}
@@ -147,15 +149,23 @@
           <script>
             $(document).ready(function () {
               var $cards = $('[data-payment-card]');
-              var $input = $('#paymentMethodInput');
 
               function selectPaymentCard($card) {
-                if ($card.data('disabled') || $card.attr('aria-disabled') === 'true') {
+                // Ignore if the card is disabled
+                if ($card.attr('aria-disabled') === 'true') {
                   return;
                 }
 
                 var method = $card.data('payment-method');
-                $input.val(method);
+                
+                // Check the correct radio button for form submission
+                if (method === 'paypal') {
+                    $('#payment_paypal').prop('checked', true);
+                } else {
+                    $('#payment_cod').prop('checked', true);
+                }
+
+                // Update the UI styles
                 $cards.each(function () {
                   var $el = $(this);
                   if ($el.data('payment-method') === method) {
@@ -181,6 +191,7 @@
                 }
               });
 
+              // Default select COD on page load
               selectPaymentCard($cards.filter('[data-payment-method="cod"]'));
             });
           </script>

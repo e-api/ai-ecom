@@ -7,6 +7,7 @@ use App\Models\CartItem;
 use App\Models\DeliveryAddress;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Services\Frontend\PayPalService;
 use App\Services\Frontend\ShippingChargeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -56,7 +57,7 @@ class OrderController extends Controller
         $validated = $request->validate([
             'payment_method' => [
                 'required',
-                'in:cod',
+                'in:cod,paypal',
             ],
         ]);
 
@@ -207,18 +208,26 @@ class OrderController extends Controller
             }
 
             // Clear the cart and complete the transaction
-            CartItem::where(
-                'user_id',
-                auth()->id()
-            )
-            ->delete();
-            session()->forget('cart_coupon');
+            // PayPal orders must retain the cart until payment succeeds.
+            if ($order->payment_method === 'cod') {
+                CartItem::where(
+                    'user_id',
+                    auth()->id()
+                )->delete();
+                session()->forget('cart_coupon');
+            }
 
             return $order;
         });
 
-        return redirect()
-        ->route(
+        // Redirect PayPal orders to the PayPal checkout page.
+        if ($order->payment_method === 'paypal') {
+            return redirect()->route('paypal.checkout', [
+                'order' => $order->id,
+            ]);
+        }
+        // Keep our existing COD success redirect.
+        return redirect()->route(
             'orders.success',
             $order
         );
@@ -247,5 +256,99 @@ class OrderController extends Controller
             'frontend.orders.invoice',
             compact('order')
         );
+    }
+
+    public function paypalCheckout(Order $order)
+    {
+        abort_unless(
+            (int) $order->user_id === (int) auth()->id(),
+            403
+        );
+
+        abort_unless(
+            $order->payment_method === 'paypal'
+            && $order->payment_status === 'pending',
+            403
+        );
+
+        $rate = (float) config('paypal.usd_to_khr_rate');
+
+        abort_if(
+            $rate <= 0,
+            500,
+            'Invalid PayPal demo conversion rate.'
+        );
+
+        $usdAmount = round(
+            (float) $order->grand_total / $rate,
+            2
+        );
+
+        abort_if(
+            $usdAmount <= 0,
+            400,
+            'Invalid PayPal order amount.'
+        );
+
+        return view('frontend.checkout.paypal', [
+            'order' => $order,
+            'usdAmount' => number_format($usdAmount, 2, '.', ''),
+            'currency' => config('paypal.currency', 'USD'),
+        ]);
+    }
+
+    public function createPaypalOrder(
+        Order $order,
+        PayPalService $paypalService
+    ) {
+        abort_unless(
+            (int) $order->user_id === (int) auth()->id(),
+            403
+        );
+
+        abort_unless(
+            $order->payment_method === 'paypal'
+            && $order->payment_status === 'pending',
+            403
+        );
+
+        $rate = (float) config('paypal.usd_to_khr_rate');
+
+        abort_if(
+            $rate <= 0,
+            500,
+            'Invalid PayPal demo conversion rate.'
+        );
+
+        // Calculate the amount on our server.
+        $usdAmount = round(
+            (float) $order->grand_total / $rate,
+            2
+        );
+
+        abort_if(
+            $usdAmount <= 0,
+            400,
+            'Invalid PayPal order amount.'
+        );
+
+        // Reuse the existing PayPal order if already created.
+        if ($order->paypal_order_id) {
+            return response()->json([
+                'id' => $order->paypal_order_id,
+            ]);
+        }
+
+        $paypalOrder = $paypalService->createOrder(
+            $usdAmount,
+            (string) $order->id
+        );
+
+        $order->paypal_order_id = $paypalOrder['id'];
+        $order->save();
+
+        return response()->json([
+            'id' => $paypalOrder['id'],
+        ]);
     }
 }

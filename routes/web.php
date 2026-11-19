@@ -162,6 +162,12 @@ Route::middleware('auth')->group(function () {
         '/checkout/paypal/{order}/create',
         [OrderController::class, 'createPaypalOrder']
     )->middleware('auth')->name('paypal.order.create');
+
+    // Add this route alongside our other PayPal routes.
+    Route::post(
+        '/checkout/paypal/{order}/capture',
+        [OrderController::class, 'capturePaypalOrder']
+    )->name('paypal.order.capture');
     
 });
 /*

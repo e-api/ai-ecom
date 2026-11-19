@@ -59,6 +59,11 @@
     );
 
     const csrfToken = @json(csrf_token());
+    
+    const captureOrderUrl = @json(
+        route('paypal.order.capture', ['order' => $order->id])
+    );
+
     const message = document.getElementById('paypal-message');
 
     paypal.Buttons({
@@ -89,10 +94,32 @@
             return data.id;
         },
 
-        onApprove: function () {
-            message.textContent = 'PayPal approval received. Final payment capture and order confirmation will be implemented in Part 71.';
-            message.classList.remove('text-gray-600', 'text-red-500');
-            message.classList.add('text-green-600');
+        onApprove: async function () {
+            message.textContent = 'Processing our payment...';
+            try {
+                const response = await fetch(captureOrderUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                    },
+                    body: JSON.stringify({})
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(
+                        data.message || 'Payment capture failed.'
+                    );
+                }
+                // Redirect to our Thank You page.
+                window.location.href = data.redirect;
+            } catch (error) {
+                console.error('Payment capture error:', error);
+                message.textContent =
+                    error.message ||
+                    'Unable to complete payment. Please contact us.';
+            }
         },
 
         onCancel: function () {

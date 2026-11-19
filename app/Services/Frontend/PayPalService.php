@@ -67,4 +67,45 @@ class PayPalService
 
         return $paypalOrder;
     }
+
+    /**
+     * Retrieve a PayPal order so we can check its current status.
+     */
+    public function getOrder(string $paypalOrderId): array
+    {
+        $response = Http::withToken($this->getAccessToken())
+            ->acceptJson()
+            ->timeout(30)
+            ->get(
+                config('paypal.base_url') .
+                '/v2/checkout/orders/' .
+                $paypalOrderId
+            );
+        $response->throw();
+        return $response->json();
+    }
+
+    /**
+     * Capture an approved PayPal order.
+     */
+    public function captureOrder(string $paypalOrderId): array
+    {
+        $response = Http::withToken($this->getAccessToken())
+            ->acceptJson()
+            ->asJson()
+            ->withHeaders(['Prefer' => 'return=representation'])
+            ->timeout(30)
+            ->post(
+                config('paypal.base_url') .
+                '/v2/checkout/orders/' .
+                $paypalOrderId .
+                '/capture',
+                // PayPal requires a JSON object body here. Passing an empty
+                // PHP array would be encoded as "[]", which PayPal rejects
+                // with INVALID_REQUEST.
+                (object) []
+            );
+        $response->throw();
+        return $response->json();
+    }
 }

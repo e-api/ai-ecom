@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OrderPaidMail;
 use App\Models\CartItem;
 use App\Models\DeliveryAddress;
 use App\Models\Order;
@@ -11,6 +12,8 @@ use App\Services\Frontend\PayPalService;
 use App\Services\Frontend\ShippingChargeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class OrderController extends Controller
@@ -237,9 +240,21 @@ class OrderController extends Controller
     {
         $order = auth()->user()
             ->orders()
-            ->findOrFail(
-                $order->id
-            );
+            ->with('orderItems')
+            ->findOrFail($order->id);
+        // PayPal orders must be paid before showing success.
+        if (
+            $order->payment_method === 'paypal'
+            && $order->payment_status !== 'paid'
+        ) {
+            return redirect()
+                ->route('paypal.checkout', $order)
+                ->with(
+                    'error',
+                    'Please complete your PayPal payment first.'
+                );
+        }
+        
         return view(
             'frontend.orders.success',
             compact('order')
@@ -332,23 +347,230 @@ class OrderController extends Controller
             'Invalid PayPal order amount.'
         );
 
-        // Reuse the existing PayPal order if already created.
+        // Reuse the existing PayPal order only while PayPal still allows it
+        // to be paid. An APPROVED order cannot be approved a second time, so
+        // a failed capture must start a fresh PayPal order.
         if ($order->paypal_order_id) {
-            return response()->json([
-                'id' => $order->paypal_order_id,
-            ]);
+            try {
+                $existingOrder = $paypalService->getOrder(
+                    $order->paypal_order_id
+                );
+                $existingStatus = data_get($existingOrder, 'status');
+
+                if ($existingStatus === 'CREATED') {
+                    return response()->json([
+                        'id' => $order->paypal_order_id,
+                    ]);
+                }
+
+                if ($existingStatus === 'COMPLETED') {
+                    // Funds were already captured; never charge the buyer twice.
+                    return response()->json([
+                        'message' => 'This payment was already completed. Please contact support if your order is still pending.',
+                    ], 422);
+                }
+            } catch (\Throwable $e) {
+                Log::warning(
+                    'Unable to check the existing PayPal order status.',
+                    [
+                        'order_id' => $order->id,
+                        'paypal_order_id' => $order->paypal_order_id,
+                        'error' => $e->getMessage(),
+                    ]
+                );
+            }
         }
 
-        $paypalOrder = $paypalService->createOrder(
-            $usdAmount,
-            (string) $order->id
-        );
+        try {
+            $paypalOrder = $paypalService->createOrder(
+                $usdAmount,
+                (string) $order->id
+            );
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            Log::error(
+                'PayPal create order request failed.',
+                [
+                    'order_id' => $order->id,
+                    'status' => $e->response->status(),
+                    'response' => $e->response->json(),
+                ]
+            );
+
+            return response()->json([
+                'message' => 'PayPal could not start the payment. Please try again.',
+            ], 422);
+        }
 
         $order->paypal_order_id = $paypalOrder['id'];
         $order->save();
 
         return response()->json([
             'id' => $paypalOrder['id'],
+        ]);
+    }
+
+    public function capturePaypalOrder(
+        Order $order,
+        PayPalService $paypalService
+    ) {
+        // Verify that this order belongs to the logged-in customer.
+        abort_unless(
+            (int) $order->user_id === (int) auth()->id(),
+            403
+        );
+
+        // Prevent capturing an already paid order again.
+        if ($order->payment_status === 'paid') {
+            return response()->json([
+                'success' => true,
+                'redirect' => route('orders.success', $order),
+            ]);
+        }
+
+        // Only pending PayPal orders can be captured.
+        abort_unless(
+            $order->payment_method === 'paypal'
+            && $order->payment_status === 'pending'
+            && !empty($order->paypal_order_id),
+            403
+        );
+
+        // Calculate the expected USD amount on our server.
+        $rate = (float) config('paypal.usd_to_khr_rate');
+
+        abort_if(
+            $rate <= 0,
+            500,
+            'Invalid PayPal demo conversion rate.'
+        );
+
+        $expectedAmount = number_format(
+            round((float) $order->grand_total / $rate, 2),
+            2,
+            '.',
+            ''
+        );
+
+        $expectedCurrency = config('paypal.currency', 'USD');
+
+        // Capture the approved PayPal order.
+        try {
+            $captureResponse = $paypalService->captureOrder(
+                $order->paypal_order_id
+            );
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            Log::error(
+                'PayPal capture request failed.',
+                [
+                    'order_id' => $order->id,
+                    'paypal_order_id' => $order->paypal_order_id,
+                    'status' => $e->response->status(),
+                    'response' => $e->response->json(),
+                ]
+            );
+
+            return response()->json([
+                'success' => false,
+                'message' => 'PayPal could not complete the payment. Please try again.',
+            ], 422);
+        }
+
+        // Get the captured payment details.
+        $capture = data_get(
+            $captureResponse,
+            'purchase_units.0.payments.captures.0'
+        );
+
+        $capturedAmount = data_get(
+            $capture,
+            'amount.value'
+        );
+
+        $capturedCurrency = data_get(
+            $capture,
+            'amount.currency_code'
+        );
+
+        $customId = data_get(
+            $captureResponse,
+            'purchase_units.0.custom_id'
+        );
+
+        // Verify the PayPal response.
+        if (
+            data_get($captureResponse, 'status') !== 'COMPLETED'
+            || data_get($capture, 'status') !== 'COMPLETED'
+            || !$capture
+            || $customId !== (string) $order->id
+            || $capturedCurrency !== $expectedCurrency
+            || number_format(
+                (float) $capturedAmount,
+                2,
+                '.',
+                ''
+            ) !== $expectedAmount
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'PayPal payment verification failed.',
+            ], 422);
+        }
+
+        // Update our order only after successful verification.
+        $shouldSendEmail = DB::transaction(function () use ($order) {
+            $lockedOrder = Order::whereKey($order->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // Avoid duplicate order updates and emails.
+            if ($lockedOrder->payment_status === 'paid') {
+                return false;
+            }
+
+            $lockedOrder->payment_status = 'paid';
+            $lockedOrder->order_status = 'processing';
+
+            $lockedOrder->save();
+
+            return true;
+        });
+
+        // Refresh our order and load its related information.
+        $order->refresh()->load([
+            'user',
+            'orderItems',
+        ]);
+
+        // Clear the cart only after successful payment.
+        CartItem::where(
+            'user_id',
+            auth()->id()
+        )->delete();
+
+        session()->forget('cart_coupon');
+
+        // Send the payment confirmation email.
+        if ($shouldSendEmail && $order->user?->email) {
+            try {
+                Mail::to($order->user->email)
+                    ->send(new OrderPaidMail($order));
+
+            } catch (\Throwable $e) {
+
+                // Log email errors without changing the successful payment.
+                Log::error(
+                    'PayPal payment confirmation email failed.',
+                    [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage(),
+                    ]
+                );
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'redirect' => route('orders.success', $order),
         ]);
     }
 }

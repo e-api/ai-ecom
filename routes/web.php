@@ -13,6 +13,7 @@ use App\Http\Controllers\Frontend\CheckoutController;
 use App\Http\Controllers\Frontend\DeliveryAddressController;
 use App\Http\Controllers\Frontend\OrderController;
 use App\Http\Controllers\Frontend\AccountController;
+use App\Http\Controllers\Frontend\ChangePasswordController;
 
 // Route::get('/', function () {
 //     // return view('welcome');
@@ -191,6 +192,17 @@ Route::middleware('auth')->group(function () {
         '/account',
         [AccountController::class, 'update']
     )->name('account.update');
+
+    // Change password
+    Route::get(
+        '/account/change-password',
+        [ChangePasswordController::class, 'edit']
+    )->name('account.password.edit');
+
+    Route::post(
+        '/account/change-password',
+        [ChangePasswordController::class, 'update']
+    )->name('account.password.update');
 
 });
 /*

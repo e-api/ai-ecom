@@ -92,6 +92,20 @@
           </form>
         </div>
 
+        {{-- Change Password Section --}}
+        <div class="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-5">
+          <h2 class="mb-2 text-lg font-black uppercase tracking-wide">Change Password</h2>
+          <p class="mb-4 text-sm text-gray-600">
+            Want to update your account password?
+            Click the button below to change it.
+          </p>
+          <a href="{{ route('account.password.edit') }}"
+            class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.313-2.687 6-6 6m2-3H5m9 0a3 3 0 110-6 3 3 0 010 6zm-6 0a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Change Password
+          </a>
+        </div>
+
       </div>
     </div>
   </section>

@@ -92,18 +92,82 @@
           </a>
         @endguest
 
-        {{-- Desktop: Logout Button (logged in) --}}
+        {{-- Desktop: User menu (logged in) --}}
         @auth
-          <form method="POST" action="{{ route('logout') }}" class="hidden sm:inline">
-            @csrf
-            <button type="submit" class="inline-flex h-10 items-center gap-2 rounded-lg border border-red-400/50 px-4 text-sm font-bold text-red-300 transition hover:bg-red-500/15 hover:text-red-200" title="Logout">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          <div class="relative hidden sm:block" data-user-menu>
+            <button
+              type="button"
+              id="user-menu-button"
+              data-user-menu-toggle
+              class="inline-flex h-10 items-center gap-2 rounded-lg border border-white/20 bg-white/10 pl-1.5 pr-2.5 text-sm font-bold text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/40"
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-controls="user-menu-dropdown"
+              title="Account menu"
+            >
+              <span class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-[#ff6a00] text-xs font-black uppercase text-white" aria-hidden="true">
+                {{ strtoupper(mb_substr(auth()->user()->name, 0, 2)) }}
+              </span>
+              <span class="hidden max-w-[9rem] truncate lg:inline">{{ auth()->user()->name }}</span>
+              <svg data-user-menu-chevron class="h-4 w-4 text-white/70 transition-transform duration-150" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
-              Logout
             </button>
-          </form>
+
+            {{-- Dropdown panel --}}
+            <div
+              id="user-menu-dropdown"
+              data-user-menu-panel
+              class="invisible absolute right-0 z-50 mt-2 w-64 origin-top-right scale-95 rounded-xl border border-gray-100 bg-white opacity-0 shadow-xl transition-all duration-150"
+              role="menu"
+              aria-labelledby="user-menu-button"
+              aria-hidden="true"
+            >
+              {{-- User information --}}
+              <div class="flex items-center gap-3 border-b border-gray-100 px-4 py-4">
+                <span class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#ff6a00] text-sm font-black uppercase text-white" aria-hidden="true">
+                  {{ strtoupper(mb_substr(auth()->user()->name, 0, 2)) }}
+                </span>
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-bold text-gray-900">{{ auth()->user()->name }}</p>
+                  <p class="truncate text-xs text-gray-500">{{ auth()->user()->email }}</p>
+                </div>
+              </div>
+
+              {{-- Menu links --}}
+              <div class="py-1">
+                <a
+                  href="{{ route('account.edit') }}"
+                  role="menuitem"
+                  class="flex items-center gap-2 px-4 py-2 text-sm transition {{ request()->routeIs('account.*') ? 'bg-gray-50 font-bold text-gray-900' : 'text-gray-700 hover:bg-gray-50' }}"
+                >
+                  <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  My Account
+                </a>
+              </div>
+
+              {{-- Logout --}}
+              <div class="border-t border-gray-100 p-1">
+                <form method="POST" action="{{ route('logout') }}">
+                  @csrf
+                  <button
+                    type="submit"
+                    role="menuitem"
+                    class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
+                  >
+                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    Logout
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
         @endauth
+
       </div>
     </div>
 
@@ -182,7 +246,6 @@
           </div>
         @endforeach
         
-        <a data-nav class="store-link px-2 rounded-lg font-medium transition-all duration-200 text-white hover:bg-white/10" href="{{ url('shop.html') }}">Shop</a>
         <a data-nav class="store-link px-2 rounded-lg font-medium transition-all duration-200 text-white hover:bg-white/10" href="{{ url('about.html') }}">About</a>
         <a data-nav class="store-link px-2 rounded-lg font-medium transition-all duration-200 text-white hover:bg-white/10" href="{{ url('contact.html') }}">Contact</a>
       </div>
@@ -225,7 +288,7 @@
               </div>
             </div>
             <div class="mt-3 pt-3 border-t border-white/10 grid grid-cols-2 gap-2">
-              <a href="{{ url('account.html') }}" class="text-white text-sm hover:bg-white/10 rounded-md p-2 transition text-center">My Account</a>
+              <a href="{{ route('account.edit') }}" class="text-white text-sm {{ request()->routeIs('account.*') ? 'bg-white/15 font-bold' : '' }} hover:bg-white/10 rounded-md p-2 transition text-center">My Account</a>
               <a href="{{ route('orders.index') }}" class="text-white text-sm {{ request()->routeIs('orders.*') ? 'bg-white/15 font-bold' : '' }} hover:bg-white/10 rounded-md p-2 transition text-center">Orders</a>
               <a href="{{ url('wishlist.html') }}" class="text-white text-sm hover:bg-white/10 rounded-md p-2 transition text-center">Wishlist</a>
               <form method="POST" action="{{ route('logout') }}" class="col-span-1">
@@ -353,6 +416,48 @@
 
 @push('scripts')
 <script nonce="$2y$10$y1wzkQBMMTJ6U7of/7UFBek2ZdAMSENu59zb5moaOkdL9ZZ5.Ov7i">
+  (function () {
+    var menu = document.querySelector('[data-user-menu]');
+    if (!menu) return;
+
+    var toggle = menu.querySelector('[data-user-menu-toggle]');
+    var panel = menu.querySelector('[data-user-menu-panel]');
+    var chevron = menu.querySelector('[data-user-menu-chevron]');
+    if (!toggle || !panel) return;
+
+    function setUserMenuOpen(open) {
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+      panel.classList.toggle('invisible', !open);
+      panel.classList.toggle('opacity-0', !open);
+      panel.classList.toggle('scale-95', !open);
+      panel.classList.toggle('visible', open);
+      panel.classList.toggle('opacity-100', open);
+      panel.classList.toggle('scale-100', open);
+      if (chevron) {
+        chevron.classList.toggle('rotate-180', open);
+      }
+    }
+
+    toggle.addEventListener('click', function (event) {
+      event.stopPropagation();
+      setUserMenuOpen(toggle.getAttribute('aria-expanded') !== 'true');
+    });
+
+    document.addEventListener('click', function (event) {
+      if (!menu.contains(event.target)) {
+        setUserMenuOpen(false);
+      }
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+        setUserMenuOpen(false);
+        toggle.focus();
+      }
+    });
+  })();
+
   (function () {
     var select = document.getElementById('header-currency');
     if (!select) return;

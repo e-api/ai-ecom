@@ -12,6 +12,7 @@ use App\Http\Controllers\Frontend\CouponController;
 use App\Http\Controllers\Frontend\CheckoutController;
 use App\Http\Controllers\Frontend\DeliveryAddressController;
 use App\Http\Controllers\Frontend\OrderController;
+use App\Http\Controllers\Frontend\AccountController;
 
 // Route::get('/', function () {
 //     // return view('welcome');
@@ -153,6 +154,12 @@ Route::middleware('auth')->group(function () {
         [OrderController::class, 'invoice']
     )->name('orders.invoice');
 
+    /*
+    |--------------------------------------------------------------------------
+    | Paypal
+    |--------------------------------------------------------------------------
+    */
+
     Route::get(
         '/checkout/paypal/{order}',
         [OrderController::class, 'paypalCheckout']
@@ -168,7 +175,23 @@ Route::middleware('auth')->group(function () {
         '/checkout/paypal/{order}/capture',
         [OrderController::class, 'capturePaypalOrder']
     )->name('paypal.order.capture');
-    
+
+    /*
+    |--------------------------------------------------------------------------
+    | Customer Account
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/account',
+        [AccountController::class, 'edit']
+    )->name('account.edit');
+
+    Route::post(
+        '/account',
+        [AccountController::class, 'update']
+    )->name('account.update');
+
 });
 /*
 NEW: SEO Friendly Category Route

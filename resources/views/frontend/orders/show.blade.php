@@ -94,6 +94,15 @@
                 <dd class="font-medium text-gray-900 sm:text-right">{{ ucfirst($order->payment_status) }}</dd>
               </div>
             </dl>
+
+            @if($order->payment_method === 'paypal' && $order->payment_status === 'pending' && in_array($order->order_status, ['pending', 'failed'], true))
+              <div class="mt-4 flex flex-col gap-2 rounded-md border border-amber-200 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-sm text-amber-800">Your PayPal payment has not been completed yet.</p>
+                <a href="{{ route('paypal.checkout', $order) }}" class="inline-flex items-center justify-center rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-800">
+                  Complete payment
+                </a>
+              </div>
+            @endif
           </section>
 
           <section>

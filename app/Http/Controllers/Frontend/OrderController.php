@@ -11,6 +11,7 @@ use App\Models\OrderItem;
 use App\Services\Frontend\PayPalService;
 use App\Services\Frontend\ShippingChargeService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -138,6 +139,30 @@ class OrderController extends Controller
             +
             $shippingCharge;
 
+        // Retry idempotency: if this customer already has a pending PayPal
+        // order for this exact cart, resume it instead of creating a new
+        // order number every time the payment is retried.
+        if ($validated['payment_method'] === 'paypal') {
+            $resumableOrder = $this->findResumablePaypalOrder(
+                $cartItems,
+                $deliveryAddress,
+                $subtotal,
+                $couponDiscount,
+                $shippingCharge,
+                $grandTotal
+            );
+
+            if ($resumableOrder) {
+                $this->cancelSupersededPaypalOrders(
+                    $resumableOrder->id
+                );
+
+                return redirect()->route('paypal.checkout', [
+                    'order' => $resumableOrder->id,
+                ]);
+            }
+        }
+
 
         // Create the order using a database transaction
         $order = DB::transaction(function () use (
@@ -225,6 +250,9 @@ class OrderController extends Controller
 
         // Redirect PayPal orders to the PayPal checkout page.
         if ($order->payment_method === 'paypal') {
+            // A brand new PayPal order replaces any older unfinished one.
+            $this->cancelSupersededPaypalOrders($order->id);
+
             return redirect()->route('paypal.checkout', [
                 'order' => $order->id,
             ]);
@@ -234,6 +262,149 @@ class OrderController extends Controller
             'orders.success',
             $order
         );
+    }
+
+    /**
+     * Find a pending PayPal order that still matches the current cart,
+     * so payment retries reuse the same order number.
+     */
+    private function findResumablePaypalOrder(
+        Collection $cartItems,
+        DeliveryAddress $deliveryAddress,
+        float $subtotal,
+        float $couponDiscount,
+        float $shippingCharge,
+        float $grandTotal
+    ): ?Order {
+        $pendingOrders = Order::query()
+            ->where('user_id', auth()->id())
+            ->where('payment_method', 'paypal')
+            ->where('payment_status', 'pending')
+            ->whereIn('order_status', ['pending', 'failed'])
+            ->with('orderItems')
+            ->latest()
+            ->get();
+
+        if ($pendingOrders->isEmpty()) {
+            return null;
+        }
+
+        $cartSignature = $this->cartSignature($cartItems);
+
+        foreach ($pendingOrders as $order) {
+            if (!$this->orderMatchesTotals(
+                $order,
+                $subtotal,
+                $couponDiscount,
+                $shippingCharge,
+                $grandTotal
+            )) {
+                continue;
+            }
+
+            if (
+                !$this->orderMatchesAddress(
+                    $order,
+                    $deliveryAddress
+                )
+            ) {
+                continue;
+            }
+
+            if (
+                $this->orderItemsSignature($order) !==
+                $cartSignature
+            ) {
+                continue;
+            }
+
+            return $order;
+        }
+
+        return null;
+    }
+
+    /**
+     * Compare the order totals against the freshly calculated cart totals.
+     */
+    private function orderMatchesTotals(
+        Order $order,
+        float $subtotal,
+        float $couponDiscount,
+        float $shippingCharge,
+        float $grandTotal
+    ): bool {
+        return abs((float) $order->subtotal - $subtotal) < 0.01
+            && abs((float) $order->coupon_discount - $couponDiscount) < 0.01
+            && abs((float) $order->shipping_charge - $shippingCharge) < 0.01
+            && abs((float) $order->grand_total - $grandTotal) < 0.01;
+    }
+
+    /**
+     * Compare the stored delivery address against the current default one.
+     */
+    private function orderMatchesAddress(
+        Order $order,
+        DeliveryAddress $deliveryAddress
+    ): bool {
+        return $order->delivery_name === $deliveryAddress->name
+            && $order->delivery_phone === $deliveryAddress->phone
+            && $order->delivery_address === $deliveryAddress->address
+            && $order->delivery_city === $deliveryAddress->city
+            && (string) $order->delivery_state ===
+                (string) $deliveryAddress->state
+            && $order->delivery_country === $deliveryAddress->country
+            && (string) $order->delivery_postal_code ===
+                (string) $deliveryAddress->postal_code;
+    }
+
+    /**
+     * Build a product_id => quantity map from the current cart.
+     */
+    private function cartSignature(Collection $cartItems): array
+    {
+        $signature = [];
+
+        foreach ($cartItems as $item) {
+            $signature[(int) $item->product_id] =
+                (int) $item->quantity;
+        }
+
+        ksort($signature);
+
+        return $signature;
+    }
+
+    /**
+     * Build a product_id => quantity map from a stored order.
+     */
+    private function orderItemsSignature(Order $order): array
+    {
+        $signature = [];
+
+        foreach ($order->orderItems as $item) {
+            $signature[(int) $item->product_id] =
+                (int) $item->quantity;
+        }
+
+        ksort($signature);
+
+        return $signature;
+    }
+
+    /**
+     * Mark older pending PayPal orders for other carts as cancelled, so only
+     * one pending PayPal order per customer stays actionable.
+     */
+    private function cancelSupersededPaypalOrders(int $keepOrderId): void
+    {
+        Order::query()
+            ->where('user_id', auth()->id())
+            ->where('payment_method', 'paypal')
+            ->where('payment_status', 'pending')
+            ->whereIn('order_status', ['pending', 'failed'])
+            ->where('id', '!=', $keepOrderId)
+            ->update(['order_status' => 'cancelled']);
     }
 
     public function success(Order $order)

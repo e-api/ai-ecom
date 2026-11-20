@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Notifications\ResetPasswordNotification;
 
 #[Fillable(['name', 'email', 'password', 'phone', 'status'])]
 #[Hidden(['password', 'remember_token'])]
@@ -66,5 +67,10 @@ class User extends Authenticatable
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function sendPasswordResetNotification($token):void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }

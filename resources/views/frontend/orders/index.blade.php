@@ -81,11 +81,19 @@
                         {{ ucfirst($order->order_status) }}
                       </span>
                     </td>
-                    <td class="py-4 pl-4 text-right">
-                      <a href="{{ route('orders.show', $order) }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition hover:text-gray-900">
-                        View
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                      </a>
+                    <td class="py-4 pl-4">
+                      <div class="flex items-center justify-end gap-2">
+                        @if($order->payment_method === 'paypal' && $order->payment_status === 'pending' && in_array($order->order_status, ['pending', 'failed'], true))
+                          <a href="{{ route('paypal.checkout', $order) }}" class="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-gray-800">
+                            Pay now
+                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                          </a>
+                        @endif
+                        <a href="{{ route('orders.show', $order) }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition hover:text-gray-900">
+                          View
+                          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                      </div>
                     </td>
                   </tr>
                 @endforeach
